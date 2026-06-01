@@ -20,20 +20,9 @@
           profile_performance_epp: Performance,
           ac_profile_tunings: {},
           dc_profile_tunings: {},
-          armoury_settings: {
-              "gpu_mux_mode": 1,
-          },
+          armoury_settings: {},
       )
     '';
-  };
-
-  services.supergfxd = {
-    enable = true;
-    settings = {
-      vfio_enable = true;
-      always_reboot = false;
-      no_logind = false;
-    };
   };
 
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;

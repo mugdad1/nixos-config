@@ -39,9 +39,6 @@
       nfu = "nh-notify nh os switch --update";
       nsearch = "nh search";
 
-      # gpu
-      gpu = "gpu-mode";
-
       # python
       piv = "python -m venv .venv";
       psv = "source .venv/bin/activate";
