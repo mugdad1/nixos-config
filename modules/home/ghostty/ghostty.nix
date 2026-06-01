@@ -10,7 +10,7 @@
         "Maple Mono"
         # "DejaVu Sans"
       ];
-      font-size = if (host == "p14s") then 16 else 14;
+      font-size = if (host == "p14s") then 14 else 12;
       font-feature = [
         "calt"
         "cv66"
