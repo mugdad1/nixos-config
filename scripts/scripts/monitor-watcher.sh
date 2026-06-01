@@ -26,13 +26,17 @@ handle-monitor-state() {
     # is an external monitor connected
     if [ -n "$external_present" ]; then
 
-        # only disable eDP-1 if more than 1 monitor is active
+        # only disable internal displays if more than 1 monitor is active
         if [ "$enabled_count" -gt 1 ]; then
-            hyprctl keyword monitor "eDP-1,disable"
+            for disp in eDP-1 eDP-2; do
+                hyprctl keyword monitor "$disp,disable"
+            done
         fi
     else
-        # no external monitor - enable laptop screen
-        hyprctl keyword monitor "eDP-1,preferred,auto,1"
+        # no external monitor - enable laptop screens
+        for disp in eDP-1 eDP-2; do
+            hyprctl keyword monitor "$disp,1920x1080@60,0x0,1.2"
+        done
     fi
 }
 

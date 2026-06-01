@@ -8,16 +8,10 @@
   environment.systemPackages = with pkgs; [
     acpi
     brightnessctl
-
-    amdgpu_top
-    nvtopPackages.amd
-
     lm_sensors
   ];
 
   services = {
-    # lact.enable = true;
-
     power-profiles-daemon.enable = true;
 
     upower = {
@@ -29,18 +23,7 @@
     };
   };
 
-  hardware = {
-    cpu.amd.updateMicrocode = true;
-
-    graphics = {
-      extraPackages = with pkgs; [
-        mesa
-
-        libva
-        libva-utils
-      ];
-    };
-  };
+  hardware.cpu.amd.updateMicrocode = true;
 
   boot = {
     kernelModules = [

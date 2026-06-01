@@ -33,48 +33,29 @@
   outputs =
     { nixpkgs, self, ... }@inputs:
     let
-      username = "frostphoenix";
+      username = "mugdad";
+      gpu = "amd-nvidia-hybrid";
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
       lib = nixpkgs.lib;
+      mkHost = host: nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [ ./hosts/${host} ];
+        specialArgs = {
+          inherit host gpu self inputs username;
+        };
+      };
     in
     {
       nixosConfigurations = {
-        desktop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/desktop ];
-          specialArgs = {
-            host = "desktop";
-            inherit self inputs username;
-          };
-        };
-        laptop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/laptop ];
-          specialArgs = {
-            host = "laptop";
-            inherit self inputs username;
-          };
-        };
-        p14s = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/p14s ];
-          specialArgs = {
-            host = "p14s";
-            inherit self inputs username;
-          };
-        };
-        vm = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/vm ];
-          specialArgs = {
-            host = "vm";
-            inherit self inputs username;
-          };
-        };
+        desktop = mkHost "desktop";
+        laptop = mkHost "laptop";
+        p14s = mkHost "p14s";
+        rog = mkHost "rog";
+        vm = mkHost "vm";
       };
     };
 }

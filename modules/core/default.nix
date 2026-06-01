@@ -21,5 +21,6 @@
     ./virtualization.nix
     # ./qmk.nix
     ./piper.nix
+    ../gpu
   ];
 }

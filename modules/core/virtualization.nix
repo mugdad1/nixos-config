@@ -21,15 +21,15 @@
   # Manage the virtualisation services
   virtualisation = {
     docker = {
-      enable = true;
+      enable = false;
     };
     libvirtd = {
-      enable = true;
+      enable = false;
       qemu = {
-        swtpm.enable = true;
+        swtpm.enable = false;
       };
     };
     spiceUSBRedirection.enable = true;
   };
-  services.spice-vdagentd.enable = true;
+  services.spice-vdagentd.enable = false;
 }

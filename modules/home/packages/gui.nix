@@ -25,5 +25,7 @@
     ## Level editor
     ldtk
     tiled
+    #creativity
+    kdePackages.kdenlive
   ];
 }

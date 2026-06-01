@@ -26,6 +26,8 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
+      rebuild = "nh-notify nh os switch";
+      update = "nh-notify nh os switch --update";
       cdnix = "cd ~/nixos-config && codium ~/nixos-config";
       ns = "nom-shell --run zsh";
       nsp = "nom-shell --run zsh -p";
