@@ -4,7 +4,7 @@
 #   Initialisation   #
 #--------------------#
 
-CURRENT_USERNAME='frostphoenix'
+CURRENT_USERNAME='mugdad'
 
 RESET=$(tput sgr0)
 WHITE=$(tput setaf 7)
@@ -103,9 +103,10 @@ done
 #-----------------#
 
 while true; do
-    HOST=$(whiptail --radiolist "Choose a host:" 14 56 4 \
+    HOST=$(whiptail --radiolist "Choose a host:" 14 56 5 \
         "desktop" "Desktop configuration" ON \
         "laptop" "Laptop configuration" OFF \
+        "p14s" "ThinkPad P14s configuration" OFF \
         "rog" "ASUS ROG laptop configuration" OFF \
         "vm" "Virtual machine configuration" OFF \
         --title "Host" 3>&1 1>&2 2>&3)
@@ -245,14 +246,6 @@ find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/${CURRENT_USERNAME}/
 
 echo -e "${INFO}Setting GPU profile to ${GREEN}$GPU${RESET}"
 sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" flake.nix
-
-if [[ $ROG_ENABLED = "Yes" ]]; then
-    echo -e "${INFO}Enabling ASUS ROG tools for host ${GREEN}$HOST${RESET}"
-    HOST_FILE="hosts/${HOST}/default.nix"
-    if ! grep -q "modules/rog" "$HOST_FILE" 2>/dev/null; then
-        sed -i "/\.\/hardware-configuration\.nix/a\    ./../../modules/rog" "$HOST_FILE"
-    fi
-fi
 
 #------------------------------#
 #   Apply pkgs configuration   #

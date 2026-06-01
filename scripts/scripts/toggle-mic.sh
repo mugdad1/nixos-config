@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 # toggle mic on/off
 swayosd-client --input-volume=mute-toggle

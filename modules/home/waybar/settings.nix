@@ -61,6 +61,7 @@ in
       disable-scroll = true;
       format = "{icon}";
       on-click = "activate";
+      sort-by-number = true;
       format-icons = {
         "1" = "I";
         "2" = "II";
@@ -72,7 +73,6 @@ in
         "8" = "VIII";
         "9" = "IX";
         "10" = "X";
-        sort-by-number = true;
       };
       persistent-workspaces = {
         "1" = [ ];

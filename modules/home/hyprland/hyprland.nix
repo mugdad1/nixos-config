@@ -11,7 +11,6 @@
     wf-recorder
     glib
     wayland
-    direnv
     tesseract
   ];
   systemd.user.targets.hyprland-session.Unit.Wants = [

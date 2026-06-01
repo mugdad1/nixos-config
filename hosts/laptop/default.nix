@@ -57,7 +57,6 @@
       [
         acpi_call
         cpupower
-      ]
-      ++ [ pkgs.cpupower-gui ];
+      ];
   };
 }
