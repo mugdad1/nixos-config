@@ -33,7 +33,7 @@
       CPU_HWP_DYN_BOOST_ON_AC = 1;
       CPU_HWP_DYN_BOOST_ON_BAT = 1;
 
-      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_AC = "balanced";
       PLATFORM_PROFILE_ON_BAT = "performance";
 
       INTEL_GPU_MIN_FREQ_ON_AC = 500;
@@ -48,7 +48,7 @@
     };
   };
 
-  powerManagement.cpuFreqGovernor = "performance";
+  powerManagement.cpuFreqGovernor = "powersave";
 
   boot = {
     kernelModules = [ "acpi_call" ];

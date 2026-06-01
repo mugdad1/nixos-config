@@ -23,7 +23,7 @@
     };
   };
 
-  powerManagement.cpuFreqGovernor = "performance";
+  powerManagement.cpuFreqGovernor = "powersave";
 
   boot.kernelParams = [ "pci=realloc" ];
   boot.kernelModules = [ "acpi_call" "r8169" ];
