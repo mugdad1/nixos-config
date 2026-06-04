@@ -20,7 +20,7 @@
       "$mod SHIFT, F, fullscreen, 1"
       "$mod, Space, exec, toggle-float"
       "$mod, D, exec, toggle-rofi rofi -show drun"
-      "$mod SHIFT, D, exec, vesktop --enable-features=UseOzonePlatform --ozone-platform=wayland"
+
       "$mod, Escape, exec, hyprlock"
       "ALT, Escape, exec, hyprlock & systemctl suspend"
       "$mod SHIFT, Escape, exec, power-menu"

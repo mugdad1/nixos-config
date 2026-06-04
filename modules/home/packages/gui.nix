@@ -17,8 +17,6 @@
     mission-center # GUI resources monitor
     zenity
 
-    ## Level editor
-    tiled
     #creativity
     kdePackages.kdenlive
   ];

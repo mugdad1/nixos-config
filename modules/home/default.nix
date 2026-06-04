@@ -1,7 +1,6 @@
 { ... }:
 {
   imports = [
-    ./audacious/audacious.nix         # music player
     ./bat.nix                         # better cat command
     ./browser.nix                     # firefox based browser
     ./btop.nix                        # resouces monitor 
@@ -17,7 +16,6 @@
     ./hyprland                        # window manager
     ./kitty.nix                       # terminal
     ./lazygit.nix
-    ./micro.nix                       # nano replacement
     ./nemo.nix                        # file manager
     ./nvim.nix                        # neovim editor
     ./obsidian.nix
@@ -28,7 +26,7 @@
     ./rofi/rofi.nix                   # launcher
     ./../../scripts/scripts.nix       # personal scripts
     ./ssh.nix                         # ssh config
-    ./spicetify.nix                   # spotify client
+
     ./superfile/superfile.nix         # terminal file manager
     ./swaylock.nix                    # lock screen
     ./swayosd.nix                     # brightness / volume wiget
