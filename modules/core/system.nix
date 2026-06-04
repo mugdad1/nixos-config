@@ -26,7 +26,7 @@
     git
   ];
 
-  time.timeZone = "Europe/Paris";
+  time.timeZone = "Asia/Riyadh";
   i18n.defaultLocale = "en_US.UTF-8";
   nixpkgs.config.allowUnfree = true;
   services.xserver.desktopManager.xterm.enable = false;
