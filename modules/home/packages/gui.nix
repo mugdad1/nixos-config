@@ -23,5 +23,8 @@
 
     ##
     filen-desktop
+
+    ## Night light
+    hyprsunset
   ];
 }

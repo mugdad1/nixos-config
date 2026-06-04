@@ -27,6 +27,7 @@
 
   boot.kernelParams = [ "pci=realloc" ];
   boot.kernelModules = [ "acpi_call" "r8169" ];
+  boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
 
   # ROG-specific monitor config — both internal displays with same settings
   home-manager.users.mugdad = {

@@ -23,6 +23,18 @@
           armoury_settings: {
               "gpu_mux_mode": 1,
           },
+          keyboard: (
+              led_brightness: 1,
+              aura: {
+                  "main": (
+                      mode: Static,
+                      color1: (214, 93, 14),
+                      color2: (0, 0, 0),
+                      color3: (0, 0, 0),
+                      speed: Low,
+                  ),
+              },
+          ),
       )
     '';
   };

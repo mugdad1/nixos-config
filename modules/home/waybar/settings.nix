@@ -43,6 +43,7 @@ in
       "battery"
       "hyprland/language"
       "custom/notification"
+      "custom/nightlight"
       "custom/power-menu"
     ];
     clock = {
@@ -175,6 +176,14 @@ in
       exec = "swaync-client -swb";
       on-click = "swaync-client -t -sw";
       on-click-right = "swaync-client -d -sw";
+      escape = true;
+    };
+    "custom/nightlight" = {
+      tooltip = true;
+      tooltip-format = "Toggle night light";
+      return-type = "json";
+      exec = "toggle-nightlight status";
+      on-click = "toggle-nightlight toggle";
       escape = true;
     };
     "custom/power-menu" = {
