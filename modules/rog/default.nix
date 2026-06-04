@@ -49,7 +49,7 @@ in
           ac_profile_tunings: {},
           dc_profile_tunings: {},
           armoury_settings: {
-              "gpu_mux_mode": 1,
+              "gpu_mux_mode": 0,
           },
           keyboard: (
               led_brightness: 1,
