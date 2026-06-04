@@ -5,7 +5,7 @@
 
     enableDefaultConfig = false;
 
-    matchBlocks = {
+    settings = {
       "*" = {
         addKeysToAgent = "1h";
 
