@@ -29,5 +29,7 @@
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
   nixpkgs.config.allowUnfree = true;
+  services.xserver.desktopManager.xterm.enable = false;
+
   system.stateVersion = "26.05";
 }
