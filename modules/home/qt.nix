@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   qt = {
     enable = true;
@@ -7,13 +7,17 @@
   };
 
   home.packages = with pkgs; [
-    gruvbox-kvantum
+    (gruvbox-kvantum.override { variant = "Gruvbox-Dark-Brown"; })
   ];
 
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
     [General]
-    theme=Gruvbox-Dark-Green
+    theme=Gruvbox-Dark-Brown
   '';
+
+  # Symlink theme into Kvantum's theme directory so it's found
+  home.file.".local/share/Kvantum/Gruvbox-Dark-Brown".source =
+    "${pkgs.gruvbox-kvantum.override { variant = "Gruvbox-Dark-Brown"; }}/share/Kvantum/Gruvbox-Dark-Brown";
 
   qt.qt5ctSettings = {
     Appearance = {
