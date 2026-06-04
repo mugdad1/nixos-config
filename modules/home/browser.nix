@@ -13,6 +13,13 @@
       DisablePocket = true;
       DisableFeedbackCommands = true;
       DontCheckDefaultBrowser = true;
+
+      AIControls = {
+        Default = {
+          Value = "blocked";
+          Locked = true;
+        };
+      };
       NoDefaultBookmarks = true;
       OfferToSaveLogins = false;
 
@@ -84,6 +91,7 @@
       };
       search = {
         default = "ddg";
+        force = true;
       };
 
       userChrome = ''

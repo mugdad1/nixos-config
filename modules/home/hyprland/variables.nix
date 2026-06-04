@@ -16,6 +16,7 @@
     QT_QPA_PLATFORM = "wayland";
 
     MOZ_ENABLE_WAYLAND = 1;
+    MOZ_SANDBOX_DRIVER_WHITELISTED = "1";
     WLR_BACKEND = "vulkan";
     WLR_RENDERER = "vulkan";
     WLR_NO_HARDWARE_CURSORS = 1;

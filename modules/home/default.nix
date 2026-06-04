@@ -6,7 +6,6 @@
     ./btop.nix                        # resouces monitor 
     ./cava.nix                        # audio visualizer
     ./direnv.nix
-    ./discord.nix                     # discord
     ./fastfetch/fastfetch.nix         # fetch tool
     ./fzf.nix                         # fuzzy finder
     ./ghostty/ghostty.nix             # terminal
