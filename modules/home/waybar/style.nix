@@ -7,7 +7,7 @@ let
     text_color = "#FBF1C7";
     background_0 = "#1D2021";
     background_1 = "#282828";
-    border_color = "#A89984";
+    border_color = "#928374";
     red = "#CC241D";
     green = "#98971A";
     yellow = "#FABD2F";

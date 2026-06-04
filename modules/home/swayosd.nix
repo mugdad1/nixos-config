@@ -70,13 +70,13 @@
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: alpha(#DDDDDD, 0.2);
+        background: alpha(#665c54, 0.5);
     }
     progress {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: #FBF1C7;
+        background: #98971A;
     }
   '';
 }

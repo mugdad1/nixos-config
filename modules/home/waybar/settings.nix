@@ -144,7 +144,7 @@ in
     "hyprland/language" = {
       tooltip = true;
       tooltip-format = "Keyboard layout";
-      format = "<span foreground='#FABD2F'> </span> {}";
+      format = "<span foreground='${yellow}'> </span> {}";
       format-fr = "FR";
       format-en = "US";
       on-click = "hyprctl switchxkblayout at-translated-set-2-keyboard next";
@@ -161,13 +161,13 @@ in
       tooltip-format = "Notifications";
       format = "{icon}";
       format-icons = {
-        notification = "<span foreground='red'><sup></sup></span>";
+        notification = "<span foreground='${red}'><sup></sup></span>";
         none = "";
-        dnd-notification = "<span foreground='red'><sup></sup></span>";
+        dnd-notification = "<span foreground='${red}'><sup></sup></span>";
         dnd-none = "";
-        inhibited-notification = "<span foreground='red'><sup></sup></span>";
+        inhibited-notification = "<span foreground='${red}'><sup></sup></span>";
         inhibited-none = "";
-        dnd-inhibited-notification = "<span foreground='red'><sup></sup></span>";
+        dnd-inhibited-notification = "<span foreground='${red}'><sup></sup></span>";
         dnd-inhibited-none = "";
       };
       return-type = "json";

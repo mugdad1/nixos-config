@@ -27,7 +27,9 @@
 
       ##### Window #####;
       window-padding-balance = true;
-      window-padding-color = "extend";
+      window-padding-x = 4;
+      window-padding-y = 4;
+      window-padding-color = "#282828";
       window-decoration = "none";
       window-theme = "ghostty";
       window-inherit-working-directory = false;

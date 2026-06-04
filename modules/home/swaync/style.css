@@ -1,10 +1,10 @@
 :root {
     --bg-primary: #1d2021;
     --bg-secondary: #282828;
-    --bg-button: #4E4E4E;
-    --bg-button-hover: #5E5E5E;
+    --bg-button: #504945;
+    --bg-button-hover: #665c54;
     --text-primary: #EBDBB2;
-    --text-disabled: #5C554A;
+    --text-disabled: #7c6f64;
     --border-color: #928374;
     --priority-low: #EBDBB2;
     --priority-normal: #83A598;
@@ -193,7 +193,7 @@ scrollbar slider {
 
 .notification-content .inline-reply .inline-reply-button {
     margin-left: 4px;
-    background: rgb(48, 48, 48);
+    background: #3c3836;
     border: 1px solid var(--border-color);
     border-radius: 0px;
     color: var(--text-primary);
@@ -201,7 +201,7 @@ scrollbar slider {
 
 .notification-content .inline-reply .inline-reply-button:disabled {
     background: initial;
-    color: rgb(150, 150, 150);
+    color: #928374;
     border: 1px solid var(--border-color);
     border-color: transparent;
 }

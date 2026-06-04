@@ -83,12 +83,7 @@
         "media.autoplay.blocking_policy" = 2;
       };
       search = {
-        default = "DuckDuckGo";
-        engines = {
-          "DuckDuckGo" = {
-            urls = [{ template = "https://duckduckgo.com/?q={searchTerms}"; }];
-          };
-        };
+        default = "ddg";
       };
 
       userChrome = ''

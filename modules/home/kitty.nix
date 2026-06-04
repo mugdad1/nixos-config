@@ -24,6 +24,10 @@
       enable_audio_bell = false;
       mouse_hide_wait = 60;
       window_padding_width = 10;
+      window_border_width = "2.0f";
+      active_border_color = "#98971A";
+      inactive_border_color = "#3C3836";
+      bell_border_color = "#D79921";
 
       ## Tabs
       tab_title_template = "{index}";
