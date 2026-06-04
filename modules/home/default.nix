@@ -1,7 +1,6 @@
 { ... }:
 {
   imports = [
-    ./aseprite/aseprite.nix           # pixel art editor
     ./audacious/audacious.nix         # music player
     ./bat.nix                         # better cat command
     ./browser.nix                     # firefox based browser
@@ -11,7 +10,6 @@
     ./discord.nix                     # discord
     ./fastfetch/fastfetch.nix         # fetch tool
     ./fzf.nix                         # fuzzy finder
-    ./gaming.nix                      # packages related to gaming
     ./ghostty/ghostty.nix             # terminal
     ./git.nix                         # version control
     ./gnome.nix                       # gnome apps
@@ -24,9 +22,9 @@
     ./nvim.nix                        # neovim editor
     ./obsidian.nix
     ./p10k/p10k.nix
+    ./qt.nix                        # qt / kvantum theme
     ./packages                        # other packages
     ./pomo/pomo.nix                   # TUI Pomodoro timer
-    ./retroarch.nix  
     ./rofi/rofi.nix                   # launcher
     ./../../scripts/scripts.nix       # personal scripts
     ./ssh.nix                         # ssh config
@@ -35,7 +33,6 @@
     ./swaylock.nix                    # lock screen
     ./swayosd.nix                     # brightness / volume wiget
     ./swaync/swaync.nix               # notification deamon
-    ./vscodium                        # vscode fork
     ./waybar                          # status bar
     ./waypaper.nix                    # GUI wallpaper picker
     ./xdg-mimes.nix                   # xdg config

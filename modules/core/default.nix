@@ -13,14 +13,10 @@
     ./program.nix
     ./security.nix
     ./services.nix
-    ./steam.nix
     ./system.nix
     ./flatpak.nix
     ./user.nix
     ./wayland.nix
-    ./virtualization.nix
-    # ./qmk.nix
-    ./piper.nix
     ../gpu
   ];
 }

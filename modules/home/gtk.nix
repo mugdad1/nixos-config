@@ -1,7 +1,6 @@
 {
   lib,
   pkgs,
-  host,
   ...
 }:
 let
@@ -22,16 +21,16 @@ in
     enable = true;
     font = {
       name = "Maple Mono";
-      size = if (host == "p14s") then 14 else 12;
+      size = 14;
     };
     theme = {
       name = gtk-theme-name;
       package = gtk-theme;
     };
-   # iconTheme = {
-    #  name = icon-theme-name;
-    #  package = pkgs.papirus-icon-theme.override { color = "green"; };
-  #  };
+    iconTheme = {
+      name = icon-theme-name;
+      package = pkgs.papirus-icon-theme.override { color = "green"; };
+    };
     cursorTheme = {
       name = "Bibata-Modern-Ice";
       package = pkgs.bibata-cursors;
@@ -58,7 +57,7 @@ in
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       gtk-theme = gtk-theme-name;
-     # icon-theme = icon-theme-name;
+      icon-theme = icon-theme-name;
       color-scheme = "prefer-dark";
     };
   };

@@ -103,12 +103,9 @@ done
 #-----------------#
 
 while true; do
-    HOST=$(whiptail --radiolist "Choose a host:" 14 56 5 \
-        "desktop" "Desktop configuration" ON \
-        "laptop" "Laptop configuration" OFF \
-        "p14s" "ThinkPad P14s configuration" OFF \
+    HOST=$(whiptail --radiolist "Choose a host:" 12 56 2 \
+        "t14s" "ThinkPad T14s Gen 2 configuration" ON \
         "rog" "ASUS ROG laptop configuration" OFF \
-        "vm" "Virtual machine configuration" OFF \
         --title "Host" 3>&1 1>&2 2>&3)
 
     if [ $? != 0 ]; then
@@ -124,28 +121,11 @@ done
 #   GPU profile detection      #
 #------------------------------#
 
-detect_vm() {
-    if command -v systemd-detect-virt &>/dev/null && systemd-detect-virt --quiet &>/dev/null; then
-        return 0
-    fi
-    for f in /sys/class/dmi/id/product_name /sys/class/dmi/id/sys_vendor; do
-        if [ -r "$f" ] && grep -Eqi 'qemu|kvm|vmware|virtualbox|hyper-v' "$f" 2>/dev/null; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 GPU_DETECTED=""
 
 has_nvidia=false
 has_intel=false
 has_amd=false
-has_vm=false
-
-if detect_vm; then
-    has_vm=true
-fi
 
 if lspci -nn | grep -qi 'vga\|3d\|display'; then
     while IFS= read -r line; do
@@ -158,15 +138,10 @@ if lspci -nn | grep -qi 'vga\|3d\|display'; then
         if echo "$line" | grep -Eqi 'intel'; then
             has_intel=true
         fi
-        if echo "$line" | grep -Eqi 'virtio|vmware|virtualbox|qxl|qemu|bochs|cirrus'; then
-            has_vm=true
-        fi
     done < <(lspci -nn | grep -i 'vga\|3d\|display')
 fi
 
-if $has_vm; then
-    GPU_DETECTED="vm"
-elif $has_nvidia && $has_amd; then
+if $has_nvidia && $has_amd; then
     GPU_DETECTED="amd-nvidia-hybrid"
 elif $has_nvidia && $has_intel; then
     GPU_DETECTED="nvidia-prime"
@@ -191,28 +166,16 @@ if [ -n "$GPU_DETECTED" ]; then
 fi
 
 if [ -z "$GPU" ]; then
-    GPU=$(whiptail --radiolist "Select GPU profile:" 17 56 7 \
+    GPU=$(whiptail --radiolist "Select GPU profile:" 15 56 6 \
         "amd" "AMD GPU" ON \
         "amd-nvidia-hybrid" "AMD iGPU + NVIDIA dGPU (Prime offload)" OFF \
         "intel" "Intel GPU" OFF \
         "nvidia" "NVIDIA GPU" OFF \
         "nvidia-prime" "NVIDIA Optimus (Intel+NVIDIA)" OFF \
-        "vm" "VM guest services" OFF \
         --title "GPU Profile" 3>&1 1>&2 2>&3)
     if [ $? != 0 ]; then
         exit 1
     fi
-fi
-
-#------------------------#
-#   pkgs configuration   #
-#------------------------#
-
-whiptail --msgbox "This config includes Aseprite, a pixel art editing software. It requires being built from source, which can take a very long time depending on your hardware. You will have the option to disable it, with the intent of speeding up the installation." 12 60 --title "Aseprite Information"
-if (whiptail --yesno "Disable Aseprite (faster install)?" --defaultno 8 40 --title "Aseprite"); then
-    DISABLE_ASEPRITE="Yes"
-else
-    DISABLE_ASEPRITE="No"
 fi
 
 #---------------------------#
@@ -223,11 +186,9 @@ SUMMARY="\
 Username:   $username
 Host:       $HOST
 GPU:        $GPU
-
-Disable Aseprite:   $DISABLE_ASEPRITE
 "
 
-whiptail --msgbox "$SUMMARY" 11 40 --title "Installation Summary"
+whiptail --msgbox "$SUMMARY" 10 40 --title "Installation Summary"
 
 #-----------------------#
 #   Last Confirmation   #

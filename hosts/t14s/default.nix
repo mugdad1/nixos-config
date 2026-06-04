@@ -21,17 +21,39 @@
       percentageAction = 5;
       criticalPowerAction = "HybridSleep";
     };
+
+    thermald.enable = true;
+
+    thinkfan.enable = true;
   };
 
-  hardware.cpu.amd.updateMicrocode = true;
+  hardware = {
+    cpu.intel.updateMicrocode = true;
+
+    trackpoint = {
+      enable = true;
+      speed = 200;
+      sensitivity = 200;
+      emulateWheel = true;
+    };
+  };
 
   boot = {
     kernelModules = [
       "acpi_call"
       "thinkpad_acpi"
     ];
-    kernelParams = [ "amd_pstate=active" ];
     extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
+  };
+
+  # Battery charge threshold at 80% for longevity
+  systemd.services.set-battery-charge-threshold = {
+    description = "Set battery charge threshold to 80%";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold 2>/dev/null || true
+    '';
   };
 
   systemd.services.set-power-profile-on-boot = {

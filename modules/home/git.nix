@@ -39,11 +39,7 @@
     };
   };
 
-  home.packages = with pkgs; [
-    gh
-    serie
-    diffnav
-  ];
+  home.packages = with pkgs; [ gh ];
 
   xdg.configFile."git/.gitignore".text = ''
     .vscode

@@ -1,6 +1,6 @@
 { lib, host, ... }:
 let
-  monitorWatcher = lib.optionals (host == "p14s" || host == "laptop") [ "monitor-watcher &" ];
+  monitorWatcher = lib.optionals (host == "t14s") [ "monitor-watcher &" ];
 in
 {
   wayland.windowManager.hyprland.settings.exec-once =

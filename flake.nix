@@ -9,7 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-gaming.url = "github:fufexan/nix-gaming";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     nix-index-database = {
@@ -34,14 +33,9 @@
     { nixpkgs, self, ... }@inputs:
     let
       username = "mugdad";
-      gpu = "amd-nvidia-hybrid";
       system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
       lib = nixpkgs.lib;
-      mkHost = host: nixpkgs.lib.nixosSystem {
+      mkHost = host: gpu: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [ ./hosts/${host} ];
         specialArgs = {
@@ -51,11 +45,8 @@
     in
     {
       nixosConfigurations = {
-        desktop = mkHost "desktop";
-        laptop = mkHost "laptop";
-        p14s = mkHost "p14s";
-        rog = mkHost "rog";
-        vm = mkHost "vm";
+        t14s = mkHost "t14s" "intel";
+        rog = mkHost "rog" "amd-nvidia-hybrid";
       };
     };
 }
