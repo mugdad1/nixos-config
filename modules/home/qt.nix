@@ -7,17 +7,17 @@
   };
 
   home.packages = with pkgs; [
-    (gruvbox-kvantum.override { variant = "Gruvbox-Dark-Brown"; })
+    (gruvbox-kvantum.override { variant = "Gruvbox-Dark-Green"; })
   ];
 
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
     [General]
-    theme=Gruvbox-Dark-Brown
+    theme=Gruvbox-Dark-Green
   '';
 
   # Symlink theme into Kvantum's theme directory so it's found
-  home.file.".local/share/Kvantum/Gruvbox-Dark-Brown".source =
-    "${pkgs.gruvbox-kvantum.override { variant = "Gruvbox-Dark-Brown"; }}/share/Kvantum/Gruvbox-Dark-Brown";
+  home.file.".local/share/Kvantum/Gruvbox-Dark-Green".source =
+    "${pkgs.gruvbox-kvantum.override { variant = "Gruvbox-Dark-Green"; }}/share/Kvantum/Gruvbox-Dark-Green";
 
   qt.qt5ctSettings = {
     Appearance = {
