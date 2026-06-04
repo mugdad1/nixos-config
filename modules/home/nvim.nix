@@ -1,4 +1,4 @@
-{ inputs, lib, ... }:
+{ inputs, lib, pkgs, ... }:
 let
   # =============================================================================
   # TOGGLE SWITCHES — set any to false to disable that entire category
@@ -20,6 +20,7 @@ in
     enable = true;
     vimAlias = true;
     viAlias = true;
+    nixpkgs.source = pkgs.path;
 
     opts = {
       number = true;
@@ -110,6 +111,7 @@ in
       })
       # ----- UI -----
       (lib.mkIf ui {
+        web-devicons.enable = true;
         which-key.enable = true;
         lualine.enable = true;
         bufferline.enable = true;
