@@ -145,7 +145,11 @@ in
           enable = true;
           servers = {
             nixd.enable = true;           # Nix
-            rust_analyzer.enable = true;  # Rust
+            rust_analyzer = {
+              enable = true;
+              installCargo = false;
+              installRustc = false;
+            };  # Rust
             ts_ls.enable = true;          # TypeScript/JavaScript
             pyright.enable = true;        # Python
             lua_ls.enable = true;         # Lua
