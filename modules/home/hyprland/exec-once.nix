@@ -1,4 +1,4 @@
-{ lib, host, ... }:
+{ pkgs, lib, host, ... }:
 let
   monitorWatcher = lib.optionals (host == "t14s") [ "monitor-watcher &" ];
 in
@@ -20,6 +20,7 @@ in
       "udiskie --automount --notify --smart-tray &"
       "hyprctl setcursor Bibata-Modern-Ice 24 &"
       "init-wallpaper &"
+      "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent &"
 
     ]
     ++ monitorWatcher;

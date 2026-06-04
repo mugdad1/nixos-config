@@ -14,8 +14,9 @@
 
     ## Utility
     gnome-disk-utility
-    mission-center # GUI resources monitor
+    mission-center
     zenity
+    hyprpolkitagent
 
     #creativity
     kdePackages.kdenlive
