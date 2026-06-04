@@ -8,6 +8,7 @@
 {
   imports = [ inputs.home-manager.nixosModules.home-manager ];
   home-manager = {
+    enableLegacyProfileManagement = true;
     useUserPackages = true;
     useGlobalPkgs = true;
     extraSpecialArgs = { inherit inputs username host; };
