@@ -6,7 +6,7 @@ if [[ $1 == "toggle" ]]; then
   if pgrep -x hyprsunset > /dev/null; then
     pkill -x hyprsunset
   else
-    hyprsunset "$TEMP" &
+    hyprsunset -t "$TEMP" &
   fi
 elif [[ $1 == "status" ]] || [[ -z $1 ]]; then
   if pgrep -x hyprsunset > /dev/null; then
