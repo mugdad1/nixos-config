@@ -29,7 +29,7 @@
       window-padding-balance = true;
       window-padding-x = 4;
       window-padding-y = 4;
-      window-padding-color = "#282828";
+      window-padding-color = "282828";
       window-decoration = "none";
       window-theme = "ghostty";
       window-inherit-working-directory = false;
