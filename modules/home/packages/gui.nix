@@ -18,7 +18,10 @@
     zenity
     hyprpolkitagent
 
-    #creativity
+    ##creativity
     kdePackages.kdenlive
+
+    ##
+    filen-desktop
   ];
 }
