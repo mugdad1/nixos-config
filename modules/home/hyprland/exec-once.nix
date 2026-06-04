@@ -20,7 +20,7 @@ in
       "udiskie --automount --notify --smart-tray &"
       "hyprctl setcursor Bibata-Modern-Ice 24 &"
       "init-wallpaper &"
-      "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent &"
+      "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1 &"
 
     ]
     ++ monitorWatcher;

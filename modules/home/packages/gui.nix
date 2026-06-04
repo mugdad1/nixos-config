@@ -16,7 +16,7 @@
     gnome-disk-utility
     mission-center
     zenity
-    hyprpolkitagent
+    kdePackages.polkit-kde-agent-1
 
     ##creativity
     kdePackages.kdenlive
