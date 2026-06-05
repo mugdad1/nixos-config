@@ -45,7 +45,6 @@
     in
     {
       nixosConfigurations = {
-        t14s = mkHost "t14s" "intel";
         rog = mkHost "rog" "amd-nvidia-hybrid";
       };
     };

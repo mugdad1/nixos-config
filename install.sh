@@ -104,8 +104,7 @@ done
 
 while true; do
     HOST=$(whiptail --radiolist "Choose a host:" 12 56 2 \
-        "t14s" "ThinkPad T14s Gen 2 configuration" ON \
-        "rog" "ASUS ROG laptop configuration" OFF \
+        "rog" "ASUS ROG laptop configuration" ON \
         --title "Host" 3>&1 1>&2 2>&3)
 
     if [ $? != 0 ]; then

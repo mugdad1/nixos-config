@@ -1,7 +1,4 @@
-{ pkgs, lib, host, ... }:
-let
-  monitorWatcher = lib.optionals (host == "t14s") [ "monitor-watcher &" ];
-in
+{ pkgs, lib, ... }:
 {
   wayland.windowManager.hyprland.settings.exec-once =
     [
@@ -22,6 +19,6 @@ in
       "init-wallpaper &"
       "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1 &"
 
-    ]
-    ++ monitorWatcher;
+      "monitor-watcher &"
+    ];
 }

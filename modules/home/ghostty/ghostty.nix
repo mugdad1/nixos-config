@@ -1,4 +1,4 @@
-{ host, ... }:
+{ ... }:
 {
   programs.ghostty = {
     enable = true;
@@ -10,7 +10,7 @@
         "Maple Mono"
         # "DejaVu Sans"
       ];
-      font-size = if (host == "t14s") then 14 else 12;
+      font-size = 12;
       font-feature = [
         "calt"
         "cv66"
