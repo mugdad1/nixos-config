@@ -27,6 +27,7 @@ in
     python312Packages.ipython
     flutter
     jdk
+    mesa-demos # provides eglinfo for flutter doctor
     android-studio
     androidSdk.androidsdk
   ];
