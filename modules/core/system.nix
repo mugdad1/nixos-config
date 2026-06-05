@@ -28,7 +28,10 @@
 
   time.timeZone = "Asia/Riyadh";
   i18n.defaultLocale = "en_US.UTF-8";
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    android_sdk.accept_license = true;
+  };
   services.xserver.desktopManager.xterm.enable = false;
 
   system.stateVersion = "26.05";

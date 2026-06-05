@@ -27,8 +27,6 @@
     ## TUI
     epy # ebook reader
 
-    ## Monitoring / fetch
-    htop
     onefetch # fetch utility for git repo
     wavemon # monitoring for wireless network devices
 
