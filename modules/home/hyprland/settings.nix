@@ -4,8 +4,8 @@
     "$mod" = "SUPER";
 
     input = {
-      kb_layout = "us,fr";
-      kb_options = "grp:alt_caps_toggle";
+      kb_layout = "us,ara";
+      kb_options = "grp:alt_shift_toggle";
 
       repeat_delay = 300;
       numlock_by_default = true;
@@ -26,7 +26,6 @@
       gaps_in = 6;
       gaps_out = 12;
       border_size = 2;
-
 
       "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
       "col.inactive_border" = "rgb(504945)";
