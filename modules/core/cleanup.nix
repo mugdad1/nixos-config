@@ -1,11 +1,5 @@
 { pkgs, ... }:
 {
-  nix.gc = {
-    automatic = true;
-    dates = "04:00";
-    options = "--delete-older-than 7d";
-  };
-
   boot.tmp.cleanOnBoot = true;
 
   systemd.tmpfiles.rules = [
