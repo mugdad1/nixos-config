@@ -1,12 +1,10 @@
-{ gpu, pkgs, lib, config, ... }:
-let
-  cfg = gpu;
-in {
+{ gpu, lib, ... }:
+{
   imports = [
     ./amd-nvidia-hybrid.nix
   ];
 
-  config = lib.mkIf (cfg == "amd-nvidia-hybrid") {
+  config = lib.mkIf (gpu == "amd-nvidia-hybrid") {
     drivers.amd-nvidia-hybrid.enable = true;
   };
 }

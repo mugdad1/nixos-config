@@ -18,6 +18,5 @@
     ./flatpak.nix
     ./user.nix
     ./wayland.nix
-    ../gpu
   ];
 }

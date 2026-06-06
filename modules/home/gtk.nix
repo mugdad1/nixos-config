@@ -44,10 +44,6 @@ in
     };
 
     gtk4 = {
-      theme = {
-        name = gtk-theme-name;
-        package = gtk-theme;
-      };
       extraConfig = {
         gtk-application-prefer-dark-theme = lib.mkForce true;
       };

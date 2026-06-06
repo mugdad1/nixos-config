@@ -8,7 +8,6 @@
     settings = {
       clock = true;
       daemonize = true;
-      # timestr="%H:%M";
       datestr = "";
       screenshots = true;
       ignore-empty-password = true;

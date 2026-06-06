@@ -1,6 +1,6 @@
 { lib, ... }:
-with lib;
 let
+  inherit (lib) lists attrsets;
   defaultApps = {
     text = [ "org.gnome.TextEditor.desktop" ];
     image = [ "imv-dir.desktop" ];
@@ -71,10 +71,9 @@ let
   };
 
   associations =
-    with lists;
-    listToAttrs (
-      flatten (
-        mapAttrsToList (
+    builtins.listToAttrs (
+      lists.flatten (
+        attrsets.mapAttrsToList (
           key: map (type: attrsets.nameValuePair type defaultApps."${key}")
         ) mimeMap
       )

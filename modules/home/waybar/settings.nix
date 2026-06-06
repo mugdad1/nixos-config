@@ -1,23 +1,6 @@
 { host, ... }:
 let
-  custom = {
-    font = "Maple Mono";
-    font_size = "18px";
-    font_weight = "bold";
-    text_color = "#FBF1C7";
-    background_0 = "#1D2021";
-    background_1 = "#282828";
-    border_color = "#928374";
-    red = "#CC241D";
-    green = "#98971A";
-    yellow = "#FABD2F";
-    blue = "#458588";
-    magenta = "#B16286";
-    cyan = "#689D6A";
-    orange = "#D65D0E";
-    opacity = "1";
-    indicator_height = "2px";
-  };
+  custom = import ./theme.nix;
 in
 {
   programs.waybar.settings.mainBar = with custom; {
@@ -37,7 +20,8 @@ in
     modules-right = [
       "cpu"
       "memory"
-      # "disk"
+      "temperature"
+      "custom/gpu-temp"
       "pulseaudio"
       "network"
       "battery"
@@ -95,11 +79,16 @@ in
       interval = 2;
       on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] kitty --override font_size=14 --title float_kitty btop'";
     };
-    disk = {
-      # path = "/";
-      format = "<span foreground='${orange}'>󰋊 </span>{percentage_used}%";
-      interval = 60;
-      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] kitty --override font_size=14 --title float_kitty btop'";
+    temperature = {
+      thermal-zone = 0;
+      format = "<span foreground='${orange}'>󰔄 </span>{temperatureC}°C";
+      interval = 5;
+    };
+    "custom/gpu-temp" = {
+      exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo 'N/A'";
+      interval = 10;
+      format = "<span foreground='${green}'> </span>{}°C";
+      tooltip = false;
     };
     network = {
       format-wifi = "<span foreground='${magenta}'> </span> {signalStrength}%";

@@ -13,10 +13,7 @@
     fwupd.enable = true;
 
     # needed for GNOME services outside of GNOME Desktop
-    dbus.packages = with pkgs; [
-      gcr
-      gnome-settings-daemon
-    ];
+    dbus.packages = [ pkgs.gcr pkgs.gnome-settings-daemon ];
 
     logind.settings.Login = {
       # don’t shutdown when power button is short-pressed

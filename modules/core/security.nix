@@ -4,7 +4,7 @@
     rtkit.enable = true;
     sudo = {
       enable = true;
-      wheelNeedsPassword = false;
+      wheelNeedsPassword = true;
     };
 
     pam.services = {

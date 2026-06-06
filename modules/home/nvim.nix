@@ -20,7 +20,7 @@ in
     enable = true;
     vimAlias = true;
     viAlias = true;
-    nixpkgs.source = pkgs.path;
+
 
     opts = {
       number = true;

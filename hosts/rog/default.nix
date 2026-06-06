@@ -1,8 +1,9 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, username, ... }:
 {
   imports = [
     ./hardware-configuration.nix
     ./../../modules/core
+    ./../../modules/gpu
     ./../../modules/rog
   ];
 
@@ -30,7 +31,7 @@
   boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
 
   # ROG-specific monitor config — both internal displays with same settings
-  home-manager.users.mugdad = {
+  home-manager.users.${username} = {
     wayland.windowManager.hyprland.settings.monitor = lib.mkForce [
       "eDP-1,1920x1080@60,0x0,1.2"
       "eDP-2,1920x1080@60,0x0,1.2"

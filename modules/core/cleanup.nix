@@ -7,11 +7,4 @@
     "D /var/tmp 1777 root root 7d"
   ];
 
-  systemd.timers."nh-clean" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
-    };
-  };
 }

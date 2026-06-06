@@ -32,5 +32,6 @@
     };
   };
 
-  services.ssh-agent.enable = true;
+  # GnuPG agent handles SSH keys instead
+  services.ssh-agent.enable = false;
 }

@@ -1,23 +1,22 @@
 { lib, pkgs, config, ... }:
-with lib;
 let
   cfg = config.drivers.amd-nvidia-hybrid;
 in {
   options.drivers.amd-nvidia-hybrid = {
-    enable = mkEnableOption "Enable AMD iGPU + NVIDIA dGPU (Prime offload)";
-    amdgpuBusId = mkOption {
-      type = types.str;
+    enable = lib.mkEnableOption "Enable AMD iGPU + NVIDIA dGPU (Prime offload)";
+    amdgpuBusId = lib.mkOption {
+      type = lib.types.str;
       default = "PCI:5:0:0";
       description = "PCI Bus ID for AMD GPU";
     };
-    nvidiaBusId = mkOption {
-      type = types.str;
+    nvidiaBusId = lib.mkOption {
+      type = lib.types.str;
       default = "PCI:1:0:0";
       description = "PCI Bus ID for NVIDIA dGPU";
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       amdgpu_top
       nvtopPackages.full
