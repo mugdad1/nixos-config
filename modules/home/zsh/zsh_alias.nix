@@ -35,8 +35,8 @@
       nb = "nom build";
       nc = "nh-notify nh clean all --keep 5";
       nft = "nh-notify nh os test";
-      nfs = "nh-notify nh os switch";
-      nfu = "nh-notify nh os switch --update";
+      nfs = "sudo nixos-rebuild switch --flake /home/mugdad/nixos-config";
+      nfu = "sudo nixos-rebuild switch --upgrade --flake /home/mugdad/nixos-config";
       nsearch = "nh search";
 
       # gpu
