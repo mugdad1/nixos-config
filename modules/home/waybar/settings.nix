@@ -130,11 +130,12 @@ in
       tooltip-format = "{time}";
     };
     "hyprland/language" = {
+      keyboard-name = "at-translated-set-2-keyboard";
+      format = "<span foreground='${yellow}'> </span> {}";
+      format-us = "EN";
+      format-ara = "AR";
       tooltip = true;
       tooltip-format = "Keyboard layout";
-      format = "<span foreground='${yellow}'> </span> {}";
-      format-fr = "FR";
-      format-en = "US";
       on-click = "hyprctl switchxkblayout at-translated-set-2-keyboard next";
     };
     "custom/launcher" = {
