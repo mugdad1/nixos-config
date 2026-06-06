@@ -7,7 +7,7 @@
     "D /var/tmp 1777 root root 7d"
   ];
 
-  systemd.timers."nh-clean" = {
+  systemd.timers."nix-store-clean" = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "daily";
@@ -15,7 +15,7 @@
     };
   };
 
-  systemd.services."nh-clean" = {
+  systemd.services."nix-store-clean" = {
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.nh}/bin/nh clean all";
