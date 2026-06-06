@@ -20,8 +20,7 @@ in
     modules-right = [
       "cpu"
       "memory"
-      "temperature"
-      "custom/gpu-temp"
+      "custom/avg-temp"
       "pulseaudio"
       "network"
       "battery"
@@ -79,15 +78,14 @@ in
       interval = 2;
       on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] kitty --override font_size=14 --title float_kitty btop'";
     };
-    temperature = {
-      thermal-zone = 0;
-      format = "<span foreground='${orange}'>󰔄 </span>{temperatureC}°C";
-      interval = 5;
-    };
-    "custom/gpu-temp" = {
-      exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo 'N/A'";
+    "custom/avg-temp" = {
+      exec = ''
+        cpu=$(awk '{printf "%.0f", $1/1000}' /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0)
+        gpu=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo 0)
+        [ "$cpu" -gt 0 ] && [ "$gpu" -gt 0 ] && echo $(( (cpu + gpu) / 2 )) || [ "$cpu" -gt 0 ] && echo "$cpu" || echo "$gpu"
+      '';
       interval = 10;
-      format = "<span foreground='${green}'> </span>{}°C";
+      format = "<span foreground='${orange}'>󰔄 </span>{}°C";
       tooltip = false;
     };
     network = {
