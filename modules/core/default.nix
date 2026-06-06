@@ -7,6 +7,7 @@
     ./xserver.nix
     ./network.nix
     ./bluetooth.nix
+    ./cleanup.nix
     ./fonts.nix
     ./nh.nix
     ./pipewire.nix
