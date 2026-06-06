@@ -2,54 +2,54 @@
 {
   wayland.windowManager.hyprland.settings = {
     windowrule = [
-      "float, class:^(imv)$"
-      "float, class:^(mpv)$"
-      "float, class:^(zenity)$"
-      "float, class:^(waypaper)$"
-      "float, class:^(.sameboy-wrapped)$"
-      "float, class:^(org.gnome.Calculator)$"
-      "float, class:^(org.gnome.FileRoller)$"
-      "float, class:^(org.pulseaudio.pavucontrol)$"
+      "match:class ^(imv)$, float on"
+      "match:class ^(mpv)$, float on"
+      "match:class ^(zenity)$, float on"
+      "match:class ^(waypaper)$, float on"
+      "match:class ^(.sameboy-wrapped)$, float on"
+      "match:class ^(org.gnome.Calculator)$, float on"
+      "match:class ^(org.gnome.FileRoller)$, float on"
+      "match:class ^(org.pulseaudio.pavucontrol)$, float on"
 
-      "pin, class:^(rofi)$"
-      "pin, class:^(waypaper)$"
+      "match:class ^(rofi)$, pin on"
+      "match:class ^(waypaper)$, pin on"
 
-      "tile, class:^(Aseprite)$"
+      "match:class ^(Aseprite)$, tile on"
 
-      "size 850 500, class:^(zenity)$"
+      "match:class ^(zenity)$, size 850 500"
 
-      "size 700 450, title:^(Volume Control)$"
-      "move 40 55%, title:^(Volume Control)$"
+      "match:title ^(Volume Control)$, size 700 450"
+      "match:title ^(Volume Control)$, move 40 55%"
 
-      "pin, title:^(Picture-in-Picture)$"
-      "float, title:^(Picture-in-Picture)$"
+      "match:title ^(Picture-in-Picture)$, pin on"
+      "match:title ^(Picture-in-Picture)$, float on"
 
-      "workspace 1, class:^(zen-beta)$"
-      "workspace 3, class:^(codium)$"
-      "workspace 4, class:^(Gimp-2.10)$"
-      "workspace 4, class:^(Aseprite)$"
-      "workspace 5, class:^(spotify)$"
-      "workspace 8, class:^(com.obsproject.Studio)$"
-      "workspace 10, class:^(discord)$"
-      "workspace 10, class:^(WebCord)$"
+      "match:class ^(zen-beta)$, workspace 1"
+      "match:class ^(codium)$, workspace 3"
+      "match:class ^(Gimp-2.10)$, workspace 4"
+      "match:class ^(Aseprite)$, workspace 4"
+      "match:class ^(spotify)$, workspace 5"
+      "match:class ^(com.obsproject.Studio)$, workspace 8"
+      "match:class ^(discord)$, workspace 10"
+      "match:class ^(WebCord)$, workspace 10"
 
-      "idle_inhibit focus, class:^(mpv)$"
-      "idle_inhibit focus, class:^(zen-beta)$, title:^(.*YouTube.*)$"
-      "idle_inhibit fullscreen, class:^(zen)$"
+      "match:class ^(mpv)$, idle_inhibit focus"
+      "match:class ^(zen-beta)$, match:title ^(.*YouTube.*)$, idle_inhibit focus"
+      "match:class ^(zen)$, idle_inhibit fullscreen"
 
-      "dim_around, class:^(xdg-desktop-portal-gtk)$"
+      "match:class ^(xdg-desktop-portal-gtk)$, dim_around on"
 
-      "rounding 0, xwayland:true"
+      "match:xwayland true, rounding 0"
 
-      "border_size 0, float:0, workspace:w[tv1]"
-      "rounding 0, float:0, workspace:w[tv1]"
-      "border_size 0, float:0, workspace:f[1]"
-      "rounding 0, float:0, workspace:f[1]"
+      "match:float 0, match:workspace w[tv1], border_size 0"
+      "match:float 0, match:workspace w[tv1], rounding 0"
+      "match:float 0, match:workspace f[1], border_size 0"
+      "match:float 0, match:workspace f[1], rounding 0"
     ];
 
     layerrule = [
-      "dim_around, namespace:rofi"
-      "dim_around, namespace:swaync-control-center"
+      "match:namespace rofi, dim_around on"
+      "match:namespace swaync-control-center, dim_around on"
     ];
 
     # No gaps when only

@@ -20,6 +20,7 @@ in
     enable = true;
     vimAlias = true;
     viAlias = true;
+    nixpkgs.source = inputs.nixpkgs;
 
 
     opts = {
