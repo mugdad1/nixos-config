@@ -10,6 +10,7 @@ shutdown="<span color='${red}'>󰐥</span>"
 reboot="<span color='${green}'>󰜉</span>"
 lock="<span color='${blue}'>󰌾</span>"
 suspend="<span color='${yellow}'>󰤄</span>"
+logout="<span color='${gray}'>󰍃</span>"
 quit="<span color='${gray}'>✘</span>"
 
 yes="<span color='${green}'>✔</span>"
@@ -22,7 +23,7 @@ rofi_cmd() {
 }
 
 run_rofi() {
-    echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$quit" | rofi_cmd
+    echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$logout\n$quit" | rofi_cmd
 }
 
 confirm_cmd() {
@@ -45,6 +46,8 @@ run_cmd() {
         elif [[ $1 == '--suspend' ]]; then
             hyprlock &
             systemctl suspend
+        elif [[ $1 == '--logout' ]]; then
+            hyprctl dispatch exit
         fi
     else
         exit 0
@@ -66,5 +69,8 @@ case ${chosen} in
     $suspend)
         sleep 0.1
         run_cmd --suspend
+        ;;
+    $logout)
+        run_cmd --logout
         ;;
 esac
