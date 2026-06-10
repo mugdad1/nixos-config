@@ -24,17 +24,21 @@
     nixvim.url = "github:nix-community/nixvim";
     superfile.url = "github:yorukot/superfile";
     zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
+    cardwire = {
+      url = "github:opengamingcollective/cardwire";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { nixpkgs, self, ... }@inputs:
+    { nixpkgs, self, cardwire, ... }@inputs:
     let
       username = "mugdad";
       system = "x86_64-linux";
       lib = nixpkgs.lib;
       mkHost = host: gpu: nixpkgs.lib.nixosSystem {
         inherit system;
-        modules = [ ./hosts/${host} ];
+        modules = [ ./hosts/${host} cardwire.nixosModules.default ];
         specialArgs = {
           inherit host gpu self inputs username;
         };

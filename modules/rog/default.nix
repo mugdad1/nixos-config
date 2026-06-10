@@ -26,6 +26,9 @@ let
       done
     done
   '';
+
+  gpu-tui-script = pkgs.writeShellScriptBin "gpu-tui" (builtins.readFile ./gpu-tui.sh);
+
 in
 {
   services.asusd = {
@@ -49,7 +52,6 @@ in
           ac_profile_tunings: {},
           dc_profile_tunings: {},
           armoury_settings: {
-              "gpu_mux_mode": 0,
           },
           keyboard: (
               led_brightness: 1,
@@ -67,13 +69,31 @@ in
     '';
   };
 
-  services.supergfxd = {
+  services.cardwire = {
     enable = true;
     settings = {
-      mode = "Integrated";
-      vfio_enable = true;
-      always_reboot = false;
-      no_logind = false;
+      auto_apply_gpu_state = true;
+      experimental_nvidia_block = true;
+      battery_auto_switch = false;
+    };
+  };
+
+  systemd.services.cardwire-apply-blocks = {
+    description = "Re-apply cardwire GPU block states after boot";
+    after = [ "cardwired.service" ];
+    requires = [ "cardwired.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''
+        BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" \
+          /var/lib/cardwire/gpu_state.json 2>/dev/null)
+        for pci in $BLOCKED; do
+          id=$(cardwire list --json | jq -r \
+            "to_entries[] | select(.value.pci == \"$pci\" and .value.default == false) | .value.id")
+          [ -n "$id" ] && cardwire gpu "$id" --block
+        done
+      ''}";
     };
   };
 
@@ -83,7 +103,12 @@ in
     "d /etc/asusd 0755 root root"
   ];
 
-  environment.systemPackages = [ keyboard-cycle-script ];
+  environment.systemPackages = with pkgs; [
+    keyboard-cycle-script
+    gpu-tui-script
+    dialog
+    jq
+  ];
 
   systemd.user.services.rog-keyboard-cycle = {
     description = "Cycle ASUS keyboard LED through gruvbox colors";

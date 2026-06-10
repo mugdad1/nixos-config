@@ -9,7 +9,7 @@ balanced="<span color='${yellow}'>󰾅 </span>"
 performance="<span color='${red}'>󰓅 </span>"
 
 current_cpu=$(powerprofilesctl get)
-has_gpu=$(command -v supergfxctl)
+mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2>/dev/null)
 
 selected_row=0
 case $current_cpu in
@@ -17,13 +17,12 @@ case $current_cpu in
     balanced)    selected_row=1 ;;
 esac
 
-if [ -n "$has_gpu" ]; then
-    current_gpu=$(supergfxctl -g 2>/dev/null)
-    case $current_gpu in
-        AsusMuxDgpu|AsusMux*) selected_row=2 ;;
-        Hybrid)               selected_row=1 ;;
-    esac
-fi
+current_gpu=$(cardwire get 2>/dev/null)
+case $current_gpu in
+    Integrated) selected_row=0 ;;
+    Hybrid)     selected_row=1 ;;
+    Manual)     selected_row=2 ;;
+esac
 
 theme="$HOME/.config/rofi/powermenu-theme.rasi"
 
@@ -46,42 +45,48 @@ run_cmd() {
     notify-send -u normal "Profile" "$label"
 }
 
-run_cmd_gpu() {
-    local gpu_mode="$1"
+run_gpu_cmd() {
+    local action="$1"
     local cpu_mode="$2"
     local label="$3"
 
     powerprofilesctl set "$cpu_mode"
-    sudo sh -c "
-        sed -i 's/\"mode\":.*/\"mode\": \"$gpu_mode\",/' /etc/supergfxd.conf
-        supergfxctl -m '$gpu_mode'
-    "
+
+    case $action in
+        amd-only)
+            pkexec cardwire set integrated
+            if [ "$mux" != "1" ]; then
+                pkexec bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
+                sleep 2 && systemctl reboot
+            fi
+            ;;
+        nvidia-only)
+            pkexec cardwire set manual
+            pkexec cardwire gpu 1 --block
+            if [ "$mux" != "0" ]; then
+                pkexec bash -c 'echo 0 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                notify-send -u critical "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
+                sleep 2 && systemctl reboot
+            fi
+            ;;
+        hybrid)
+            pkexec cardwire set hybrid
+            ;;
+    esac
+
     notify-send -u normal "Profile" "$label"
 }
 
 chosen=$(run_rofi)
-if [ -n "$has_gpu" ]; then
-    case $chosen in
-        $performance)
-            run_cmd_gpu "AsusMuxDgpu" "performance" "Performance — NVIDIA only (REBOOT to apply)"
-            ;;
-        $balanced)
-            run_cmd_gpu "Hybrid" "balanced" "Balanced — Both GPUs"
-            ;;
-        $power_saver)
-            run_cmd_gpu "Integrated" "power-saver" "Power Saving — AMD only"
-            ;;
-    esac
-else
-    case $chosen in
-        $performance)
-            run_cmd "performance" "Performance"
-            ;;
-        $balanced)
-            run_cmd "balanced" "Balanced"
-            ;;
-        $power_saver)
-            run_cmd "power-saver" "Power Saving"
-            ;;
-    esac
-fi
+case $chosen in
+    $performance)
+        run_gpu_cmd "nvidia-only" "performance" "Performance — NVIDIA only"
+        ;;
+    $balanced)
+        run_gpu_cmd "hybrid" "balanced" "Balanced — Both GPUs"
+        ;;
+    $power_saver)
+        run_gpu_cmd "amd-only" "power-saver" "Power Saving — AMD only"
+        ;;
+esac
