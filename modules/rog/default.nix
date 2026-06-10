@@ -107,7 +107,6 @@ in
     keyboard-cycle-script
     gpu-tui-script
     dialog
-    jq
   ];
 
   systemd.user.services.rog-keyboard-cycle = {
@@ -116,7 +115,7 @@ in
       Type = "simple";
       ExecStart = "${keyboard-cycle-script}/bin/rog-keyboard-cycle";
       Restart = "on-failure";
-      Environment = "PATH=/run/current-system/sw/bin:/nix/store/9ypz3flqsrl5xl495mm8h645gadjsxi1-coreutils-9.11/bin";
+      Environment = "PATH=/run/current-system/sw/bin:${pkgs.coreutils}/bin";
     };
     wantedBy = [ "default.target" ];
   };

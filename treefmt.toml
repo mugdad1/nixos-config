@@ -18,7 +18,7 @@ excludes = [
 
 [formatter.nix]
 command = "nixfmt"
-options = [ "-sv", "-w" ,"80" ]
+options = [ "--width", "80" ]
 includes = [ "*.nix" ]
 excludes = [ ]
 

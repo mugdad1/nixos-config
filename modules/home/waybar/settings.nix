@@ -158,7 +158,7 @@ in
     };
     "custom/nightlight" = {
       tooltip = true;
-      tooltip-format = "Toggle night light";
+      tooltip-format = "{alt}";
       return-type = "json";
       exec = "toggle-nightlight status";
       on-click = "toggle-nightlight toggle";

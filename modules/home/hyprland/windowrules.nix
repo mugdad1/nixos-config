@@ -35,7 +35,7 @@
 
       "match:class ^(mpv)$, idle_inhibit focus"
       "match:class ^(zen-beta)$, match:title ^(.*YouTube.*)$, idle_inhibit focus"
-      "match:class ^(zen)$, idle_inhibit fullscreen"
+      "match:class ^(zen-beta)$, idle_inhibit fullscreen"
 
       "match:class ^(xdg-desktop-portal-gtk)$, dim_around on"
 

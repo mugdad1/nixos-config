@@ -82,6 +82,10 @@ in
       color: ${yellow};
     }
 
+    #custom-nightlight.warmer {
+      color: ${red};
+    }
+
     #custom-launcher {
       font-size: 20px;
       color: ${text_color};

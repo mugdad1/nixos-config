@@ -211,11 +211,6 @@ sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" flake.nix
 #   Apply pkgs configuration   #
 #------------------------------#
 
-if [[ $DISABLE_ASEPRITE = "Yes" ]]; then
-    echo -e "${INFO}Disabling Aseprite"
-    sed -i '3s/  /  # /' modules/home/aseprite/aseprite.nix
-fi
-
 #----------------------#
 #   Clear git config   #
 #----------------------#

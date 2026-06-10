@@ -23,10 +23,10 @@ buildGoModule rec {
     "-w"
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Customizable TUI Pomodoro timer with ASCII art, progress bar, and desktop notifications.";
     homepage = "https://github.com/Bahaaio/pomo";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     mainProgram = "pomo";
   };
 }

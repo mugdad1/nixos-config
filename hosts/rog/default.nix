@@ -32,7 +32,7 @@
 
   # ROG-specific monitor config — both internal displays with same settings
   home-manager.users.${username} = {
-    wayland.windowManager.hyprland.settings.monitor = lib.mkForce [
+    wayland.windowManager.hyprland.settings.monitor = lib.mkDefault [
       "eDP-1,1920x1080@60,0x0,1.2"
       "eDP-2,1920x1080@60,0x0,1.2"
     ];

@@ -22,7 +22,7 @@ in
     cmake
     gnumake
     valgrind
-    llvmPackages_20.clang-tools
+    llvmPackages_latest.clang-tools
     python3
     python312Packages.ipython
     flutter
