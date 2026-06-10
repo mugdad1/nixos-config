@@ -7,7 +7,7 @@
       systemd-boot.configurationLimit = 10;
     };
 
-    kernelParams = [ "lockdown=confidentiality" ];
+    kernelParams = [ ];
     kernelPackages = pkgs.linuxPackages_latest;
     kernelModules = [ "hid-nintendo" ];
     supportedFilesystems = [ "ntfs" ];
