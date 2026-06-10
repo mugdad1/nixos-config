@@ -22,7 +22,9 @@
       # don’t shutdown when power button is short-pressed
       HandlePowerKey = "ignore";
 
-      # ignore lid close when docked/external monitor conected
+      # ignore lid close
+      HandleLidSwitch = "ignore";
+      HandleLidSwitchExternalPower = "ignore";
       HandleLidSwitchDocked = "ignore";
     };
 
