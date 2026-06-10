@@ -26,8 +26,8 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
-      rebuild = "nh-notify sudo nh os switch";
-      update = "nh-notify sudo nh os switch --update";
+      rebuild = "nh-notify nh os switch";
+      update = "nh-notify nh os switch --update";
       nft = "nh-notify nh os test";
       nc = "nh-notify nh clean all --keep 5";
       ns = "nom-shell --run zsh";
