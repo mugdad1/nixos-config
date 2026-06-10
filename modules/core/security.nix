@@ -1,6 +1,7 @@
 { ... }:
 {
   security = {
+    lockKernelModules = true;
     rtkit.enable = true;
     sudo = {
       enable = true;

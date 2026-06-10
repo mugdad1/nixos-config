@@ -7,6 +7,7 @@
       user = {
         name = "";
         email = "";
+        # FIXME: set your git name and email above
       };
 
       init.defaultBranch = "main";

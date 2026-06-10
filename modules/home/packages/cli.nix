@@ -2,6 +2,7 @@
 {
   home.packages = with pkgs; [
     ## Better core utils
+    btop # system monitor
     duf # disk information
     eza # ls replacement
     fd # find replacement
@@ -12,6 +13,8 @@
     ncdu # disk space
     ripgrep # grep replacement
     tldr
+    trash-cli # command line trash interface
+    xcp # faster cp written in Rust
 
     ## Tools / useful cli
     opencode
@@ -36,11 +39,14 @@
     mpv
 
     ## Utilities
+    binutils # GNU binary tools (strings, objdump, etc.)
     entr # perform action when file change
     ffmpeg
     file # Show file information
     jq # JSON processor
     killall
+    ripdrag # drag and drop files from terminal
+    strace # system call tracer
     libnotify
     mimeo
     openssl

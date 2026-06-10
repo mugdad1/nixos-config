@@ -184,4 +184,19 @@
     enable = true;
     enableZshIntegration = true;
   };
+
+  programs.atuin = {
+    enable = true;
+    enableZshIntegration = true;
+    flags = [ "--disable-up-arrow" ];
+    settings = {
+      auto_sync = true;
+      sync_frequency = "5m";
+      search_mode = "fuzzy";
+      filter_mode_shell = "host";
+      filter_mode = "global";
+      show_preview = true;
+      secrets_filter = true;
+    };
+  };
 }

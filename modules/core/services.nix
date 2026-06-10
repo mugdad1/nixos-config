@@ -9,7 +9,10 @@
     };
 
     dbus.enable = true;
-    fstrim.enable = true;
+    fstrim = {
+      enable = true;
+      interval = "daily";
+    };
     fwupd.enable = true;
 
     # needed for GNOME services outside of GNOME Desktop
