@@ -162,6 +162,7 @@ in
       return-type = "json";
       exec = "toggle-nightlight status";
       on-click = "toggle-nightlight toggle";
+      interval = 2;
       escape = true;
     };
     "custom/power-menu" = {

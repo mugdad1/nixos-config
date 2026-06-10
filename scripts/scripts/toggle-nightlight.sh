@@ -4,14 +4,13 @@ TEMPS=(4000 3000)
 
 if [[ $1 == "toggle" ]]; then
   if ! pgrep -x hyprsunset > /dev/null; then
-    hyprsunset -t "${TEMPS[0]}" &
+    hyprsunset -t "${TEMPS[0]}" > /dev/null 2>&1 &
   else
     OLD=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+')
+    pkill -x hyprsunset
+    sleep 0.5
     if [[ "$OLD" == "${TEMPS[0]}" ]]; then
-      pkill -x hyprsunset
-      hyprsunset -t "${TEMPS[1]}" &
-    else
-      pkill -x hyprsunset
+      hyprsunset -t "${TEMPS[1]}" > /dev/null 2>&1 &
     fi
   fi
 elif [[ $1 == "status" ]] || [[ -z $1 ]]; then
