@@ -28,15 +28,13 @@
       # Nixos
       rebuild = "nh-notify nh os switch --hostname ${host}";
       update = "nh-notify nh os switch --update --hostname ${host}";
-      cdnix = "cd ~/nixos-config && codium ~/nixos-config";
+      nft = "nh-notify nh os test";
+      nc = "nh-notify nh clean all --keep 5";
       ns = "nom-shell --run zsh";
       nsp = "nom-shell --run zsh -p";
-      nd = "nom develop --command zsh";
       nb = "nom build";
-      nc = "nh-notify nh clean all --keep 5";
-      nft = "nh-notify nh os test";
-      nfs = "sudo nixos-rebuild switch --flake /home/mugdad/nixos-config";
-      nfu = "sudo nixos-rebuild switch --upgrade --flake /home/mugdad/nixos-config";
+      nd = "nom develop --command zsh";
+      cdnix = "cd ~/nixos-config && codium ~/nixos-config";
       nsearch = "nh search";
 
       # gpu
