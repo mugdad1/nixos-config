@@ -7,9 +7,6 @@
       wheelNeedsPassword = true;
     };
 
-    pam.services = {
-      swaylock = { };
-      hyprlock = { };
-    };
+    pam.services.hyprlock = { };
   };
 }

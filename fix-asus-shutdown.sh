@@ -1,29 +1,23 @@
 #!/bin/bash
+set -e
 
-# Fix for asus-shutdown.service SIGTERM handling
-# This script is intended to be run during NixOS activation
+WRAPPER_DIR="$HOME/.local/bin"
+WRAPPER_PATH="$WRAPPER_DIR/asus-shutdown-wrapper"
+ASUS_SHUTDOWN_BIN="$(command -v asus-shutdown)"
 
-# Create the wrapper script
-mkdir -p /home/mugdad/.local/bin
+mkdir -p "$WRAPPER_DIR"
 
-cat > /home/mugdad/.local/bin/asus-shutdown-wrapper << 'EOF'
+cat > "$WRAPPER_PATH" << EOF
 #!/bin/sh
-
-# Wrapper to fix asus-shutdown SIGTERM handling
-# The original asus-shutdown gets stuck in deferred shutdown state
-# This wrapper immediately exits on SIGTERM to prevent service hangs
-
 trap 'exit 0' TERM
-
-exec /nix/store/idwc6axhwl2ddpdyb8pv2n8g0k2rkinb-asusctl-6.3.7/bin/asus-shutdown
+exec $ASUS_SHUTDOWN_BIN
 EOF
 
-chmod +x /home/mugdad/.local/bin/asus-shutdown-wrapper
+chmod +x "$WRAPPER_PATH"
 
-# Add to PATH so it can be found
-if ! echo "$PATH" | grep -q "/home/mugdad/.local/bin"; then
-    echo "export PATH=/home/mugdad/.local/bin:\$PATH" >> ~/.bashrc
-    echo "export PATH=/home/mugdad/.local/bin:\$PATH" >> ~/.zshrc
+if ! echo "$PATH" | grep -q "$WRAPPER_DIR"; then
+    echo "export PATH=\"$WRAPPER_DIR:\$PATH\"" >> ~/.bashrc
+    echo "export PATH=\"$WRAPPER_DIR:\$PATH\"" >> ~/.zshrc
 fi
 
 echo "asus-shutdown wrapper installed"

@@ -47,10 +47,6 @@
       "$mod CTRL, O, exec, ocr"
 
       # switch focus
-      "$mod, left,  movefocus, l"
-      "$mod, right, movefocus, r"
-      "$mod, up,    movefocus, u"
-      "$mod, down,  movefocus, d"
       "$mod, h, movefocus, l"
       "$mod, j, movefocus, d"
       "$mod, k, movefocus, u"
@@ -60,10 +56,6 @@
       "$mod, right, alterzorder, top"
       "$mod, up,    alterzorder, top"
       "$mod, down,  alterzorder, top"
-      "$mod, h, alterzorder, top"
-      "$mod, j, alterzorder, top"
-      "$mod, k, alterzorder, top"
-      "$mod, l, alterzorder, top"
 
       "CTRL ALT, up, exec, hyprctl dispatch focuswindow floating"
       "CTRL ALT, down, exec, hyprctl dispatch focuswindow tiled"
