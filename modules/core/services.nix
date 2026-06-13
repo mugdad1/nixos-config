@@ -47,4 +47,8 @@
   systemd.tmpfiles.rules = [
     "d /var/cache/tuigreet 0755 greeter greeter"
   ];
+
+  zramSwap.enable = true;
+
+  boot.kernel.sysctl."vm.swappiness" = 10;
 }
