@@ -17,7 +17,6 @@
       merge.conflictstyle = "diff3";
       diff.colorMoved = "default";
       pull.ff = "only";
-      color.ui = true;
 
       url = {
         "git@github.com:".insteadOf = [
@@ -56,7 +55,7 @@
 
     gs = "git status";
     gcl = "git clone";
-    gd = "git diff | diffnav";
+    gd = "git diff";
 
     ga = "git add";
     gaa = "git add --all";
@@ -77,7 +76,7 @@
     gch = "git checkout";
     gchb = "git checkout -b";
 
-    glg = "serie";
+    glg = "git log --oneline --decorate";
     glog = "git log --oneline --decorate --graph";
     glol = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset'";
     glola = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --all";

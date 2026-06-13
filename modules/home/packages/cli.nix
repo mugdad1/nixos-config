@@ -12,7 +12,6 @@
     ncdu # disk space
     ripgrep # grep replacement
     tldr
-    trash-cli # command line trash interface
     xcp # faster cp written in Rust
 
     ## Tools / useful cli

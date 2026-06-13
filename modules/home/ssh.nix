@@ -14,8 +14,6 @@
 
         forwardAgent = false;
         compression = false;
-        serverAliveInterval = 0;
-        serverAliveCountMax = 3;
         hashKnownHosts = false;
         userKnownHostsFile = "~/.ssh/known_hosts";
       };

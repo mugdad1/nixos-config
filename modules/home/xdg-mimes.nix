@@ -8,7 +8,6 @@
     directory = ["nemo.desktop"];
     office = ["libreoffice.desktop"];
     pdf = ["org.gnome.Evince.desktop"];
-    terminal = ["ghostty.desktop"];
     archive = ["org.gnome.FileRoller.desktop"];
     discord = ["discord.desktop"];
   };
@@ -59,7 +58,6 @@
       "application/rtf"
     ];
     pdf = ["application/pdf"];
-    terminal = ["terminal"];
     archive = [
       "application/zip"
       "application/rar"
@@ -75,9 +73,7 @@
     )
   );
 in {
-  xdg.configFile."mimeapps.list".force = true;
   xdg.mimeApps.enable = true;
-  xdg.mimeApps.associations.added = associations;
   xdg.mimeApps.defaultApplications = associations;
 
   home.sessionVariables = {

@@ -41,22 +41,8 @@
     "backlight"
   ],
   "widget-config": {
-    "inhibitors": {
-      "text": "Inhibitors",
-      "button-text": "Clear All",
-      "clear-all-button": true
-    },
-    "title": {
-      "text": "Notifications",
-      "clear-all-button": true,
-      "button-text": "Clear All"
-    },
     "dnd": {
       "text": "Do Not Disturb"
-    },
-    "label": {
-      "max-lines": 5,
-      "text": "Label Text"
     },
     "mpris": {
       "show-album-art": "always",

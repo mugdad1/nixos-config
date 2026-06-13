@@ -29,11 +29,6 @@ in {
       name = icon-theme-name;
       package = pkgs.papirus-icon-theme;
     };
-    cursorTheme = {
-      name = "Bibata-Modern-Ice";
-      package = pkgs.bibata-cursors;
-      size = 24;
-    };
 
     gtk3 = {
       extraConfig = {

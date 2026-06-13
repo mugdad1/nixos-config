@@ -31,7 +31,6 @@
       ## Tabs
       tab_title_template = "{index}";
       active_tab_font_style = "normal";
-      inactive_tab_font_style = "normal";
       tab_bar_style = "powerline";
       tab_powerline_style = "angled";
       active_tab_foreground = "#FBF1C7";
