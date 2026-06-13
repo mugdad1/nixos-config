@@ -1,10 +1,9 @@
-{ inputs, ... }:
-{
-  imports = [ inputs.nix-flatpak.nixosModules.nix-flatpak ];
+{inputs, ...}: {
+  imports = [inputs.nix-flatpak.nixosModules.nix-flatpak];
 
   services.flatpak = {
     enable = true;
-    packages = [ ];
+    packages = [];
     overrides = {
       global = {
         # Force Wayland by default

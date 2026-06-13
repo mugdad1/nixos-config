@@ -4,8 +4,7 @@
   python3Packages,
   fetchPypi,
   inputs,
-}:
-let
+}: let
   ufo-extractor = python3Packages.buildPythonPackage rec {
     pname = "ufo_extractor";
     version = "0.8.1";
@@ -69,7 +68,7 @@ let
       sha256 = "sha256-d5fVfBlOOfTGyYnsYOwXRF9AG8bB55bAmjfRnXsvPbs=";
     };
 
-    build-system = [ python3.pkgs.hatchling ];
+    build-system = [python3.pkgs.hatchling];
 
     propagatedBuildInputs = with python3.pkgs; [
       foundrytools
@@ -85,30 +84,30 @@ let
     doCheck = false;
   };
 in
-stdenv.mkDerivation {
-  pname = "maple-mono-custom";
-  version = "v7.8";
+  stdenv.mkDerivation {
+    pname = "maple-mono-custom";
+    version = "v7.8";
 
-  src = inputs.maple-mono;
+    src = inputs.maple-mono;
 
-  nativeBuildInputs = with python3.pkgs; [
-    fonttools
-    font-v
-    glyphslib
-    lxml
-    cffsubr
-    cu2qu
-    defcon
-    ttfautohint-py
-    foundrytools-cli
-  ];
+    nativeBuildInputs = with python3.pkgs; [
+      fonttools
+      font-v
+      glyphslib
+      lxml
+      cffsubr
+      cu2qu
+      defcon
+      ttfautohint-py
+      foundrytools-cli
+    ];
 
-  buildPhase = ''
-    python build.py --no-nerd-font --feat cv66,ss05 --remove-tag-liga --ttf-only
-  '';
+    buildPhase = ''
+      python build.py --no-nerd-font --feat cv66,ss05 --remove-tag-liga --ttf-only
+    '';
 
-  installPhase = ''
-    mkdir -p $out/share/fonts/truetype
-    cp -a fonts/TTF-AutoHint $out/share/fonts/truetype/
-  '';
-}
+    installPhase = ''
+      mkdir -p $out/share/fonts/truetype
+      cp -a fonts/TTF-AutoHint $out/share/fonts/truetype/
+    '';
+  }

@@ -1,10 +1,9 @@
-{ pkgs, ... }:
-{
-  home.packages = with pkgs; [ swayosd ];
+{pkgs, ...}: {
+  home.packages = with pkgs; [swayosd];
 
   wayland.windowManager.hyprland = {
     settings = {
-      exec-once = [ "swayosd-server" ];
+      exec-once = ["swayosd-server"];
 
       bind = [
         ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"

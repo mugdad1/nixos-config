@@ -2,12 +2,11 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   gtk-theme-name = "Colloid-Green-Dark-Gruvbox";
   gtk-theme = pkgs.colloid-gtk-theme.override {
-    colorVariants = [ "dark" ];
-    themeVariants = [ "green" ];
+    colorVariants = ["dark"];
+    themeVariants = ["green"];
     tweaks = [
       "gruvbox"
       "rimless"
@@ -15,8 +14,7 @@ let
     ];
   };
   icon-theme-name = "Papirus-Dark";
-in
-{
+in {
   gtk = {
     enable = true;
     font = {

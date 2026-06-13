@@ -1,9 +1,12 @@
-{ pkgs, host, ... }:
 {
+  pkgs,
+  host,
+  ...
+}: {
   networking = {
     hostName = "${host}";
     networkmanager.enable = true;
-    nameservers = [ "127.0.0.1" ];
+    nameservers = ["127.0.0.1"];
     firewall = {
       enable = true;
       allowedTCPPorts = [
@@ -14,5 +17,5 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [ networkmanagerapplet ];
+  environment.systemPackages = with pkgs; [networkmanagerapplet];
 }

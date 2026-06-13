@@ -30,41 +30,37 @@
     };
   };
 
-  outputs =
-    {
-      nixpkgs,
-      self,
-      cardwire,
-      ...
-    }@inputs:
-    let
-      username = "mugdad";
-      system = "x86_64-linux";
-      lib = nixpkgs.lib;
-      mkHost =
-        host: gpu:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hosts/${host}
-            cardwire.nixosModules.default
-          ];
-          specialArgs = {
-            inherit
-              host
-              gpu
-              self
-              inputs
-              username
-              ;
-          };
+  outputs = {
+    nixpkgs,
+    self,
+    cardwire,
+    ...
+  } @ inputs: let
+    username = "mugdad";
+    system = "x86_64-linux";
+    lib = nixpkgs.lib;
+    mkHost = host: gpu:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          ./hosts/${host}
+          cardwire.nixosModules.default
+        ];
+        specialArgs = {
+          inherit
+            host
+            gpu
+            self
+            inputs
+            username
+            ;
         };
-    in
-    {
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
-
-      nixosConfigurations = {
-        rog = mkHost "rog" "amd-nvidia-hybrid";
       };
+  in {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+
+    nixosConfigurations = {
+      rog = mkHost "rog" "amd-nvidia-hybrid";
     };
+  };
 }

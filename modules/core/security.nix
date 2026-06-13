@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   security = {
     rtkit.enable = true;
     sudo = {
@@ -7,6 +6,6 @@
       wheelNeedsPassword = true;
     };
 
-    pam.services.hyprlock = { };
+    pam.services.hyprlock = {};
   };
 }

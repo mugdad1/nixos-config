@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   programs.zsh = {
     initContent = ''
       # Use emacs key bindings

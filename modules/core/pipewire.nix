@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   services = {
     pipewire = {
       enable = true;
@@ -28,5 +27,5 @@
   };
 
   hardware.alsa.enablePersistence = true;
-  environment.systemPackages = with pkgs; [ alsa-utils ];
+  environment.systemPackages = with pkgs; [alsa-utils];
 }

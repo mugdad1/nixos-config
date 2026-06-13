@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   fonts = {
     fontconfig = {
       enable = true;
@@ -9,9 +8,9 @@
           "Maple Mono"
           "JetBrainsMono Nerd Font"
         ];
-        sansSerif = [ "Public Sans" ];
-        serif = [ "Noto Serif" ];
-        emoji = [ "Noto Color Emoji" ];
+        sansSerif = ["Public Sans"];
+        serif = ["Noto Serif"];
+        emoji = ["Noto Color Emoji"];
       };
     };
 

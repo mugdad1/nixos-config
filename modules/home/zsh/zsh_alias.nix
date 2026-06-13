@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   programs.zsh = {
     shellAliases = {
       # Utils

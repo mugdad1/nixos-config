@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   androidSdk = pkgs.androidenv.composeAndroidPackages {
     platformVersions = [
       "34"
@@ -11,14 +10,13 @@ let
       "35.0.0"
       "36.0.0"
     ];
-    cmakeVersions = [ "3.22.1" ];
+    cmakeVersions = ["3.22.1"];
     includeNDK = true;
     ndkVersion = "28.2.13676358";
     includeEmulator = false;
     includeSystemImages = false;
   };
-in
-{
+in {
   home.packages = with pkgs; [
     nixd
     shfmt

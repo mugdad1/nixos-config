@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   nix = {
     settings = {
       auto-optimise-store = true;
@@ -25,7 +24,7 @@
     # gc handled by nh (programs.nh.clean)
     optimise = {
       automatic = true;
-      dates = [ "03:00" ];
+      dates = ["03:00"];
     };
   };
 

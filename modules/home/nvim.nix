@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   # =============================================================================
   # TOGGLE SWITCHES — set any to false to disable that entire category
   # =============================================================================
@@ -17,9 +16,8 @@ let
   navigation = true; # smart-splits, indent-blankline, neoscroll
   debug = true; # DAP — C/C++/Rust/Python/Go debugger
   tools = true; # undotree, colorizer, trouble, markdown-preview
-in
-{
-  imports = [ inputs.nixvim.homeModules.nixvim ];
+in {
+  imports = [inputs.nixvim.homeModules.nixvim];
 
   programs.nixvim = {
     enable = true;
@@ -89,7 +87,7 @@ in
                       "n"
                       "f"
                       ""
-                      { nowait = true; }
+                      {nowait = true;}
                     ];
                     position = "center";
                     shortcut = "f";
@@ -104,7 +102,7 @@ in
                       "n"
                       "g"
                       ""
-                      { nowait = true; }
+                      {nowait = true;}
                     ];
                     position = "center";
                     shortcut = "g";
@@ -119,7 +117,7 @@ in
                       "n"
                       "n"
                       ""
-                      { nowait = true; }
+                      {nowait = true;}
                     ];
                     position = "center";
                     shortcut = "n";
@@ -134,7 +132,7 @@ in
                       "n"
                       "r"
                       ""
-                      { nowait = true; }
+                      {nowait = true;}
                     ];
                     position = "center";
                     shortcut = "r";
@@ -149,7 +147,7 @@ in
                       "n"
                       "q"
                       ""
-                      { nowait = true; }
+                      {nowait = true;}
                     ];
                     position = "center";
                     shortcut = "q";
@@ -238,11 +236,11 @@ in
           enable = true;
           settings = {
             formatters_by_ft = {
-              nix = [ "nixfmt" ];
-              python = [ "black" ];
-              rust = [ "rustfmt" ];
-              go = [ "gofmt" ];
-              lua = [ "stylua" ];
+              nix = ["nixfmt"];
+              python = ["black"];
+              rust = ["rustfmt"];
+              go = ["gofmt"];
+              lua = ["stylua"];
               javascript = [
                 "prettierd"
                 "prettier"
@@ -271,8 +269,8 @@ in
                 "prettierd"
                 "prettier"
               ];
-              terraform = [ "terraform_fmt" ];
-              "*" = [ "trim_whitespace" ];
+              terraform = ["terraform_fmt"];
+              "*" = ["trim_whitespace"];
             };
             format_on_save = {
               lsp_fallback = true;

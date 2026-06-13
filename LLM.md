@@ -4,7 +4,8 @@
 
 1. **ALWAYS websearch before answering** — never rely on outdated knowledge. NixOS, Hyprland, asusctl, cardwire, NH, and related tools evolve fast. Verify options, syntax, and availability before suggesting anything.
 2. **When user says "improve it" or similar vague improvement request** — automatically research, plan, then ask one question at a time using the question tool (never batch). The today workflow is the model: propose one change → user approves → implement → next. Keep iterating until user says stop.
-3. **Ask one thing at a time** using the question tool. Never batch multiple decisions into one question.
+3. **Never assume — always ask first.** Don't make changes or start implementing until the user explicitly says "yes" or "do it". Discussion/research is not a green light.
+4. **Ask one thing at a time** using the question tool. Never batch multiple decisions into one question.
 4. **Plan first** — present a clear plan before implementing. Let the user approve before writing code.
 4. **Workflow: nix flake check → nixfmt → git add . → git commit → git push** — always in that order before finishing.
 5. **Prefer declarative over mutable** — NixOS's strength is reproducibility. Avoid imperative hacks.
@@ -104,7 +105,15 @@ asusctl profile get         # Shows active, AC, and battery profiles
 
 ## Conventions
 
-### Nix Style
+### Nix Formatters
+
+| Formatter | Engine | Config | Semantics | Status |
+|-----------|--------|--------|-----------|--------|
+| **nixfmt** (rfc-style) | Haskell | None | Correct | Official RFC standard, enforced for nixpkgs. Currently used. |
+| **alejandra** | Rust | None (uncompromising) | Guaranteed identical eval hash | Fast, beautiful, actively maintained. Zero config. |
+| **nixpkgs-fmt** | Rust | Limited | Rules-based | Older, effectively replaced by nixfmt. |
+
+## Nix Style
 - Formatted with `nixfmt` (run before every push)
 - `options` can be at top level, but then ALL config must go under a `config` attribute (use `lib.mkMerge` + `lib.mkIf` for conditional configs)
 - Single host, single flake — no multi-host complexity

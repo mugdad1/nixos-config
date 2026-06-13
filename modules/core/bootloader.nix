@@ -1,5 +1,8 @@
-{ pkgs, lib, ... }:
-let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   gruvbox = {
     bg0_h = "1D2021";
     bg0 = "282828";
@@ -24,8 +27,7 @@ let
   };
 
   wallpaper = ../../wallpapers/otherWallpaper/gruvbox/japanese_pedestrian_street.png;
-in
-{
+in {
   boot = {
     loader = {
       limine = {
@@ -40,7 +42,7 @@ in
         '';
 
         style = {
-          wallpapers = [ wallpaper ];
+          wallpapers = [wallpaper];
           wallpaperStyle = "stretched";
 
           interface = {
@@ -73,7 +75,7 @@ in
     ];
 
     kernelPackages = pkgs.linuxPackages_latest;
-    supportedFilesystems = [ "ntfs" ];
+    supportedFilesystems = ["ntfs"];
   };
 
   console.colors = [

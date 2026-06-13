@@ -1,5 +1,8 @@
-{ pkgs, username, ... }:
 {
+  pkgs,
+  username,
+  ...
+}: {
   programs.git = {
     enable = true;
 
@@ -40,7 +43,7 @@
     };
   };
 
-  home.packages = with pkgs; [ gh ];
+  home.packages = with pkgs; [gh];
 
   xdg.configFile."git/.gitignore".text = ''
     .vscode

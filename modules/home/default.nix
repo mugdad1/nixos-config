@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./bat.nix # better cat command
     ./browser.nix # firefox based browser

@@ -5,8 +5,7 @@
   username,
   gpu,
   ...
-}:
-let
+}: let
   keyboard-cycle-script = pkgs.writeShellScriptBin "rog-keyboard-cycle" ''
     STEPS=15
     COLORS=(fb4934 fe8019 fabd2f b8bb26 83a598 458588 d3869b b16286)
@@ -33,8 +32,7 @@ let
       done
     done
   '';
-in
-{
+in {
   imports = [
     ./hardware-configuration.nix
     ./../../modules/core
@@ -141,9 +139,9 @@ in
 
       systemd.services.cardwire-apply-blocks = {
         description = "Re-apply cardwire GPU block states after boot";
-        after = [ "cardwired.service" ];
-        requires = [ "cardwired.service" ];
-        wantedBy = [ "multi-user.target" ];
+        after = ["cardwired.service"];
+        requires = ["cardwired.service"];
+        wantedBy = ["multi-user.target"];
         path = [
           config.services.cardwire.package
           pkgs.jq
@@ -183,7 +181,7 @@ in
           Restart = "on-failure";
           Environment = "PATH=/run/current-system/sw/bin:${pkgs.coreutils}/bin";
         };
-        wantedBy = [ "default.target" ];
+        wantedBy = ["default.target"];
       };
 
       services.upower = {
@@ -196,12 +194,12 @@ in
 
       powerManagement.cpuFreqGovernor = "powersave";
 
-      boot.kernelParams = [ "pci=realloc" ];
+      boot.kernelParams = ["pci=realloc"];
       boot.kernelModules = [
         "acpi_call"
         "r8169"
       ];
-      boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
+      boot.extraModulePackages = with config.boot.kernelPackages; [acpi_call];
 
       home-manager.users.${username} = {
         wayland.windowManager.hyprland.settings.monitor = lib.mkDefault [

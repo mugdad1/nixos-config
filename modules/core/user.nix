@@ -4,16 +4,14 @@
   username,
   host,
   ...
-}:
-{
-  imports = [ inputs.home-manager.nixosModules.home-manager ];
+}: {
+  imports = [inputs.home-manager.nixosModules.home-manager];
   home-manager = {
-
     useUserPackages = true;
     useGlobalPkgs = true;
-    extraSpecialArgs = { inherit inputs username host; };
+    extraSpecialArgs = {inherit inputs username host;};
     users.${username} = {
-      imports = [ ./../home ];
+      imports = [./../home];
       home.username = "${username}";
       home.homeDirectory = "/home/${username}";
       home.stateVersion = "26.05";
@@ -31,5 +29,5 @@
     ];
     shell = pkgs.zsh;
   };
-  nix.settings.allowed-users = [ "${username}" ];
+  nix.settings.allowed-users = ["${username}"];
 }

@@ -1,5 +1,4 @@
-{ host, ... }:
-{
+{host, ...}: {
   programs.hyprlock = {
     enable = true;
 
@@ -108,7 +107,7 @@
         }
       ];
 
-      animation = [ "inputFieldColors, 0" ];
+      animation = ["inputFieldColors, 0"];
     };
   };
 }

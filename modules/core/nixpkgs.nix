@@ -1,10 +1,8 @@
-{ inputs, ... }:
-{
+{inputs, ...}: {
   nixpkgs = {
     overlays = [
       (
-        final: prev:
-        (import ../../pkgs {
+        final: prev: (import ../../pkgs {
           inherit inputs;
           pkgs = prev;
           inherit (prev) system;

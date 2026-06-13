@@ -1,8 +1,6 @@
-{ ... }:
-let
+{...}: let
   custom = import ./theme.nix;
-in
-{
+in {
   programs.waybar.style = with custom; ''
     * {
       border: none;

@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   wayland.windowManager.hyprland.settings = {
     binds = {
       scroll_event_delay = 100;
@@ -132,6 +131,6 @@
       "$mod, mouse:273, resizewindow"
     ];
 
-    bindl = [ ",switch:on:Lid Switch, exec, pidof hyprlock || hyprlock" ];
+    bindl = [",switch:on:Lid Switch, exec, pidof hyprlock || hyprlock"];
   };
 }

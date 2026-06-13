@@ -1,8 +1,6 @@
-{ host, ... }:
-let
+{host, ...}: let
   custom = import ./theme.nix;
-in
-{
+in {
   programs.waybar.settings.mainBar = with custom; {
     position = "bottom";
     layer = "top";
@@ -16,7 +14,7 @@ in
       "hyprland/workspaces"
       "tray"
     ];
-    modules-center = [ "clock" ];
+    modules-center = ["clock"];
     modules-right = [
       "cpu"
       "memory"
@@ -58,11 +56,11 @@ in
         "10" = "X";
       };
       persistent-workspaces = {
-        "1" = [ ];
-        "2" = [ ];
-        "3" = [ ];
-        "4" = [ ];
-        "5" = [ ];
+        "1" = [];
+        "2" = [];
+        "3" = [];
+        "4" = [];
+        "5" = [];
       };
     };
     cpu = {
@@ -102,7 +100,7 @@ in
       format = "{icon} {volume}%";
       format-muted = "<span foreground='${blue}'> </span> {volume}%";
       format-icons = {
-        default = [ "<span foreground='${blue}'> </span>" ];
+        default = ["<span foreground='${blue}'> </span>"];
       };
       scroll-step = 2;
       on-click = "pamixer -t";

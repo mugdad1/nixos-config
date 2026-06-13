@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./nixpkgs.nix
     ./bootloader.nix
