@@ -6,7 +6,6 @@ ModuleName=two-step
 [two-step]
 Font=Cantarell 12
 TitleFont=Cantarell Light 30
-ImageDir=%3CthemeDir%3E
 DialogHorizontalAlignment=.5
 DialogVerticalAlignment=.5
 TitleHorizontalAlignment=.5
