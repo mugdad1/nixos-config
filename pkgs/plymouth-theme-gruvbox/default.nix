@@ -34,7 +34,7 @@ n_dots = 12
 n_frames = 30
 
 for frame in range(n_frames):
-    cmd = ["convert", "-size", f"{size}x{size}", "xc:none"]
+    cmd = ["magick", "-size", f"{size}x{size}", "xc:none"]
     for dot in range(n_dots):
         angle = 2 * math.pi * dot / n_dots - math.pi / 2
         x = cx + radius * math.cos(angle)
@@ -60,21 +60,21 @@ bullet_size = 12
 b_cx = bullet_size // 2
 b_r = 4
 subprocess.run([
-    "convert", "-size", f"{bullet_size}x{bullet_size}", "xc:none",
+    "magick", "-size", f"{bullet_size}x{bullet_size}", "xc:none",
     "-fill", "#504945", "-draw", f"circle {b_cx},{b_cx} {b_cx + b_r},{b_cx}",
     f"{dest}/bullet.png"
 ], check=True)
 
 # entry.png — selected entry (Gruvbox yellow)
 subprocess.run([
-    "convert", "-size", f"{bullet_size}x{bullet_size}", "xc:none",
+    "magick", "-size", f"{bullet_size}x{bullet_size}", "xc:none",
     "-fill", "#fabd2f", "-draw", f"circle {b_cx},{b_cx} {b_cx + b_r},{b_cx}",
     f"{dest}/entry.png"
 ], check=True)
 
 # lock.png — simple padlock (Gruvbox fg)
 subprocess.run([
-    "convert", "-size", "32x32", "xc:none",
+    "magick", "-size", "32x32", "xc:none",
     "-fill", "#ebdbb2",
     "-draw", "roundrectangle 6,14 26,30 4,4",
     "-draw", "roundrectangle 12,4 20,14 4,4",
@@ -85,14 +85,14 @@ subprocess.run([
 
 # capslock.png — triangle indicator (Gruvbox fg)
 subprocess.run([
-    "convert", "-size", "32x32", "xc:none",
+    "magick", "-size", "32x32", "xc:none",
     "-fill", "#ebdbb2", "-draw", "polygon 16,4 28,26 4,26",
     f"{dest}/capslock.png"
 ], check=True)
 
 # keyboard.png — simple keyboard icon (Gruvbox fg)
 subprocess.run([
-    "convert", "-size", "32x20", "xc:none",
+    "magick", "-size", "32x20", "xc:none",
     "-fill", "#ebdbb2",
     "-draw", "roundrectangle 0,0 32,20 3,3",
     "-fill", "#1d2021",
@@ -104,7 +104,7 @@ subprocess.run([
 
 # keymap-render.png — simplified keyboard layout
 subprocess.run([
-    "convert", "-size", "48x32", "xc:none",
+    "magick", "-size", "48x32", "xc:none",
     "-fill", "#ebdbb2",
     "-draw", "rectangle 0,0 48,32",
     "-fill", "#1d2021",
