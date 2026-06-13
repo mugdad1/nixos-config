@@ -3,10 +3,7 @@
   networking = {
     hostName = "${host}";
     networkmanager.enable = true;
-    nameservers = [
-      "94.140.14.14"
-      "94.140.15.15"
-    ];
+    nameservers = [ "127.0.0.1" ];
     firewall = {
       enable = true;
       allowedTCPPorts = [ 22 80 443 ];

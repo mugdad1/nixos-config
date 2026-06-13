@@ -5,6 +5,7 @@
     ./bootloader.nix
     ./hardware.nix
     ./xserver.nix
+    ./adguardhome.nix
     ./network.nix
     ./bluetooth.nix
     ./cleanup.nix
