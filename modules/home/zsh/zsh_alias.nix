@@ -26,8 +26,8 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
-      rebuild = "TMPDIR=/var/tmp nh-notify nh os switch ~/nixos-config -H rog";
-      update = "TMPDIR=/var/tmp nh-notify nh os switch ~/nixos-config -H rog --update";
+      rebuild = "TMPDIR=/var/tmp nh-notify nh os switch ~/nixos-config -H rog -e /usr/bin/pkexec";
+      update = "TMPDIR=/var/tmp nh-notify nh os switch ~/nixos-config -H rog -e /usr/bin/pkexec --update";
       nft = "nh-notify nh os test";
       nc = "nh-notify nh clean all --keep 5";
       ns = "nom-shell --run zsh";
