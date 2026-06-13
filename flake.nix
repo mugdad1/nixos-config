@@ -57,7 +57,7 @@
         };
       };
   in {
-      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+    formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
     nixosConfigurations = {
       rog = mkHost "rog" "amd-nvidia-hybrid";
