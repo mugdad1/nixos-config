@@ -19,7 +19,6 @@
     ./p10k/p10k.nix
     ./qt.nix # qt / kvantum theme
     ./packages # other packages
-    ./pomo/pomo.nix # TUI Pomodoro timer
     ./rofi/rofi.nix # launcher
     ./../../scripts/scripts.nix # personal scripts
     ./ssh.nix # ssh config

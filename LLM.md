@@ -63,8 +63,7 @@ nixos-config/
 │   └── scripts/power-profile-menu.sh  # $mod+P rofi menu for GPU+profile switching
 ├── pkgs/                         # Custom packages
 │   ├── default.nix
-│   ├── maple-mono/
-│   └── pomo/
+│   └── maple-mono/
 ├── wallpapers/
 └── docs/                         # Documentation (may be outdated)
 ```
@@ -143,6 +142,7 @@ cdnix    → cd ~/nixos-config && codium ~/nixos-config
 - **`packages = []`** — removed empty list from flatpak.nix
 - **`user_rules = []`** — removed default noise from adguardhome.nix
 - **AdGuard Home default filtering noise** — removed `parental_enabled`, `safe_search`, `safebrowsing_enabled`
+- **pomo** — TUI pomodoro timer, removed (`pkgs/pomo` + `modules/home/pomo`)
 
 ## Important Notes for LLMs
 
