@@ -3,7 +3,6 @@
 
   services.flatpak = {
     enable = true;
-    packages = [];
     overrides = {
       global = {
         # Force Wayland by default

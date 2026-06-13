@@ -1,8 +1,6 @@
 {pkgs, ...}: {
   fonts = {
     fontconfig = {
-      enable = true;
-
       defaultFonts = {
         monospace = [
           "Maple Mono"
@@ -23,7 +21,6 @@
       nerd-fonts.jetbrains-mono
       nerd-fonts.symbols-only
 
-      # twemoji-color-font
       noto-fonts-color-emoji
     ];
   };

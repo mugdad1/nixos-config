@@ -3,7 +3,6 @@
     enable = true;
     host = "127.0.0.1";
     port = 3000;
-    openFirewall = true;
     mutableSettings = false;
     settings = {
       users = [
@@ -43,11 +42,6 @@
       filtering = {
         protection_enabled = true;
         filtering_enabled = true;
-        parental_enabled = false;
-        safe_search = {
-          enabled = false;
-        };
-        safebrowsing_enabled = false;
       };
       filters =
         map
@@ -93,7 +87,6 @@
           "https://adguardteam.github.io/HostlistsRegistry/assets/filter_66.txt"
           "https://adguardteam.github.io/HostlistsRegistry/assets/filter_67.txt"
         ];
-      user_rules = [];
       querylog = {
         enabled = true;
         interval = "168h";

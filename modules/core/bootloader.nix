@@ -71,7 +71,6 @@ in {
 
     kernelParams = lib.mkBefore [
       "quiet"
-      "splash"
     ];
 
     kernelPackages = pkgs.linuxPackages_latest;
