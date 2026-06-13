@@ -4,8 +4,8 @@ let
   splash = pkgs.runCommand "gruvbox-splash.bmp" {
     nativeBuildInputs = [ (pkgs.python3.withPackages (ps: [ ])) ];
   } ''
-    python3 << 'PYEOF'
-import struct
+    python3 << PYEOF
+import os, struct
 width, height = 1920, 1080
 r, g, b = 0x1d, 0x20, 0x21
 row_size = width * 3 + (4 - width * 3 % 4) % 4
@@ -18,7 +18,7 @@ dib = struct.pack("<I", 40) + struct.pack("<i", width) + struct.pack("<i", heigh
 dib += struct.pack("<H", 1) + struct.pack("<H", 24) + struct.pack("<I", 0)
 dib += struct.pack("<I", len(pixels)) + struct.pack("<i", 2835) + struct.pack("<i", 2835)
 dib += struct.pack("<I", 0) + struct.pack("<I", 0)
-with open("$out", "wb") as f:
+with open(os.environ["out"], "wb") as f:
     f.write(hdr + dib + pixels)
 PYEOF
   '';
