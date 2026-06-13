@@ -57,22 +57,16 @@ in {
       environment.systemPackages = with pkgs; [
         amdgpu_top
         nvtopPackages.full
-        rocmPackages.amdsmi
-        rocmPackages.rocminfo
-        rocmPackages.rocm-smi
       ];
 
       hardware = {
         graphics.extraPackages = with pkgs; [
-          mesa
           libva
-          libva-utils
         ];
 
         nvidia = {
           modesetting.enable = true;
           open = true;
-          nvidiaSettings = true;
           package = config.boot.kernelPackages.nvidiaPackages.stable;
           powerManagement.enable = true;
           powerManagement.finegrained = true;
@@ -97,8 +91,6 @@ in {
                 charge_control_end_threshold: 80,
                 base_charge_control_end_threshold: 80,
               disable_nvidia_powerd_on_battery: true,
-              ac_command: "",
-              bat_command: "",
               platform_profile_linked_epp: true,
               platform_profile_on_battery: Quiet,
               change_platform_profile_on_battery: true,
@@ -108,22 +100,6 @@ in {
               profile_balanced_epp: BalancePower,
               profile_custom_epp: Performance,
               profile_performance_epp: Performance,
-              ac_profile_tunings: {},
-              dc_profile_tunings: {},
-              armoury_settings: {
-              },
-              keyboard: (
-                  led_brightness: 1,
-                  aura: {
-                      "main": (
-                          mode: Static,
-                          color1: (214, 93, 14),
-                          color2: (0, 0, 0),
-                          color3: (0, 0, 0),
-                          speed: Low,
-                      ),
-                  },
-              ),
           )
         '';
       };
@@ -162,14 +138,11 @@ in {
 
       boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
-      systemd.tmpfiles.rules = [
-        "d /etc/asusd 0755 root root"
-      ];
+      powerManagement.powertop.enable = true;
 
       environment.systemPackages = with pkgs; [
         acpi
         brightnessctl
-        dialog
         keyboard-cycle-script
       ];
 
@@ -191,15 +164,6 @@ in {
         percentageAction = 3;
         criticalPowerAction = "PowerOff";
       };
-
-      powerManagement.cpuFreqGovernor = "powersave";
-
-      boot.kernelParams = ["pci=realloc"];
-      boot.kernelModules = [
-        "acpi_call"
-        "r8169"
-      ];
-      boot.extraModulePackages = with config.boot.kernelPackages; [acpi_call];
 
       home-manager.users.${username} = {
         wayland.windowManager.hyprland.settings.monitor = lib.mkDefault [
