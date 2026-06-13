@@ -88,7 +88,7 @@ in
     after = [ "cardwired.service" ];
     requires = [ "cardwired.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.cardwire pkgs.jq ];
+    path = [ config.services.cardwire.package pkgs.jq ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''
