@@ -1,47 +1,76 @@
 { pkgs, lib, ... }:
-
 let
-  splash = pkgs.runCommand "gruvbox-splash.bmp" {
-    nativeBuildInputs = [ (pkgs.python3.withPackages (ps: [ ])) ];
-  } ''
-    python3 << PYEOF
-import os, struct
-width, height = 1920, 1080
-r, g, b = 0x1d, 0x20, 0x21
-row_size = width * 3 + (4 - width * 3 % 4) % 4
-pixels = b""
-for y in range(height):
-    pixels += bytes([b, g, r]) * width + b"\x00" * (row_size - width * 3)
-fs = 54 + len(pixels)
-hdr = b"BM" + struct.pack("<I", fs) + b"\x00\x00\x00\x00" + struct.pack("<I", 54)
-dib = struct.pack("<I", 40) + struct.pack("<i", width) + struct.pack("<i", height)
-dib += struct.pack("<H", 1) + struct.pack("<H", 24) + struct.pack("<I", 0)
-dib += struct.pack("<I", len(pixels)) + struct.pack("<i", 2835) + struct.pack("<i", 2835)
-dib += struct.pack("<I", 0) + struct.pack("<I", 0)
-with open(os.environ["out"], "wb") as f:
-    f.write(hdr + dib + pixels)
-PYEOF
-  '';
+  gruvbox = {
+    bg0_h = "1D2021";
+    bg0 = "282828";
+    bg1 = "3C3836";
+    fg = "EBDBB2";
+    fg0 = "FBF1C7";
+    red = "CC241D";
+    green = "98971A";
+    yellow = "D79921";
+    blue = "458588";
+    purple = "B16286";
+    aqua = "689D69";
+    gray = "A89984";
+    dark_gray = "7C6F64";
+    bright_red = "FB4934";
+    bright_green = "B8BB26";
+    bright_yellow = "FABD2F";
+    bright_blue = "83A598";
+    bright_purple = "D3869B";
+    bright_aqua = "8EC07C";
+    bright_fg = "EBDBB2";
+  };
+
+  wallpaper = ../../wallpapers/otherWallpaper/gruvbox/japanese_pedestrian_street.png;
 in
 {
   boot = {
     loader = {
-      systemd-boot = {
+      limine = {
         enable = true;
-        consoleMode = "max";
-        configurationLimit = 10;
-        edk2-uefi-shell.enable = true;
-        extraFiles = {
-          "splash.bmp" = splash;
-          "EFI/systemd/splash.bmp" = splash;
+        enableEditor = false;
+        maxGenerations = 10;
+
+        extraEntries = ''
+          /Windows
+            protocol: chainload
+            path: boot():///EFI/Microsoft/Boot/bootmgfw.efi
+        '';
+
+        style = {
+          wallpapers = [ wallpaper ];
+          wallpaperStyle = "stretched";
+
+          interface = {
+            resolution = "1920x1080";
+            branding = "mugdad1";
+            brandingColor = gruvbox.fg;
+            helpColor = gruvbox.gray;
+            helpColorBright = gruvbox.bright_yellow;
+          };
+
+          graphicalTerminal = {
+            foreground = gruvbox.fg;
+            background = "FF${gruvbox.bg0_h}";
+            brightForeground = gruvbox.fg0;
+            brightBackground = gruvbox.bg0;
+            palette = "${gruvbox.bg0_h};${gruvbox.red};${gruvbox.green};${gruvbox.yellow};${gruvbox.blue};${gruvbox.purple};${gruvbox.aqua};${gruvbox.gray}";
+            brightPalette = "${gruvbox.dark_gray};${gruvbox.bright_red};${gruvbox.bright_green};${gruvbox.bright_yellow};${gruvbox.bright_blue};${gruvbox.bright_purple};${gruvbox.bright_aqua};${gruvbox.bright_fg}";
+            margin = 8;
+            marginGradient = 4;
+          };
         };
       };
+
       efi.canTouchEfiVariables = true;
     };
 
     plymouth = {
       enable = true;
-      theme = "spinner";
+      themePackages = [ pkgs.plymouth-theme-gruvbox ];
+      theme = "gruvbox";
     };
 
     kernelParams = lib.mkBefore [
