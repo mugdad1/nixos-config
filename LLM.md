@@ -130,6 +130,19 @@ cdnix    → cd ~/nixos-config && codium ~/nixos-config
 - **supergfxctl** — deprecated by upstream asusctl, not used
 - **hibernate** — not configured, swap device doesn't exist (zram only)
 - **`keep-derivations` / `keep-outputs`** — deprecated nix options, silently ignored
+- **`"splash"` kernel param** — removed from bootloader.nix
+- **`hardware.alsa.enablePersistence`** — removed from pipewire.nix
+- **`services.gnome.tinysparql`** — removed, nothing uses it on Hyprland
+- **`openFirewall`** in AdGuard Home — removed, no web server
+- **Ports 80, 443** — removed from network.nix firewall (no web server)
+- **`services.sudo.enable`** and **`wheelNeedsPassword`** — removed from security.nix (both default to `true`)
+- **`pinentryFlavor`** — dead comment removed from program.nix (renamed to `pinentryPackage`)
+- **`nix-ld.libraries = []`** — removed empty list from program.nix
+- **`fonts.fontconfig.enable = true`** — removed from fonts.nix (defaults to `true`)
+- **`# twemoji-color-font`** — dead comment removed from fonts.nix
+- **`packages = []`** — removed empty list from flatpak.nix
+- **`user_rules = []`** — removed default noise from adguardhome.nix
+- **AdGuard Home default filtering noise** — removed `parental_enabled`, `safe_search`, `safebrowsing_enabled`
 
 ## Important Notes for LLMs
 
