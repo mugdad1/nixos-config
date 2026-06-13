@@ -31,18 +31,34 @@
   };
 
   outputs =
-    { nixpkgs, self, cardwire, ... }@inputs:
+    {
+      nixpkgs,
+      self,
+      cardwire,
+      ...
+    }@inputs:
     let
       username = "mugdad";
       system = "x86_64-linux";
       lib = nixpkgs.lib;
-      mkHost = host: gpu: nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [ ./hosts/${host} cardwire.nixosModules.default ];
-        specialArgs = {
-          inherit host gpu self inputs username;
+      mkHost =
+        host: gpu:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/${host}
+            cardwire.nixosModules.default
+          ];
+          specialArgs = {
+            inherit
+              host
+              gpu
+              self
+              inputs
+              username
+              ;
+          };
         };
-      };
     in
     {
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt;

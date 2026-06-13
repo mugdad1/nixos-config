@@ -1,4 +1,11 @@
-{ pkgs, config, lib, username, gpu, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  username,
+  gpu,
+  ...
+}:
 let
   keyboard-cycle-script = pkgs.writeShellScriptBin "rog-keyboard-cycle" ''
     STEPS=15
@@ -137,7 +144,10 @@ in
         after = [ "cardwired.service" ];
         requires = [ "cardwired.service" ];
         wantedBy = [ "multi-user.target" ];
-        path = [ config.services.cardwire.package pkgs.jq ];
+        path = [
+          config.services.cardwire.package
+          pkgs.jq
+        ];
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''
@@ -187,7 +197,10 @@ in
       powerManagement.cpuFreqGovernor = "powersave";
 
       boot.kernelParams = [ "pci=realloc" ];
-      boot.kernelModules = [ "acpi_call" "r8169" ];
+      boot.kernelModules = [
+        "acpi_call"
+        "r8169"
+      ];
       boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
 
       home-manager.users.${username} = {

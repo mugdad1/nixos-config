@@ -70,14 +70,11 @@ let
     discord = [ "x-scheme-handler/discord" ];
   };
 
-  associations =
-    builtins.listToAttrs (
-      lists.flatten (
-        attrsets.mapAttrsToList (
-          key: map (type: attrsets.nameValuePair type defaultApps."${key}")
-        ) mimeMap
-      )
-    );
+  associations = builtins.listToAttrs (
+    lists.flatten (
+      attrsets.mapAttrsToList (key: map (type: attrsets.nameValuePair type defaultApps."${key}")) mimeMap
+    )
+  );
 in
 {
   xdg.configFile."mimeapps.list".force = true;
