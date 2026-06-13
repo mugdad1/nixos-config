@@ -11,11 +11,8 @@
     ./gnome.nix # gnome apps
     ./gtk.nix # gtk theme
     ./hyprland # window manager
-    ./kitty.nix # terminal
-    ./lazygit.nix
     ./nemo.nix # file manager
     ./nvim.nix # neovim editor
-    ./obsidian.nix
     ./p10k/p10k.nix
     ./qt.nix # qt / kvantum theme
     ./packages # other packages
@@ -24,8 +21,8 @@
     ./ssh.nix # ssh config
 
     ./superfile/superfile.nix # terminal file manager
-    ./swayosd.nix # brightness / volume wiget
-    ./swaync/swaync.nix # notification deamon
+    ./swayosd.nix # brightness / volume widget
+    ./swaync/swaync.nix # notification daemon
     ./waybar # status bar
     ./waypaper.nix # GUI wallpaper picker
     ./xdg-mimes.nix # xdg config

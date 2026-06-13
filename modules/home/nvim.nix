@@ -412,11 +412,11 @@ in {
       }
       {
         key = "[d";
-        action = "<cmd>lua vim.diagnostic.goto_next()<CR>";
+        action = "<cmd>lua vim.diagnostic.goto_prev()<CR>";
       }
       {
         key = "]d";
-        action = "<cmd>lua vim.diagnostic.goto_prev()<CR>";
+        action = "<cmd>lua vim.diagnostic.goto_next()<CR>";
       }
       {
         key = "<leader>q";

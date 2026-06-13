@@ -34,8 +34,6 @@
     ## Multimedia
     imv
     lowfi
-    mpv
-
     ## Utilities
     binutils # GNU binary tools (strings, objdump, etc.)
     entr # perform action when file change

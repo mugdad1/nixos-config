@@ -2,11 +2,9 @@
   wayland.windowManager.hyprland.settings = {
     windowrule = [
       "match:class ^(imv)$, float on"
-      "match:class ^(mpv)$, float on"
       "match:class ^(zenity)$, float on"
       "match:class ^(waypaper)$, float on"
       "match:class ^(.sameboy-wrapped)$, float on"
-      "match:class ^(org.gnome.Calculator)$, float on"
       "match:class ^(org.gnome.FileRoller)$, float on"
       "match:class ^(org.pulseaudio.pavucontrol)$, float on"
 
@@ -32,7 +30,6 @@
       "match:class ^(discord)$, workspace 10"
       "match:class ^(WebCord)$, workspace 10"
 
-      "match:class ^(mpv)$, idle_inhibit focus"
       "match:class ^(zen-beta)$, match:title ^(.*YouTube.*)$, idle_inhibit focus"
       "match:class ^(zen-beta)$, idle_inhibit fullscreen"
 

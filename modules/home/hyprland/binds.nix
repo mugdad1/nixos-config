@@ -32,7 +32,6 @@
       "$mod, W,exec, wallpaper-picker"
       "$mod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
       "$mod, N, exec, swaync-client -t -sw"
-      "CTRL SHIFT, Escape, exec, hyprctl dispatch exec '[workspace 9] missioncenter'"
       "$mod, equal, exec, woomer"
 
       "$mod, XF86Display, exec, toggle-display"

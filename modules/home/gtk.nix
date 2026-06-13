@@ -1,8 +1,4 @@
-{
-  lib,
-  pkgs,
-  ...
-}: let
+{pkgs, ...}: let
   gtk-theme-name = "Colloid-Green-Dark-Gruvbox";
   gtk-theme = pkgs.colloid-gtk-theme.override {
     colorVariants = ["dark"];
@@ -28,18 +24,6 @@ in {
     iconTheme = {
       name = icon-theme-name;
       package = pkgs.papirus-icon-theme;
-    };
-
-    gtk3 = {
-      extraConfig = {
-        gtk-application-prefer-dark-theme = lib.mkForce true;
-      };
-    };
-
-    gtk4 = {
-      extraConfig = {
-        gtk-application-prefer-dark-theme = lib.mkForce true;
-      };
     };
   };
 

@@ -55,7 +55,6 @@ in {
   config = lib.mkMerge [
     (lib.mkIf (gpu == "amd-nvidia-hybrid") {
       environment.systemPackages = with pkgs; [
-        amdgpu_top
         nvtopPackages.full
       ];
 

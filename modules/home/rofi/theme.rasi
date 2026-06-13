@@ -7,7 +7,6 @@
     fg-col: #FBF1C7;
     fg-col2: #EBDBB2;
     grey: #928374;
-    highlight: @green;
     element-bg: #282828;
     element-alternate-bg: #3c3836;
 }

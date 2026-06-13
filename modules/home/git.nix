@@ -50,7 +50,7 @@
   '';
 
   programs.zsh.shellAliases = {
-    g = "lazygit";
+    g = "git status";
     gf = "onefetch --number-of-file-churns 0 --no-color-palette";
 
     gs = "git status";

@@ -1,10 +1,10 @@
 {lib, ...}: let
   inherit (lib) lists attrsets;
   defaultApps = {
-    text = ["org.gnome.TextEditor.desktop"];
+    text = ["ghostty.desktop"];
     image = ["imv-dir.desktop"];
-    audio = ["mpv.desktop"];
-    video = ["mpv.desktop"];
+    audio = ["vlc.desktop"];
+    video = ["vlc.desktop"];
     directory = ["nemo.desktop"];
     office = ["libreoffice.desktop"];
     pdf = ["org.gnome.Evince.desktop"];
