@@ -13,41 +13,6 @@
 9. **No emojis in code or responses** unless the user uses them first.
 10. **Be direct and concise** — no preamble, no postamble, no unnecessary explanations.
 
-## Audit Workflow
-
-When auditing modules, follow this exact format for each finding:
-
-### Per-Finding Format
-```
-### Finding: [short title]
-**File:** `path/to/file.nix:line_number`
-**Code:**
-\`\`\`nix
-// exact code snippet
-\`\`\`
-**Sources:**
-- [Source Name](URL) — date — what it says
-- [Source Name](URL) — date — what it says
-
-**Proposed Change:**
-\`\`\`nix
-// new code
-\`\`\`
-
-| Pro | Con |
-|-----|-----|
-| ... | ... |
-
-**Verdict:** approve/reject with reasoning
-```
-
-### Rules
-- **Websearch every finding** — never assume. Multiple sources, exact URLs, dates.
-- **Ask 1 by 1** — present one finding, user approves/rejects, then next.
-- **Not just deprecations** — look for improvements, redundancies, dead code, missing best practices.
-- **Verify before suggesting** — check NixOS manual, nixpkgs commits, upstream changelogs.
-- **Check actual usage** — is the feature/service/package actually used? Dead config = remove it.
-
 ## Project Overview
 
 Single-host NixOS flake for an ASUS ROG G513RC laptop (AMD Ryzen + NVIDIA RTX 3050). Wayland-only, Hyprland desktop, ROG laptop with full asusd + cardwire integration.
@@ -185,6 +150,22 @@ cdnix    → cd ~/nixos-config && codium ~/nixos-config
 - **music.sh** — Audacious player toggle, superseded by playerctl
 - **toggle-blur.sh** — Hyprland blur toggle, zero references
 - **toggle-opacity.sh** — window opacity toggle, dead
+- **git: diffnav/serie aliases** — commands not installed
+- **git: color.ui = true** — default in modern Git
+- **xdg-mimes: terminal MIME type** — doesn't exist in XDG spec
+- **xdg-mimes: mimeapps.list.force** — conflicted with mimeApps.enable
+- **xdg-mimes: associations.added** — redundant with defaultApplications
+- **gtk: duplicate cursor config** — kept home.pointerCursor, removed gtk.cursorTheme
+- **ssh: serverAliveInterval/CountMax** — interval=0 disabled keepalive, countmax was dead
+- **waybar: background_0, indicator_height** — defined but never referenced
+- **hyprland: MOZ_ENABLE_WAYLAND** — deprecated since Firefox 121
+- **hyprland: MOZ_SANDBOX_DRIVER_WHITELISTED** — Windows-only, dead on Linux
+- **hyprland: WLR_BACKEND, WLR_RENDERER, WLR_NO_HARDWARE_CURSORS** — Hyprland manages these internally
+- **swaync: inhibitors, title, label widgets** — configured but not in widgets list
+- **zsh: duplicate edit-command-line** — already defined in zsh.nix
+- **direnv/fzf: enableZshIntegration** — default when programs.zsh.enable = true
+- **kitty: inactive_tab_font_style** — default value was "normal"
+- **cli: trash-cli** — duplicate with gtrash
 
 ## Important Notes for LLMs
 
