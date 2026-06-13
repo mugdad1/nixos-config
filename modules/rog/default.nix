@@ -33,11 +33,6 @@ in
 {
   services.asusd = {
     enable = true;
-    package = pkgs.asusctl.overrideAttrs (old: {
-      postInstall = (old.postInstall or "") + ''
-        rm -f $out/share/applications/rog-control-center.desktop
-      '';
-    });
     asusdConfig.text = ''
       (
             charge_control_end_threshold: 80,
