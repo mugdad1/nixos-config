@@ -11,7 +11,6 @@
   blue = "#458588";
   magenta = "#B16286";
   cyan = "#689D6A";
-  orange = "#D65D0E";
   orange_bright = "#FE8019";
   opacity = "1";
 }

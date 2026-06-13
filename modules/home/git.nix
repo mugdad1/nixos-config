@@ -8,9 +8,8 @@
 
     settings = {
       user = {
-        name = "";
-        email = "";
-        # FIXME: set your git name and email above
+        name = "mugdad";
+        email = "mugdad02@tutamail.com";
       };
 
       init.defaultBranch = "main";

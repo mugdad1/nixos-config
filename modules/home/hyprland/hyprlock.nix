@@ -1,4 +1,4 @@
-{host, ...}: {
+{...}: {
   programs.hyprlock = {
     enable = true;
 

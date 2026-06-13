@@ -1,5 +1,4 @@
 {lib, ...}: let
-  inherit (lib) lists attrsets;
   defaultApps = {
     text = ["ghostty.desktop"];
     image = ["imv-dir.desktop"];
@@ -68,8 +67,8 @@
   };
 
   associations = builtins.listToAttrs (
-    lists.flatten (
-      attrsets.mapAttrsToList (key: map (type: attrsets.nameValuePair type defaultApps."${key}")) mimeMap
+    lib.lists.flatten (
+      lib.attrsets.mapAttrsToList (key: map (type: lib.attrsets.nameValuePair type defaultApps."${key}")) mimeMap
     )
   );
 in {

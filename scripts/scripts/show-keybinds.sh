@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 config_file=~/.config/hypr/hyprland.conf
-mod=$(grep '^\$mod=' "$config_file" | head -1 | cut -d= -f2)
+mod=$(grep '^\$mod\s*=' "$config_file" | head -1 | sed 's/.*=\s*//; s/[" ]//g')
 
 if [ -z "$mod" ]; then
     mod="SUPER"
 fi
 
-keybinds=$(grep '^bind=' "$config_file" | sed "s/^bind=//; s/\$mod/$mod/g")
+keybinds=$(grep -E '^\s*bind\s*=' "$config_file" | sed "s/.*=\s*//; s/\$mod/$mod/g; s/^,\s*/  /")
 
 if pgrep -x rofi > /dev/null; then
     pkill rofi
