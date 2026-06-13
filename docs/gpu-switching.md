@@ -6,9 +6,8 @@ This system uses **cardwire** (eBPF-based GPU blocker) + the hardware **MUX swit
 
 | File | Purpose |
 |------|---------|
-| `modules/rog/default.nix` | Nix config: enables `services.cardwire`, adds `gpu-tui` script, adds `cardwire-apply-blocks` systemd service |
-| `modules/rog/gpu-tui.sh` | Standalone dialog-based TUI for switching GPU modes (source for `gpu-tui` package) |
-| `scripts/scripts/power-profile-menu.sh` | Rofi menu bound to `$mod + P` in Hyprland; replaces supergfxctl with cardwire |
+| `hosts/rog/default.nix` | Nix config: enables `services.cardwire`, asusd, `cardwire-apply-blocks` systemd service |
+| `scripts/scripts/power-profile-menu.sh` | Rofi menu bound to `$mod + P` in Hyprland for GPU/profile switching |
 | `flake.nix` | Adds `cardwire` flake input and its NixOS module |
 
 ## How It Works

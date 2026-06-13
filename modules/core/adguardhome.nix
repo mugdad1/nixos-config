@@ -30,13 +30,16 @@
         ];
         upstream_mode = "parallel";
         blocking_mode = "nxdomain";
-        ratelimit = 20;
+        ratelimit = 0;
         refuse_any = true;
         cache_size = 8388608;
         cache_ttl_min = 60;
         cache_ttl_max = 14400;
         cache_optimistic = true;
         anonymize_client_ip = true;
+        edns_client_subnet = {
+          enabled = true;
+        };
       };
       filtering = {
         protection_enabled = true;

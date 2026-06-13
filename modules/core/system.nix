@@ -9,8 +9,6 @@
         "nix-command"
         "flakes"
       ];
-      keep-derivations = true;
-      keep-outputs = true;
       max-jobs = "auto";
       substituters = [
         "https://nix-community.cachix.org"
@@ -41,7 +39,5 @@
     allowUnfree = true;
     android_sdk.accept_license = true;
   };
-  services.xserver.desktopManager.xterm.enable = false;
-
   system.stateVersion = "26.05";
 }

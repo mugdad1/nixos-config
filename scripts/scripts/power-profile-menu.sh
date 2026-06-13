@@ -36,7 +36,8 @@ run_gpu_cmd() {
     local cpu_mode="$2"
     local label="$3"
 
-    powerprofilesctl set "$cpu_mode"
+    profile="${cpu_mode/power-saver/quiet}"
+    asusctl profile set "$profile"
 
     case $action in
         amd-only)

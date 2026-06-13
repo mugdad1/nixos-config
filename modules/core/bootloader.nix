@@ -67,12 +67,6 @@ in
       efi.canTouchEfiVariables = true;
     };
 
-    plymouth = {
-      enable = true;
-      themePackages = [ pkgs.plymouth-theme-gruvbox ];
-      theme = "gruvbox";
-    };
-
     kernelParams = lib.mkBefore [
       "quiet"
       "splash"
