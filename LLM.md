@@ -178,6 +178,13 @@ cdnix    → cd ~/nixos-config && codium ~/nixos-config
 - **`user_rules = []`** — removed default noise from adguardhome.nix
 - **AdGuard Home default filtering noise** — removed `parental_enabled`, `safe_search`, `safebrowsing_enabled`
 - **pomo** — TUI pomodoro timer, removed (`pkgs/pomo` + `modules/home/pomo`)
+- **ascii.sh** — colorized ASCII character table, dead utility
+- **compress.sh** — tar.gz compressor, dead utility
+- **extract.sh** — tar.gz extractor, dead utility
+- **maxfetch.sh** — custom fetch script, dead utility
+- **music.sh** — Audacious player toggle, superseded by playerctl
+- **toggle-blur.sh** — Hyprland blur toggle, zero references
+- **toggle-opacity.sh** — window opacity toggle, dead
 
 ## Important Notes for LLMs
 
