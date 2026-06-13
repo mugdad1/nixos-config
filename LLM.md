@@ -13,6 +13,41 @@
 9. **No emojis in code or responses** unless the user uses them first.
 10. **Be direct and concise** — no preamble, no postamble, no unnecessary explanations.
 
+## Audit Workflow
+
+When auditing modules, follow this exact format for each finding:
+
+### Per-Finding Format
+```
+### Finding: [short title]
+**File:** `path/to/file.nix:line_number`
+**Code:**
+\`\`\`nix
+// exact code snippet
+\`\`\`
+**Sources:**
+- [Source Name](URL) — date — what it says
+- [Source Name](URL) — date — what it says
+
+**Proposed Change:**
+\`\`\`nix
+// new code
+\`\`\`
+
+| Pro | Con |
+|-----|-----|
+| ... | ... |
+
+**Verdict:** approve/reject with reasoning
+```
+
+### Rules
+- **Websearch every finding** — never assume. Multiple sources, exact URLs, dates.
+- **Ask 1 by 1** — present one finding, user approves/rejects, then next.
+- **Not just deprecations** — look for improvements, redundancies, dead code, missing best practices.
+- **Verify before suggesting** — check NixOS manual, nixpkgs commits, upstream changelogs.
+- **Check actual usage** — is the feature/service/package actually used? Dead config = remove it.
+
 ## Project Overview
 
 Single-host NixOS flake for an ASUS ROG G513RC laptop (AMD Ryzen + NVIDIA RTX 3050). Wayland-only, Hyprland desktop, ROG laptop with full asusd + cardwire integration.
