@@ -33,6 +33,11 @@ in
 {
   services.asusd = {
     enable = true;
+    package = pkgs.asusctl.overrideAttrs (old: {
+      postInstall = (old.postInstall or "") + ''
+        rm -f $out/share/applications/rog-control-center.desktop
+      '';
+    });
     asusdConfig.text = ''
       (
             charge_control_end_threshold: 80,
@@ -83,6 +88,7 @@ in
     after = [ "cardwired.service" ];
     requires = [ "cardwired.service" ];
     wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.cardwire pkgs.jq ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''

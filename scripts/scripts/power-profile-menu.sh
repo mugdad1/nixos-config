@@ -8,20 +8,14 @@ power_saver="<span color='${green}'>󰾆 </span>"
 balanced="<span color='${yellow}'>󰾅 </span>"
 performance="<span color='${red}'>󰓅 </span>"
 
-current_cpu=$(powerprofilesctl get)
 mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2>/dev/null)
-
-selected_row=0
-case $current_cpu in
-    performance) selected_row=2 ;;
-    balanced)    selected_row=1 ;;
-esac
 
 current_gpu=$(cardwire get 2>/dev/null)
 case $current_gpu in
     Integrated) selected_row=0 ;;
     Hybrid)     selected_row=1 ;;
     Manual)     selected_row=2 ;;
+    *)          selected_row=0 ;;
 esac
 
 theme="$HOME/.config/rofi/powermenu-theme.rasi"
@@ -35,14 +29,6 @@ rofi_cmd() {
 
 run_rofi() {
     echo -e "${power_saver}\n${balanced}\n${performance}" | rofi_cmd
-}
-
-run_cmd() {
-    local cpu_mode="$1"
-    local label="$2"
-
-    powerprofilesctl set "$cpu_mode"
-    notify-send -u normal "Profile" "$label"
 }
 
 run_gpu_cmd() {
