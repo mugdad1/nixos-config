@@ -35,8 +35,8 @@ in
 
         extraEntries = ''
           /Windows
-            protocol: chainload
-            path: boot():///EFI/Microsoft/Boot/bootmgfw.efi
+            protocol: efi
+            path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
         '';
 
         style = {
