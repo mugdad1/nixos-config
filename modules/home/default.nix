@@ -2,7 +2,6 @@
   imports = [
     ./bat.nix # better cat command
     ./browser.nix # firefox based browser
-    ./cava.nix # audio visualizer
     ./direnv.nix
     ./fastfetch/fastfetch.nix # fetch tool
     ./fzf.nix # fuzzy finder
