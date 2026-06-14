@@ -8,7 +8,6 @@
     office = ["libreoffice.desktop"];
     pdf = ["org.gnome.Evince.desktop"];
     archive = ["org.gnome.FileRoller.desktop"];
-    discord = ["discord.desktop"];
   };
 
   mimeMap = {
@@ -63,7 +62,6 @@
       "application/7z"
       "application/*tar"
     ];
-    discord = ["x-scheme-handler/discord"];
   };
 
   associations = builtins.listToAttrs (

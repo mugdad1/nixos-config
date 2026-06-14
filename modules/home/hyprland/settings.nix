@@ -10,8 +10,6 @@
       numlock_by_default = true;
 
       follow_mouse = 1;
-      mouse_refocus = 0;
-      float_switch_override_focus = 0;
 
       touchpad = {
         disable_while_typing = false;
@@ -36,8 +34,6 @@
 
       focus_on_activate = true;
       middle_click_paste = false;
-
-      disable_autoreload = false;
     };
 
     dwindle = {

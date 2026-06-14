@@ -2,7 +2,6 @@
   programs.zsh = {
     enable = true;
 
-    # enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
@@ -44,18 +43,11 @@
     ];
 
     completionInit = ''
-      # Load Zsh modules
-      # zmodload zsh/zle
-      # zmodload zsh/zpty
-      # zmodload zsh/complist
-
       # Initialize colors
       autoload -Uz colors
       colors
 
       # Initialize completion system
-      # autoload -U compinit
-      # compinit
       _comp_options+=(globdots)
 
       # Load edit-command-line for ZLE
@@ -132,7 +124,6 @@
 
       DISABLE_AUTO_UPDATE=true
       DISABLE_MAGIC_FUNCTIONS=true
-      export "MICRO_TRUECOLOR=1"
 
       setopt hist_verify
 

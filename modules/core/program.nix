@@ -5,7 +5,7 @@
 
     gnupg.agent = {
       enable = true;
-      enableSSHSupport = true;
+      enableSSHSupport = false;
     };
 
     appimage.enable = true;

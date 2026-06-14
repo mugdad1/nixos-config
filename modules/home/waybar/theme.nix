@@ -9,7 +9,6 @@
   green = "#98971A";
   yellow = "#FABD2F";
   blue = "#458588";
-  magenta = "#B16286";
   cyan = "#689D6A";
   orange_bright = "#FE8019";
   opacity = "1";

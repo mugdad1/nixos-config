@@ -14,7 +14,6 @@
     subfolders = False
     show_hidden = False
     show_gifs_only = False
-    post_command = pkill .waypaper-wrapp
     number_of_columns = 3
     awww_transition_type = any
     awww_transition_step = 90

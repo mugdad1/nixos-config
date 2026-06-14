@@ -236,7 +236,7 @@ in {
           enable = true;
           settings = {
             formatters_by_ft = {
-              nix = ["nixfmt"];
+              nix = ["alejandra"];
               python = ["black"];
               rust = ["rustfmt"];
               go = ["gofmt"];

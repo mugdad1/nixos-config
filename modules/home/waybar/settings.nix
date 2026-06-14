@@ -1,4 +1,4 @@
-{host, ...}: let
+{...}: let
   custom = import ./theme.nix;
 in {
   programs.waybar.settings.mainBar = with custom; {
@@ -19,7 +19,6 @@ in {
       "cpu"
       "memory"
       "pulseaudio"
-      "network"
       "battery"
       "custom/notification"
       "custom/nightlight"
@@ -73,13 +72,6 @@ in {
       format-alt = "<span foreground='${cyan}'>󰟜 </span>{used} GiB";
       interval = 2;
       on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ghostty -e btop'";
-    };
-    network = {
-      format-wifi = "<span foreground='${magenta}'> </span> {signalStrength}%";
-      format-ethernet = "<span foreground='${magenta}'>󰀂 </span>";
-      tooltip-format = "Connected to {essid} {ifname} via {gwaddr}";
-      format-linked = "{ifname} (No IP)";
-      format-disconnected = "<span foreground='${magenta}'>󰖪 </span>";
     };
     tray = {
       icon-size = 20;
