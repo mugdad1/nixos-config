@@ -28,9 +28,6 @@
       nc = "nh-notify nh clean all --keep 5";
       nsearch = "nh search";
 
-      # gpu
-      gpu = "gpu-mode";
-
       # python
       piv = "python -m venv .venv";
       psv = "source .venv/bin/activate";
