@@ -18,7 +18,6 @@
     ./rofi/rofi.nix # launcher
     ./../../scripts/scripts.nix # personal scripts
 
-    ./superfile/superfile.nix # terminal file manager
     ./swayosd.nix # brightness / volume widget
     ./swaync/swaync.nix # notification daemon
     ./waybar # status bar
