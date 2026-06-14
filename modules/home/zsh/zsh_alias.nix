@@ -7,7 +7,6 @@
       tt = "gtrash put";
       cat = "bat";
 
-      code = "codium";
       diff = "delta --diff-so-fancy --side-by-side";
       less = "bat";
       copy = "wl-copy";
@@ -31,7 +30,6 @@
       nsp = "nom-shell --run zsh -p";
       nb = "nom build";
       nd = "nom develop --command zsh";
-      cdnix = "cd ~/nixos-config && codium ~/nixos-config";
       nsearch = "nh search";
 
       # gpu
