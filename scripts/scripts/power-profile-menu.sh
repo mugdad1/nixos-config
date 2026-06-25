@@ -10,7 +10,13 @@ performance="<span color='${red}'>󰓅 </span>"
 
 mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2>/dev/null)
 
-current_gpu=$(cardwire get 2>/dev/null)
+amd_pci="0000:05:00.0"
+nvidia_pci="0000:01:00.0"
+
+amd_id=$(cardwire list --json 2>/dev/null | jq -r "to_entries[] | select(.value.pci == \"$amd_pci\") | .value.id")
+nvidia_id=$(cardwire list --json 2>/dev/null | jq -r "to_entries[] | select(.value.pci == \"$nvidia_pci\") | .value.id")
+
+current_gpu=$(cardwire get 2>/dev/null | xargs)
 case $current_gpu in
     Integrated) selected_row=0 ;;
     Hybrid)     selected_row=1 ;;
@@ -42,24 +48,24 @@ run_gpu_cmd() {
 
     case $action in
         amd-only)
-            pkexec cardwire set integrated
+            pkexec env PATH="$PATH" cardwire set integrated
             if [ "$mux" != "1" ]; then
-                pkexec bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                pkexec env PATH="$PATH" bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
                 notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         nvidia-only)
-            pkexec cardwire set manual
-            pkexec cardwire gpu 1 --block
+            pkexec env PATH="$PATH" cardwire set manual
+            [ -n "$amd_id" ] && pkexec env PATH="$PATH" cardwire gpu "$amd_id" --block
             if [ "$mux" != "0" ]; then
-                pkexec bash -c 'echo 0 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                pkexec env PATH="$PATH" bash -c 'echo 0 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
                 notify-send -u critical "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         hybrid)
-            pkexec cardwire set hybrid
+            pkexec env PATH="$PATH" cardwire set hybrid
             ;;
     esac
 

@@ -11,6 +11,8 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -61,6 +63,7 @@
 
     nixosConfigurations = {
       rog = mkHost "rog" "amd-nvidia-hybrid";
+      t480s = mkHost "t480s" "intel";
     };
   };
 }

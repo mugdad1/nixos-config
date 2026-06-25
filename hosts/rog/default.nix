@@ -83,6 +83,8 @@ in {
     })
 
     {
+      services.xserver.videoDrivers = ["nvidia"];
+
       services.asusd = {
         enable = true;
         asusdConfig.text = ''
@@ -124,12 +126,14 @@ in {
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''
-            BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" \
-              /var/lib/cardwire/gpu_state.json 2>/dev/null)
+            set -eu
+            STATE=/var/lib/cardwire/gpu_state.json
+            [ -f "$STATE" ] || exit 0
+            BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" "$STATE")
             for pci in $BLOCKED; do
               id=$(cardwire list --json | jq -r \
                 "to_entries[] | select(.value.pci == \"$pci\" and .value.default == false) | .value.id")
-              [ -n "$id" ] && cardwire gpu "$id" --block
+              [ -n "$id" ] && cardwire gpu "$id" --block || true
             done
           ''}";
         };

@@ -17,6 +17,7 @@
     swappy # snapshot editing tool
     tdf # cli pdf viewer
     yt-dlp-light
+opencode
 
     ## Multimedia
     imv
