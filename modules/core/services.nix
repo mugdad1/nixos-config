@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, lib, ...}: {
   services = {
     gvfs.enable = true;
 
@@ -22,10 +22,10 @@
       # don’t shutdown when power button is short-pressed
       HandlePowerKey = "ignore";
 
-      # ignore lid close
-      HandleLidSwitch = "ignore";
-      HandleLidSwitchExternalPower = "ignore";
-      HandleLidSwitchDocked = "ignore";
+      # ignore lid close (hosts can override via mkForce)
+      HandleLidSwitch = lib.mkDefault "ignore";
+      HandleLidSwitchExternalPower = lib.mkDefault "ignore";
+      HandleLidSwitchDocked = lib.mkDefault "ignore";
     };
 
     udisks2.enable = true;

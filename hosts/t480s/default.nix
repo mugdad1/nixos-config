@@ -22,10 +22,12 @@
     "i915.enable_guc=2"
     "i915.enable_fbc=1"
     "i915.enable_psr=2"
+    "i915.enable_dc=2"
     "mem_sleep_default=deep"
     "psmouse.synaptics_intertouch=1"
   ];
 
+  services.throttled.enable = true;
   services.thermald.enable = true;
   services.fwupd.enable = true;
 
@@ -37,6 +39,11 @@
       START_CHARGE_THRESH_BAT0 = "75";
       STOP_CHARGE_THRESH_BAT0 = "80";
     };
+  };
+
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "ignore";
   };
 
   services.upower = {
