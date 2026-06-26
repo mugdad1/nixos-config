@@ -27,6 +27,11 @@
     "psmouse.synaptics_intertouch=1"
   ];
 
+  services.udev.extraRules = ''
+    # Hide the internal SD card reader from udisks (shows as empty /dev/sda)
+    ACTION=="add", SUBSYSTEM=="block", ENV{ID_MODEL}=="SD_MMC", ATTR{removable}=="1", ENV{UDISKS_IGNORE}="1"
+  '';
+
   services.throttled.enable = true;
 
   services.tlp = {
