@@ -5,7 +5,7 @@
         final: prev: (import ../../pkgs {
           inherit inputs;
           pkgs = prev;
-          inherit (prev) system;
+          system = prev.stdenv.hostPlatform.system;
         })
       )
     ];
