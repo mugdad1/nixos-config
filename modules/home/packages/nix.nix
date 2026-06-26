@@ -11,7 +11,7 @@
     nix-index = {
       enable = true;
       symlinkToCacheHome = true;
-      enableZshIntegration = false;
+      enableZshIntegration = true;
     };
 
     nix-index-database.comma.enable = true;

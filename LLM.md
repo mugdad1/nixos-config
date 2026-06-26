@@ -15,11 +15,11 @@
 
 ## Project Overview
 
-Single-host NixOS flake for an ASUS ROG G513RC laptop (AMD Ryzen + NVIDIA RTX 3050). Wayland-only, Hyprland desktop, ROG laptop with full asusd + cardwire integration.
+Multi-host NixOS flake for an ASUS ROG G513RC (AMD Ryzen + NVIDIA RTX 3050) and a Lenovo ThinkPad T480s (Intel i5-8250U + UHD 620). Wayland-only, Hyprland desktop.
 
 - **User:** `mugdad`
-- **Host:** `rog`
-- **GPU:** `amd-nvidia-hybrid` (special arg passed from flake.nix)
+- **Hosts:** `rog` (G513RC), `t480s` (ThinkPad)
+- **GPUs:** `amd-nvidia-hybrid` (rog), `intel` (t480s)
 - **Shell:** zsh
 - **State version:** 26.05, but actually running 26.11
 
@@ -27,9 +27,10 @@ Single-host NixOS flake for an ASUS ROG G513RC laptop (AMD Ryzen + NVIDIA RTX 30
 
 ```
 nixos-config/
-├── flake.nix                    # Top-level flake, single host "rog"
+├── flake.nix                    # Top-level flake, hosts: rog + t480s
 ├── LLM.md                       # This file
 ├── hosts/rog/
+├── hosts/t480s/
 │   ├── default.nix              # Main host config (merged: GPU + ROG + power)
 │   └── hardware-configuration.nix
 ├── modules/
@@ -107,17 +108,16 @@ asusctl profile get         # Shows active, AC, and battery profiles
 ### Nix Style
 - Formatted with `alejandra` (run before every push)
 - `options` can be at top level, but then ALL config must go under a `config` attribute (use `lib.mkMerge` + `lib.mkIf` for conditional configs)
-- Single host, single flake — no multi-host complexity
+- Two hosts, single flake — host-specific config in `hosts/<name>/`, shared modules in `modules/`
 - `programs.nh.enable = true` for NH integration (but aliases use `nixos-rebuild` directly)
 
 ### Shell Aliases (in `modules/home/zsh/zsh_alias.nix`)
 ```
-rebuild  → nix flake check && sudo nixos-rebuild switch --flake ~/nixos-config#rog
-update   → nix flake update && nix flake check && sudo nixos-rebuild switch --flake ~/nixos-config#rog
+rebuild  → nix flake check && sudo nixos-rebuild switch --flake ~/nixos-config
+update   → nix flake update && nix flake check && sudo nixos-rebuild switch --flake ~/nixos-config
 nft      → nh-notify nh os test
 nc       → nh-notify nh clean all --keep 5
-ns       → nom-shell --run zsh
-cdnix    → cd ~/nixos-config && codium ~/nixos-config
+nsearch  → nh search
 ```
 
 ## Removed / Deprecated (historical context, do NOT re-add)

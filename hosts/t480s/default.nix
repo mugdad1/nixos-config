@@ -28,8 +28,6 @@
   ];
 
   services.throttled.enable = true;
-  services.thermald.enable = true;
-  services.fwupd.enable = true;
 
   services.tlp = {
     enable = true;
