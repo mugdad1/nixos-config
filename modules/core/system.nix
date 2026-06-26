@@ -30,6 +30,7 @@
 
   environment.systemPackages = with pkgs; [
     git
+    brightnessctl
   ];
 
   time.timeZone = "Asia/Riyadh";

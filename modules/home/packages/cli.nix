@@ -16,8 +16,6 @@
     yt-dlp-light
 opencode
 cliamp
-    ## Multimedia
-    imv
     ## Utilities
     binutils # GNU binary tools (strings, objdump, etc.)
     entr # perform action when file change

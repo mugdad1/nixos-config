@@ -22,8 +22,8 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
-      rebuild = "cd ~/nixos-config && sudo nixos-rebuild switch --flake ~/nixos-config";
-      update = "cd ~/nixos-config && nix flake update && sudo nixos-rebuild switch --flake ~/nixos-config";
+      rebuild = "nh os switch ~/nixos-config";
+      update = "nh os switch ~/nixos-config --update";
       nft = "nh-notify nh os test";
       nc = "nh-notify nh clean all --keep 5";
       nsearch = "nh search";

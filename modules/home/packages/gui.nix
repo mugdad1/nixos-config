@@ -1,9 +1,11 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
     ## Multimedia
+    imv
     obs-studio
     pavucontrol
     vlc
+    audacity
 
     ## Office
     libreoffice

@@ -12,6 +12,14 @@
     };
     fwupd.enable = true;
 
+    openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = false;
+        PermitRootLogin = "no";
+      };
+    };
+
     # needed for GNOME services outside of GNOME Desktop
     dbus.packages = [
       pkgs.gcr
@@ -45,7 +53,18 @@
     "d /var/cache/tuigreet 0755 greeter greeter"
   ];
 
-  zramSwap.enable = true;
+  services.upower = {
+    enable = true;
+    percentageLow = 20;
+    percentageCritical = 5;
+    percentageAction = 3;
+    criticalPowerAction = "PowerOff";
+  };
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+  };
 
   boot.kernel.sysctl."vm.swappiness" = 10;
 }

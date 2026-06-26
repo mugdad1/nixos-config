@@ -139,14 +139,12 @@ in {
         };
       };
 
-      boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
-
       powerManagement.powertop.enable = true;
 
       environment.systemPackages = with pkgs; [
         acpi
-        brightnessctl
         keyboard-cycle-script
+        (ffmpeg-full.override { withNvidia = true; })
       ];
 
       systemd.user.services.rog-keyboard-cycle = {
@@ -158,14 +156,6 @@ in {
           Environment = "PATH=/run/current-system/sw/bin:${pkgs.coreutils}/bin";
         };
         wantedBy = ["default.target"];
-      };
-
-      services.upower = {
-        enable = true;
-        percentageLow = 20;
-        percentageCritical = 5;
-        percentageAction = 3;
-        criticalPowerAction = "PowerOff";
       };
 
       home-manager.users.${username} = {

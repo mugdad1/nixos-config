@@ -43,10 +43,10 @@
     lib = nixpkgs.lib;
     mkHost = host: gpu:
       nixpkgs.lib.nixosSystem {
-        inherit system;
         modules = [
           ./hosts/${host}
           cardwire.nixosModules.default
+          { nixpkgs.hostPlatform = system; }
         ];
         specialArgs = {
           inherit
