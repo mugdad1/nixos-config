@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{ pkgs, lib, host, ... }: let
   androidSdk = pkgs.androidenv.composeAndroidPackages {
     platformVersions = [
       "34"
@@ -17,30 +17,34 @@
     includeSystemImages = false;
   };
 in {
-  home.packages = with pkgs; [
-    nixd
-    shfmt
-    treefmt
-    nixfmt
-    gcc
-    gdb
-    gef
-    cmake
-    gnumake
-    valgrind
-    llvmPackages_latest.clang-tools
-    python3
-    python312Packages.ipython
-    flutter
-    jdk
-    mesa-demos # provides eglinfo for flutter doctor
-    android-studio
-    androidSdk.androidsdk
-  ];
+  home.packages =
+    with pkgs; [
+      nixd
+      shfmt
+      treefmt
+      nixfmt
+      gcc
+      gdb
+      gef
+      cmake
+      gnumake
+      valgrind
+      llvmPackages_latest.clang-tools
+      python3
+      python312Packages.ipython
+    ]
+    ++ lib.optionals (host == "rog") [
+      flutter
+      jdk
+      mesa-demos # provides eglinfo for flutter doctor
+      android-studio
+      androidSdk.androidsdk
+    ];
 
-  home.sessionVariables = {
-    ANDROID_SDK_ROOT = "${androidSdk.androidsdk}/libexec/android-sdk";
-    ANDROID_HOME = "${androidSdk.androidsdk}/libexec/android-sdk";
-    CHROME_EXECUTABLE = "zen-beta";
-  };
+  home.sessionVariables =
+    { CHROME_EXECUTABLE = "zen-beta"; }
+    // lib.optionalAttrs (host == "rog") {
+      ANDROID_SDK_ROOT = "${androidSdk.androidsdk}/libexec/android-sdk";
+      ANDROID_HOME = "${androidSdk.androidsdk}/libexec/android-sdk";
+    };
 }

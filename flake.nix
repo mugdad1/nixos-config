@@ -61,6 +61,10 @@
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
+    packages.${system}.nvim = inputs.nixvim.legacyPackages.${system}.makeNixvim {
+      imports = [ ./modules/home/nvim-config.nix ];
+    };
+
     nixosConfigurations = {
       rog = mkHost "rog" "amd-nvidia-hybrid";
       t480s = mkHost "t480s" "intel";

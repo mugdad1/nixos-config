@@ -9,16 +9,13 @@
     ncdu # disk space
     ripgrep # grep replacement
     tldr
-    xcp # faster cp written in Rust
 
     ## Tools / useful cli
-    broot # tree files view
     just # command runner (makefile like)
     swappy # snapshot editing tool
-    tdf # cli pdf viewer
     yt-dlp-light
 opencode
-
+cliamp
     ## Multimedia
     imv
     ## Utilities
