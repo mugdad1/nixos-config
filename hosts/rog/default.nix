@@ -144,7 +144,7 @@ in {
       environment.systemPackages = with pkgs; [
         acpi
         keyboard-cycle-script
-        (ffmpeg-full.override { withNvidia = true; })
+        (ffmpeg-full.override { withNvcodec = true; })
       ];
 
       systemd.user.services.rog-keyboard-cycle = {
