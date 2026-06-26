@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  host,
   ...
 }: let
   gruvbox = {
@@ -26,7 +27,10 @@
     bright_fg = "EBDBB2";
   };
 
-  wallpaper = ../../wallpapers/otherWallpaper/gruvbox/japanese_pedestrian_street.png;
+  wallpaper = {
+    rog   = ../../wallpapers/otherWallpaper/gruvbox/tux.png;
+    t480s = ../../wallpapers/otherWallpaper/gruvbox/dark-thinkdot2.png;
+  }.${host};
 in {
   boot = {
     loader = {
@@ -34,12 +38,6 @@ in {
         enable = true;
         enableEditor = false;
         maxGenerations = 10;
-
-        extraEntries = ''
-          /Windows
-            protocol: efi
-            path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
-        '';
 
         style = {
           wallpapers = [wallpaper];
