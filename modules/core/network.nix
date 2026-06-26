@@ -5,7 +5,10 @@
 }: {
   networking = {
     hostName = "${host}";
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      wifi.backend = "iwd";
+    };
     nameservers = ["127.0.0.1"];
     firewall = {
       enable = true;

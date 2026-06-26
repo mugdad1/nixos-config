@@ -49,10 +49,6 @@
     HandleLidSwitchExternalPower = "ignore";
   };
 
-  environment.systemPackages = with pkgs; [
-    iwd
-  ];
-
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";
   };

@@ -46,7 +46,6 @@
         modules = [
           ./hosts/${host}
           cardwire.nixosModules.default
-          { nixpkgs.hostPlatform = system; }
         ];
         specialArgs = {
           inherit
