@@ -1,3 +1,3 @@
 { pkgs, inputs, ... }: {
-  home.packages = [ inputs.self.packages.${pkgs.system}.nvim ];
+  home.packages = [ inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.nvim ];
 }
