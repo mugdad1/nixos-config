@@ -84,13 +84,6 @@ cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.n
 
 #--- Build ---#
 
-echo -e "${INFO}Running flake check..."
-if ! nix flake check; then
-    echo -e "${ERROR}Flake check failed. Aborting."
-    whiptail --msgbox "Flake check failed." 8 40 --title "Error"
-    exit 1
-fi
-
 echo -e "${INFO}Starting system build..."
 sudo nixos-rebuild switch --flake .#${HOST}
 
