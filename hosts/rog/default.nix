@@ -141,6 +141,8 @@ in {
 
       powerManagement.powertop.enable = true;
 
+      home-manager.users.${username}.xdg.configFile."hypr/monitors.conf".source = ./monitors.conf;
+
       environment.systemPackages = with pkgs; [
         acpi
         keyboard-cycle-script
