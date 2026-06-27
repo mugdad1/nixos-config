@@ -8,8 +8,7 @@
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";
-      settings.main."rc-manager" = "file";
-      insertNameservers = ["127.0.0.1"];
+      dns = "none";
     };
     firewall = {
       enable = true;
@@ -19,5 +18,6 @@
     };
   };
 
+  environment.etc."resolv.conf".text = "nameserver 127.0.0.1\n";
   environment.systemPackages = with pkgs; [networkmanagerapplet];
 }
