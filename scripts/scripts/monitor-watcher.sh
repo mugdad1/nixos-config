@@ -35,7 +35,7 @@ handle-monitor-state() {
     else
         # no external monitor - enable laptop screens
         for disp in eDP-1 eDP-2; do
-            hyprctl keyword monitor "$disp,1920x1080@60,0x0,1.2"
+            hyprctl keyword monitor "$disp,1920x1080@60,0x0,1"
         done
     fi
 }
