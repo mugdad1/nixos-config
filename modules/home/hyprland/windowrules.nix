@@ -18,7 +18,6 @@
       "match:title ^(Picture-in-Picture)$, pin on"
       "match:title ^(Picture-in-Picture)$, float on"
 
-      "match:class ^(zen-beta)$, workspace 1"
       "match:class ^(com.obsproject.Studio)$, workspace 8"
 
       "match:class ^(xdg-desktop-portal-gtk)$, dim_around on"
