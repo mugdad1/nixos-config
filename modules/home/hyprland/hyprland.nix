@@ -3,6 +3,7 @@
     awww
     grimblast
     hyprpicker
+    nwg-displays
     grim
     slurp
     wl-clip-persist
