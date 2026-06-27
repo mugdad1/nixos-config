@@ -34,8 +34,6 @@
     HandleLidSwitchExternalPower = "ignore";
   };
 
-  home-manager.users.${username}.xdg.configFile."hypr/monitors.conf".source = ./monitors.conf;
-
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";
   };
