@@ -38,7 +38,7 @@ fi
 if grep -qi 'rog\|g513' /sys/class/dmi/id/product_name 2> /dev/null; then
     HOST="rog"
     GPU="amd-nvidia-hybrid"
-elif grep -qi 't480s\|thinkpad' /sys/class/dmi/id/product_name 2> /dev/null; then
+elif grep -qi 't480s\|thinkpad\|20L8' /sys/class/dmi/id/product_name 2> /dev/null; then
     HOST="t480s"
     GPU="intel"
 fi
