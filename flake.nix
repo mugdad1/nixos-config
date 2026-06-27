@@ -24,7 +24,6 @@
     };
 
     nixvim.url = "github:nix-community/nixvim";
-    superfile.url = "github:yorukot/superfile";
     zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
     cardwire = {
       url = "github:opengamingcollective/cardwire";

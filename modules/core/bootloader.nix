@@ -41,7 +41,7 @@ in {
 
           interface = {
             resolution = "1920x1080";
-            branding = "mugdad1";
+            branding = "mugdad";
             brandingColor = gruvbox.fg;
             helpColor = gruvbox.gray;
             helpColorBright = gruvbox.bright_yellow;
