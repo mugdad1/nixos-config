@@ -5,6 +5,7 @@
 }: {
   networking = {
     hostName = "${host}";
+    resolvconf.enable = false;
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";
