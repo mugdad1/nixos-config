@@ -61,7 +61,7 @@
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
     packages.${system}.nvim = inputs.nixvim.legacyPackages.${system}.makeNixvim {
-      imports = [ ./modules/home/nvim-config.nix ];
+      imports = [./modules/home/nvim-config.nix];
     };
 
     nixosConfigurations = {

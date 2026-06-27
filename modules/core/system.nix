@@ -1,4 +1,9 @@
-{pkgs, lib, host, ...}: {
+{
+  pkgs,
+  lib,
+  host,
+  ...
+}: {
   nix = {
     settings = {
       auto-optimise-store = true;
@@ -36,8 +41,8 @@
   time.timeZone = "Asia/Riyadh";
   i18n.defaultLocale = "en_US.UTF-8";
   nixpkgs.config = lib.mkMerge [
-    { allowUnfree = true; }
-    (lib.mkIf (host == "rog") { android_sdk.accept_license = true; })
+    {allowUnfree = true;}
+    (lib.mkIf (host == "rog") {android_sdk.accept_license = true;})
   ];
   system.stateVersion = "26.05";
 }

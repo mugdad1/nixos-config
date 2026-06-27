@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  host,
   ...
 }: let
   gruvbox = {
@@ -27,10 +26,7 @@
     bright_fg = "EBDBB2";
   };
 
-  wallpaper = {
-    rog   = ../../wallpapers/otherWallpaper/gruvbox/tux.png;
-    t480s = ../../wallpapers/otherWallpaper/gruvbox/dark-thinkdot2.png;
-  }.${host};
+  wallpaper = ../../wallpapers/otherWallpaper/nixos/nixos.png;
 in {
   boot = {
     loader = {

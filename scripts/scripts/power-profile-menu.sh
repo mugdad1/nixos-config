@@ -8,20 +8,20 @@ power_saver="<span color='${green}'>󰾆 </span>"
 balanced="<span color='${yellow}'>󰾅 </span>"
 performance="<span color='${red}'>󰓅 </span>"
 
-mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2>/dev/null)
+mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2> /dev/null)
 
 amd_pci="0000:05:00.0"
 nvidia_pci="0000:01:00.0"
 
-amd_id=$(cardwire list --json 2>/dev/null | jq -r "to_entries[] | select(.value.pci == \"$amd_pci\") | .value.id")
-nvidia_id=$(cardwire list --json 2>/dev/null | jq -r "to_entries[] | select(.value.pci == \"$nvidia_pci\") | .value.id")
+amd_id=$(cardwire list --json 2> /dev/null | jq -r "to_entries[] | select(.value.pci == \"$amd_pci\") | .value.id")
+nvidia_id=$(cardwire list --json 2> /dev/null | jq -r "to_entries[] | select(.value.pci == \"$nvidia_pci\") | .value.id")
 
-current_gpu=$(cardwire get 2>/dev/null | xargs)
+current_gpu=$(cardwire get 2> /dev/null | xargs)
 case $current_gpu in
     Integrated) selected_row=0 ;;
-    Hybrid)     selected_row=1 ;;
-    Manual)     selected_row=2 ;;
-    *)          selected_row=0 ;;
+    Hybrid) selected_row=1 ;;
+    Manual) selected_row=2 ;;
+    *) selected_row=0 ;;
 esac
 
 theme="$HOME/.config/rofi/powermenu-theme.rasi"
