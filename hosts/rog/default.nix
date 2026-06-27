@@ -157,13 +157,6 @@ in {
         };
         wantedBy = ["default.target"];
       };
-
-      home-manager.users.${username} = {
-        wayland.windowManager.hyprland.settings.monitor = lib.mkForce [
-          "eDP-1,1920x1080@60,0x0,1.2"
-          "eDP-2,1920x1080@60,0x0,1.2"
-        ];
-      };
     }
   ];
 }

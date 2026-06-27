@@ -1,6 +1,7 @@
 {...}: {
   wayland.windowManager.hyprland.settings = {
     "$mod" = "SUPER";
+    "source" = "~/.config/hypr/monitors.conf";
 
     input = {
       kb_layout = "us,ara";
