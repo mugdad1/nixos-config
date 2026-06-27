@@ -13,7 +13,5 @@
     "hyprctl setcursor Bibata-Modern-Ice 24"
     "init-wallpaper"
     "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1"
-
-    "monitor-watcher"
   ];
 }
