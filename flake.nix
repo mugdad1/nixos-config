@@ -31,12 +31,7 @@
     };
   };
 
-  outputs = {
-    nixpkgs,
-    self,
-    cardwire,
-    ...
-  } @ inputs: let
+  outputs = { nixpkgs, self, ... } @ inputs: let
     username = "mugdad";
     system = "x86_64-linux";
     lib = nixpkgs.lib;
@@ -44,7 +39,6 @@
       nixpkgs.lib.nixosSystem {
         modules = [
           ./hosts/${host}
-          cardwire.nixosModules.default
         ];
         specialArgs = {
           inherit

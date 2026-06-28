@@ -4,6 +4,7 @@
   lib,
   username,
   gpu,
+  inputs,
   ...
 }: let
   keyboard-cycle-script = pkgs.writeShellScriptBin "rog-keyboard-cycle" ''
@@ -36,6 +37,7 @@ in {
   imports = [
     ./hardware-configuration.nix
     ./../../modules/core
+    inputs.cardwire.nixosModules.default
   ];
 
   options.drivers.amd-nvidia-hybrid = {

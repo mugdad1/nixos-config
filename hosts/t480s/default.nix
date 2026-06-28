@@ -28,6 +28,7 @@
   ];
 
   services.throttled.enable = true;
+  services.tlp.enable = false;
 
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
