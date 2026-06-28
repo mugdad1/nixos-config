@@ -134,7 +134,7 @@ in {
             BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" "$STATE")
             for pci in $BLOCKED; do
               id=$(cardwire list --json | jq -r \
-                "to_entries[] | select(.value.pci == \"$pci\" and .value.default == false) | .value.id")
+                "to_entries[] | select(.value.pci == \"$pci\") | .value.id")
               [ -n "$id" ] && cardwire gpu "$id" --block || true
             done
           ''}";
