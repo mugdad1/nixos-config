@@ -14,8 +14,8 @@
     just # command runner (makefile like)
     swappy # snapshot editing tool
     yt-dlp-light
-opencode
-cliamp
+    opencode
+    cliamp
     ## Utilities
     binutils # GNU binary tools (strings, objdump, etc.)
     entr # perform action when file change

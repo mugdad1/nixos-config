@@ -21,6 +21,7 @@
     ##
     filen-desktop
 
+    vscodium-fhs
     ## Night light
     hyprsunset
   ];
