@@ -13,7 +13,7 @@
       "$mod, Return, exec, ghostty --gtk-single-instance=true"
       "ALT, Return, exec, [float; size 1111 700] ghostty"
       "$mod SHIFT, Return, exec, [fullscreen] ghostty"
-      "$mod, B, exec, [workspace 1 silent] zen-beta"
+      "$mod, B, exec, zen-beta"
       "$mod, Q, killactive,"
       "$mod, F, fullscreen, 0"
       "$mod SHIFT, F, fullscreen, 1"
