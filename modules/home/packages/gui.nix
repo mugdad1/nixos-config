@@ -6,6 +6,7 @@
     pavucontrol
     vlc
     audacity
+firefox-bin-unwrapped
 
     ## Office
     libreoffice
