@@ -14,14 +14,12 @@
     gnome-disk-utility
     zenity
     kdePackages.polkit-kde-agent-1
-
     ## Creativity
     kdePackages.kdenlive
 
     ##
     filen-desktop
 
-    vscodium-fhs
     ## Night light
     hyprsunset
   ];

@@ -26,6 +26,7 @@
     extraGroups = [
       "networkmanager"
       "wheel"
+      "input"
       "video"
       "render"
     ];
