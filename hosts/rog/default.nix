@@ -141,7 +141,6 @@ in {
         };
       };
 
-      powerManagement.powertop.enable = true;
 
       environment.systemPackages = with pkgs; [
         acpi
