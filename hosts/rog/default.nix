@@ -117,21 +117,53 @@ in {
       };
 
       systemd.services.cardwire-apply-blocks = {
-        description = "Re-apply cardwire GPU block states after boot";
+        description = "Re-apply cardwire GPU mode, MUX, and block states after boot";
         after = ["cardwired.service"];
         requires = ["cardwired.service"];
         wantedBy = ["multi-user.target"];
         path = [
           config.services.cardwire.package
           pkgs.jq
+          pkgs.coreutils
         ];
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${pkgs.writeShellScript "cardwire-apply-blocks" ''
             set -eu
-            STATE=/var/lib/cardwire/gpu_state.json
-            [ -f "$STATE" ] || exit 0
-            BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" "$STATE")
+
+            MODE_FILE=/var/lib/cardwire/mode.json
+            STATE_FILE=/var/lib/cardwire/gpu_state.json
+            MUX_PATH=/sys/devices/platform/asus-nb-wmi/gpu_mux_mode
+
+            # Re-apply GPU mode so it survives reboots
+            if [ -f "$MODE_FILE" ]; then
+              MODE=$(jq -r '.mode' "$MODE_FILE")
+              if [ "$MODE" = "integrated" ] || [ "$MODE" = "hybrid" ]; then
+                cardwire set "$MODE" 2>/dev/null || true
+              fi
+            fi
+
+            # Set MUX switch based on the active mode
+            if [ -f "$MODE_FILE" ] && [ -f "$MUX_PATH" ]; then
+              MODE=$(jq -r '.mode' "$MODE_FILE")
+              CURRENT_MUX=$(cat "$MUX_PATH")
+              case "$MODE" in
+                integrated)
+                  if [ "$CURRENT_MUX" != "1" ]; then
+                    echo 1 > "$MUX_PATH"
+                  fi
+                  ;;
+                hybrid | manual)
+                  if [ "$CURRENT_MUX" != "0" ]; then
+                    echo 0 > "$MUX_PATH"
+                  fi
+                  ;;
+              esac
+            fi
+
+            # Re-apply per-GPU blocks
+            [ -f "$STATE_FILE" ] || exit 0
+            BLOCKED=$(jq -r "to_entries[] | select(.value.block == true) | .key" "$STATE_FILE")
             for pci in $BLOCKED; do
               id=$(cardwire list --json | jq -r \
                 "to_entries[] | select(.value.pci == \"$pci\") | .value.id")

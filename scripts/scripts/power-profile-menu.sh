@@ -48,8 +48,7 @@ run_gpu_cmd() {
 
     case $action in
         amd-only)
-            pkexec env PATH="$PATH" cardwire set manual
-            [ -n "$nvidia_id" ] && pkexec env PATH="$PATH" cardwire gpu "$nvidia_id" --block
+            pkexec env PATH="$PATH" cardwire set integrated
             if [ "$mux" != "1" ]; then
                 pkexec env PATH="$PATH" bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
                 notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
