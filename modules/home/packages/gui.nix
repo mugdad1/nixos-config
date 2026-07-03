@@ -17,7 +17,7 @@ firefox-bin-unwrapped
     kdePackages.polkit-kde-agent-1
     ## Creativity
     kdePackages.kdenlive
-
+mission-center
     ##
     filen-desktop
 
