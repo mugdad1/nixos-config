@@ -18,11 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    maple-mono = {
-      url = "github:subframe7536/maple-font?ref=v7.8";
-      flake = false;
-    };
-
     nixvim.url = "github:nix-community/nixvim";
     zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
     cardwire = {

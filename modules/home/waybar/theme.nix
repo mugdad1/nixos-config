@@ -1,5 +1,5 @@
 {
-  font = "Maple Mono";
+  font = "Iosevka Nerd Font";
   font_size = "18px";
   font_weight = "bold";
   text_color = "#FBF1C7";

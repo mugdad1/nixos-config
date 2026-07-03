@@ -2,7 +2,7 @@
 
 configuration {
     show-icons: false;
-    font: "Maple Mono Bold 26";
+    font: "Iosevka Nerd Font Bold 26";
 }
 
 window {

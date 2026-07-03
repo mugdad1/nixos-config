@@ -14,7 +14,7 @@ in {
   gtk = {
     enable = true;
     font = {
-      name = "Maple Mono";
+      name = "Iosevka Nerd Font";
       size = 14;
     };
     theme = {

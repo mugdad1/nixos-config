@@ -41,7 +41,7 @@
           text = ''cmd[update:1000] echo "$(date +'%k:%M')"'';
 
           font_size = 115;
-          font_family = "Maple Mono Bold";
+          font_family = "Iosevka Nerd Font Bold";
 
           shadow_passes = 3;
           color = "rgba(235, 219, 178, 0.9)";
@@ -55,7 +55,7 @@
           text = ''cmd[update:1000] echo "- $(date +'%A, %B %d') -" '';
 
           font_size = 18;
-          font_family = "Maple Mono";
+          font_family = "Iosevka Nerd Font";
 
           shadow_passes = 3;
           color = "rgba(235, 219, 178, 0.9)";
@@ -69,7 +69,7 @@
           text = "  $USER";
 
           font_size = 15;
-          font_family = "Maple Mono Bold";
+          font_family = "Iosevka Nerd Font Bold";
 
           color = "rgba(235, 219, 178, 1)";
 
@@ -88,7 +88,7 @@
           dots_spacing = 0.4;
 
           font_color = "rgba(235, 219, 178, 0.9)";
-          font_family = "Maple Mono Bold";
+          font_family = "Iosevka Nerd Font Bold";
 
           outer_color = "rgba(168, 153, 132, 0.95)";
           inner_color = "rgba(102, 92, 84, 0.33)";

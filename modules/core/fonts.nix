@@ -3,7 +3,7 @@
     fontconfig = {
       defaultFonts = {
         monospace = [
-          "Maple Mono"
+          "Iosevka Nerd Font"
           "JetBrainsMono Nerd Font"
         ];
         sansSerif = ["Public Sans"];
@@ -13,7 +13,7 @@
     };
 
     packages = with pkgs; [
-      maple-mono-custom
+      nerd-fonts.iosevka
 
       noto-fonts
       public-sans

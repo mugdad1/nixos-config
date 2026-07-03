@@ -1,6 +1,5 @@
 {...}: {
   imports = [
-    ./nixpkgs.nix
     ./bootloader.nix
     ./hardware.nix
     ./adguardhome.nix

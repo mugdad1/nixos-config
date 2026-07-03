@@ -6,8 +6,7 @@
     settings = {
       ##### Font #####
       font-family = [
-        "Maple Mono"
-        # "DejaVu Sans"
+        "Iosevka Nerd Font"
       ];
       font-size = 12;
       font-feature = [

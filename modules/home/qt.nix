@@ -28,8 +28,8 @@ in {
       standard_dialogs = "xdgdesktopportal";
     };
     Fonts = {
-      fixed = "\"Maple Mono,14\"";
-      general = "\"Maple Mono,14\"";
+      fixed = "\"Iosevka Nerd Font,14\"";
+      general = "\"Iosevka Nerd Font,14\"";
     };
   };
 
@@ -40,8 +40,8 @@ in {
       standard_dialogs = "xdgdesktopportal";
     };
     Fonts = {
-      fixed = "\"Maple Mono,14\"";
-      general = "\"Maple Mono,14\"";
+      fixed = "\"Iosevka Nerd Font,14\"";
+      general = "\"Iosevka Nerd Font,14\"";
     };
   };
 }
