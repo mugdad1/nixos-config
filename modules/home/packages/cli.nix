@@ -1,14 +1,8 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
     ## Better core utils
-    btop # system monitor
-    duf # disk information
     eza # ls replacement
-    fd # find replacement
-    gtrash # rm replacement, put deleted files in system trash
     ncdu # disk space
-    ripgrep # grep replacement
-    tldr
 
     ## Tools / useful cli
     just # command runner (makefile like)
