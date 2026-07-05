@@ -19,9 +19,9 @@ in ''
   hl.bind(mod .. " + SHIFT + W",   hl.dsp.exec_cmd("[float; size 925 615] waypaper"))
   hl.bind(mod .. " + N",           hl.dsp.exec_cmd("swaync-client -t -sw"))
   hl.bind(mod .. " + C",           hl.dsp.exec_cmd("hyprpicker -a"))
-  hl.bind(mod .. " + equal",       hl.dsp.exec_cmd("woomer"))
   hl.bind(mod .. " + XF86Display", hl.dsp.exec_cmd("toggle-display"))
-  hl.bind(mod .. " + F1",          hl.dsp.exec_cmd("show-keybinds"))
+
+  hl.bind(mod .. " + S",           hl.dsp.exec_cmd("web-search"))
 
   -- Window management
   hl.bind(mod .. " + Q",           hl.dsp.window.close())

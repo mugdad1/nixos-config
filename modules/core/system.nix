@@ -27,10 +27,6 @@
     };
 
     # gc handled by nh (programs.nh.clean)
-    optimise = {
-      automatic = true;
-      dates = ["03:00"];
-    };
   };
 
   environment.systemPackages = with pkgs; [
