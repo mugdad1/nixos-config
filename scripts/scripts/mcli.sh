@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# zcli - NixOS system management CLI
+# mcli - NixOS system management
 
 set -euo pipefail
 
@@ -20,9 +20,9 @@ err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
 usage() {
   cat <<EOF
-zcli v${VERSION} - NixOS system management
+mcli v${VERSION} - NixOS system management
 
-Usage: zcli <command> [options]
+Usage: mcli <command> [options]
 
 Commands:
   rebuild        Rebuild NixOS configuration
@@ -33,11 +33,11 @@ Commands:
   help           Show this help
 
 Examples:
-  zcli rebuild
-  zcli update
-  zcli diag
-  zcli cleanup
-  zcli trim
+  mcli rebuild
+  mcli update
+  mcli diag
+  mcli cleanup
+  mcli trim
 EOF
 }
 
