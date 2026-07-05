@@ -1,5 +1,5 @@
 {...}: let
-  c = (import ../gruvbox.nix).raw;
+  c = (import ../gruvbox.nix).css;
 in {
   programs.fzf = {
     enable = true;
