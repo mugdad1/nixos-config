@@ -73,10 +73,6 @@ in ''
           movefocus_cycles_fullscreen  = true,
       },
 
-      gestures = {
-          gesture = "3, horizontal, workspace";
-      },
-
       dwindle = {
           force_split           = 2,
           preserve_split        = true,
@@ -109,4 +105,7 @@ in ''
   hl.animation({ leaf = "fadeShadow",  enabled = true,  speed = 10, bezier = "easeOutCirc" })
   hl.animation({ leaf = "fadeDim",     enabled = true,  speed = 4, bezier = "fluent_decel" })
   hl.animation({ leaf = "workspaces",  enabled = true,  speed = 4, bezier = "easeOutCubic", style = "fade" })
+
+  -- Gestures
+  hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 ''
