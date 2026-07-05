@@ -43,17 +43,13 @@ EOF
 
 cmd_rebuild() {
   info "Rebuilding NixOS for ${HOSTNAME}..."
-  if command -v nom &>/dev/null; then
-    nh os switch -- --accept-flake-config 2>&1 | nom
-  else
-    nh os switch -- --accept-flake-config
-  fi
+  nh os switch ~/nixos-config
   ok "Rebuild complete"
 }
 
 cmd_update() {
   info "Updating flake inputs..."
-  pushd "$(dirname "$(readlink -f /etc/nixos/flake.nix 2>/dev/null || echo "$PWD")")" >/dev/null
+  pushd ~/nixos-config >/dev/null
   nix flake update
   popd >/dev/null
   info "Rebuilding with updated inputs..."
