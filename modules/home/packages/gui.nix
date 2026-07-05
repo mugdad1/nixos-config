@@ -8,8 +8,7 @@
     firefox-bin
 
     ## Office
-    libreoffice
-
+    onlyoffice-desktopeditors
     ## Utility
     gnome-disk-utility
     zenity
