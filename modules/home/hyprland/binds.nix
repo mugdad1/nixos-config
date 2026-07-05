@@ -131,4 +131,7 @@ in ''
   hl.bind("Caps_Lock",              hl.dsp.exec_cmd("swayosd-client --caps-lock"),        { release = true })
   hl.bind("Scroll_Lock",            hl.dsp.exec_cmd("swayosd-client --scroll-lock"),      { release = true })
   hl.bind("Num_Lock",               hl.dsp.exec_cmd("swayosd-client --num-lock"),         { release = true })
+
+  -- ROG keyboard LED toggle
+  hl.bind(mod .. " + F2", hl.dsp.exec_cmd("rog-kb-toggle"))
 ''
