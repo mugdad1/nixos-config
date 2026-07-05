@@ -1,6 +1,5 @@
 {
   pkgs,
-  lib,
   ...
 }: let
   c = (import ../../gruvbox.nix).css;
@@ -25,16 +24,4 @@ in {
     ''
     + builtins.readFile ./style.css;
   xdg.configFile."swaync/config.json".source = ./config.json;
-
-  systemd.user.services.swaync = {
-    Unit = {
-      ConditionPathExists = "/dev/null-should-not-exist";
-    };
-    Service = {
-      ExecStart = lib.mkForce "/dev/null";
-    };
-    Install = {
-      WantedBy = lib.mkForce [];
-    };
-  };
 }

@@ -38,7 +38,7 @@ in ''
   hl.bind(mod .. " + SHIFT + Escape",  hl.dsp.exec_cmd("power-menu"))
 
   -- Screenshots
-  hl.bind(", Print",                  hl.dsp.exec_cmd("screenshot --copy"))
+  hl.bind("Print",                    hl.dsp.exec_cmd("screenshot --copy"))
   hl.bind(mod .. " + Print",          hl.dsp.exec_cmd("screenshot --save"))
   hl.bind(mod .. " + SHIFT + Print",  hl.dsp.exec_cmd("screenshot --swappy"))
 
@@ -56,8 +56,8 @@ in ''
   hl.bind(mod .. " + up",    hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
   hl.bind(mod .. " + down",  hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
 
-  hl.bind("CTRL ALT + up",   hl.dsp.exec_cmd("hyprctl dispatch focuswindow floating"))
-  hl.bind("CTRL ALT + down", hl.dsp.exec_cmd("hyprctl dispatch focuswindow tiled"))
+  hl.bind("CTRL + ALT + up",   hl.dsp.exec_cmd("hyprctl dispatch focuswindow floating"))
+  hl.bind("CTRL + ALT + down", hl.dsp.exec_cmd("hyprctl dispatch focuswindow tiled"))
 
   -- Workspaces
   for i = 1, 10 do
@@ -98,10 +98,10 @@ in ''
   hl.bind(mod .. " + ALT + l",     hl.dsp.window.move({ x = 80, y = 0, relative = true }))
 
   -- Media
-  hl.bind(", XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { repeating = true })
-  hl.bind(", XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { repeating = true })
-  hl.bind(", XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { repeating = true })
-  hl.bind(", XF86AudioStop", hl.dsp.exec_cmd("playerctl stop"),       { repeating = true })
+  hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
+  hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { locked = true })
+  hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+  hl.bind("XF86AudioStop", hl.dsp.exec_cmd("playerctl stop"),       { locked = true })
 
   -- Mouse scroll
   hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e-1" }))
@@ -115,5 +115,20 @@ in ''
   hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
   -- Lid switch
-  hl.bind("Lid Switch", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"), { locked = true })
+  hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"), { locked = true })
+
+  -- SwayOSD
+  hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"), { locked = true })
+  hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("toggle-mic"),                                  { locked = true })
+  hl.bind(mod .. " + XF86MonBrightnessUp",   hl.dsp.exec_cmd("swayosd-client --brightness 100"), { locked = true })
+  hl.bind(mod .. " + XF86MonBrightnessDown", hl.dsp.exec_cmd("swayosd-client --brightness 0"),   { locked = true })
+  hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("swayosd-client --brightness raise"), { locked = true, repeating = true })
+  hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("swayosd-client --brightness lower"), { locked = true, repeating = true })
+  hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume +2"), { locked = true, repeating = true })
+  hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume -2"), { locked = true, repeating = true })
+  hl.bind(mod .. " + f11",          hl.dsp.exec_cmd("swayosd-client --output-volume +2"), { repeating = true })
+  hl.bind(mod .. " + f12",          hl.dsp.exec_cmd("swayosd-client --output-volume -2"), { repeating = true })
+  hl.bind("Caps_Lock",              hl.dsp.exec_cmd("swayosd-client --caps-lock"),        { release = true })
+  hl.bind("Scroll_Lock",            hl.dsp.exec_cmd("swayosd-client --scroll-lock"),      { release = true })
+  hl.bind("Num_Lock",               hl.dsp.exec_cmd("swayosd-client --num-lock"),         { release = true })
 ''

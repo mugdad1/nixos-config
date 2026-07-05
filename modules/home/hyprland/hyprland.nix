@@ -17,19 +17,6 @@ in {
     wayland
   ];
 
-  systemd.user.targets.hyprland-session.Unit.Wants = [
-    "xdg-desktop-autostart.target"
-  ];
-
-  wayland.windowManager.hyprland = {
-    enable = true;
-    package = null;
-    portalPackage = null;
-
-    xwayland.enable = true;
-    systemd.enable = true;
-  };
-
   xdg.configFile."hypr/hyprland.lua".text = ''
     -- mugdad's Hyprland configuration
     -- Lua format (Hyprland 0.55+)
@@ -39,8 +26,8 @@ in {
     ---- MONITORS ----
     ------------------
 
-    -- Managed by nwg-displays (writes monitors.lua directly)
-
+    -- Managed by nwg-displays
+    dofile(os.getenv("HOME") .. "/.config/hypr/monitors.lua")
 
     -------------------------
     ---- ENVIRONMENT VARS ----

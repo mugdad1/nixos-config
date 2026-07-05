@@ -15,6 +15,7 @@
       hl.exec_cmd("udiskie --automount --notify --smart-tray")
       hl.exec_cmd("hyprctl setcursor Bibata-Modern-Ice 24")
       hl.exec_cmd("init-wallpaper")
+      hl.exec_cmd("swayosd-server")
       hl.exec_cmd("${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1")
   end)
 ''

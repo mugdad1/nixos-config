@@ -12,7 +12,7 @@ in ''
           border_size = 2,
 
           col = {
-              active_border   = "rgb(${c.green}) rgb(${c.red}) 45deg",
+              active_border   = { colors = { "rgb(${c.green})", "rgb(${c.red})" }, angle = 45 },
               inactive_border = "rgb(${c.bg2})",
           },
 
