@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-FLAKE_DIR="$(dirname "$(readlink -f "$(which nh)")")"
+FLAKE_DIR="$HOME/nixos-config"
 HOSTNAME=$(hostname)
 VERSION="1.0.0"
 
@@ -43,13 +43,13 @@ EOF
 
 cmd_rebuild() {
   info "Rebuilding NixOS for ${HOSTNAME}..."
-  nh os switch ~/nixos-config
+  sudo nh os switch "${FLAKE_DIR}"
   ok "Rebuild complete"
 }
 
 cmd_update() {
   info "Updating flake inputs..."
-  pushd ~/nixos-config >/dev/null
+  pushd "${FLAKE_DIR}" >/dev/null
   nix flake update
   popd >/dev/null
   info "Rebuilding with updated inputs..."
