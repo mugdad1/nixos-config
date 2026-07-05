@@ -35,6 +35,12 @@
     HandleLidSwitchExternalPower = "ignore";
   };
 
+  environment.etc."libinput/local-overrides.quirks".text = ''
+    [Trackpoint Buttons Only]
+    MatchName=*Elan TrackPoint*
+    AttrEventCode=-REL_X;-REL_Y
+  '';
+
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";
   };

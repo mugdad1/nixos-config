@@ -1,135 +1,119 @@
-{...}: {
-  wayland.windowManager.hyprland.settings = {
-    binds = {
-      scroll_event_delay = 100;
-      movefocus_cycles_fullscreen = true;
-    };
+{...}: let
+  mod = "SUPER";
+in ''
+  ---------------------
+  ---- KEYBINDINGS ----
+  ---------------------
 
-    bind = [
-      # show keybinds list
-      "$mod, F1, exec, show-keybinds"
+  local mod = "${mod}"
 
-      # keybindings
-      "$mod, Return, exec, ghostty --gtk-single-instance=true"
-      "ALT, Return, exec, [float; size 1111 700] ghostty"
-      "$mod SHIFT, Return, exec, [fullscreen] ghostty"
-      "$mod, B, exec, zen-beta"
-      "$mod, Q, killactive,"
-      "$mod, F, fullscreen, 0"
-      "$mod SHIFT, F, fullscreen, 1"
-      "$mod, Space, exec, toggle-float"
-      "$mod, D, exec, toggle-rofi rofi -show drun"
+  -- App launchers
+  hl.bind(mod .. " + RETURN",      hl.dsp.exec_cmd("ghostty --gtk-single-instance=true"))
+  hl.bind("ALT + RETURN",          hl.dsp.exec_cmd("[float; size 1111 700] ghostty"))
+  hl.bind(mod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[fullscreen] ghostty"))
+  hl.bind(mod .. " + B",           hl.dsp.exec_cmd("zen-beta"))
+  hl.bind(mod .. " + D",           hl.dsp.exec_cmd("toggle-rofi rofi -show drun"))
+  hl.bind(mod .. " + E",           hl.dsp.exec_cmd("nemo"))
+  hl.bind("ALT + E",               hl.dsp.exec_cmd("[float; size 1111 700] nemo"))
+  hl.bind(mod .. " + W",           hl.dsp.exec_cmd("wallpaper-picker"))
+  hl.bind(mod .. " + SHIFT + W",   hl.dsp.exec_cmd("[float; size 925 615] waypaper"))
+  hl.bind(mod .. " + N",           hl.dsp.exec_cmd("swaync-client -t -sw"))
+  hl.bind(mod .. " + C",           hl.dsp.exec_cmd("hyprpicker -a"))
+  hl.bind(mod .. " + equal",       hl.dsp.exec_cmd("woomer"))
+  hl.bind(mod .. " + XF86Display", hl.dsp.exec_cmd("toggle-display"))
+  hl.bind(mod .. " + F1",          hl.dsp.exec_cmd("show-keybinds"))
 
-      "$mod, Escape, exec, hyprlock"
-      "ALT, Escape, exec, hyprlock & systemctl suspend"
-      "$mod SHIFT, Escape, exec, power-menu"
-      "$mod, P, exec, power-profile-menu"
-      "$mod, T, exec, toggle-opacity"
-      "$mod, E, exec, nemo"
-      "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
-      "$mod SHIFT, B, exec, toggle-waybar"
-      "$mod, C, exec, hyprpicker -a"
-      "$mod, W,exec, wallpaper-picker"
-      "$mod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
-      "$mod, N, exec, swaync-client -t -sw"
-      "$mod, equal, exec, woomer"
+  -- Window management
+  hl.bind(mod .. " + Q",           hl.dsp.window.close())
+  hl.bind(mod .. " + F",           hl.dsp.window.fullscreen())
+  hl.bind(mod .. " + SHIFT + F",   hl.dsp.window.fullscreen({ maximize = true }))
+  hl.bind(mod .. " + Space",       hl.dsp.exec_cmd("toggle-float"))
+  hl.bind(mod .. " + P",           hl.dsp.exec_cmd("power-profile-menu"))
+  hl.bind(mod .. " + T",           hl.dsp.exec_cmd("toggle-opacity"))
+  hl.bind(mod .. " + SHIFT + B",   hl.dsp.exec_cmd("toggle-waybar"))
 
-      "$mod, XF86Display, exec, toggle-display"
+  -- Lock and power
+  hl.bind(mod .. " + Escape",          hl.dsp.exec_cmd("hyprlock"))
+  hl.bind("ALT + Escape",              hl.dsp.exec_cmd("hyprlock & systemctl suspend"))
+  hl.bind(mod .. " + SHIFT + Escape",  hl.dsp.exec_cmd("power-menu"))
 
-      # screenshot
-      ", Print, exec, screenshot --copy"
-      "$mod, Print, exec, screenshot --save"
-      "$mod SHIFT, Print, exec, screenshot --swappy"
+  -- Screenshots
+  hl.bind(", Print",                  hl.dsp.exec_cmd("screenshot --copy"))
+  hl.bind(mod .. " + Print",          hl.dsp.exec_cmd("screenshot --save"))
+  hl.bind(mod .. " + SHIFT + Print",  hl.dsp.exec_cmd("screenshot --swappy"))
 
-      # OCR
-      "$mod CTRL, O, exec, ocr"
+  -- OCR
+  hl.bind(mod .. " + CTRL + O",       hl.dsp.exec_cmd("ocr"))
 
-      # switch focus
-      "$mod, h, movefocus, l"
-      "$mod, j, movefocus, d"
-      "$mod, k, movefocus, u"
-      "$mod, l, movefocus, r"
+  -- Focus
+  hl.bind(mod .. " + h",    hl.dsp.focus({ direction = "left" }))
+  hl.bind(mod .. " + j",    hl.dsp.focus({ direction = "down" }))
+  hl.bind(mod .. " + k",    hl.dsp.focus({ direction = "up" }))
+  hl.bind(mod .. " + l",    hl.dsp.focus({ direction = "right" }))
 
-      "$mod, left,  alterzorder, top"
-      "$mod, right, alterzorder, top"
-      "$mod, up,    alterzorder, top"
-      "$mod, down,  alterzorder, top"
+  hl.bind(mod .. " + left",  hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
+  hl.bind(mod .. " + right", hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
+  hl.bind(mod .. " + up",    hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
+  hl.bind(mod .. " + down",  hl.dsp.exec_cmd("hyprctl dispatch alterzorder top"))
 
-      "CTRL ALT, up, exec, hyprctl dispatch focuswindow floating"
-      "CTRL ALT, down, exec, hyprctl dispatch focuswindow tiled"
+  hl.bind("CTRL ALT + up",   hl.dsp.exec_cmd("hyprctl dispatch focuswindow floating"))
+  hl.bind("CTRL ALT + down", hl.dsp.exec_cmd("hyprctl dispatch focuswindow tiled"))
 
-      # switch workspace
-      "$mod, 1, workspace, 1"
-      "$mod, 2, workspace, 2"
-      "$mod, 3, workspace, 3"
-      "$mod, 4, workspace, 4"
-      "$mod, 5, workspace, 5"
-      "$mod, 6, workspace, 6"
-      "$mod, 7, workspace, 7"
-      "$mod, 8, workspace, 8"
-      "$mod, 9, workspace, 9"
-      "$mod, 0, workspace, 10"
+  -- Workspaces
+  for i = 1, 10 do
+      local key = i % 10
+      hl.bind(mod .. " + " .. key,          hl.dsp.focus({ workspace = i }))
+      hl.bind(mod .. " + SHIFT + " .. key,  hl.dsp.window.move({ workspace = i }))
+  end
+  hl.bind(mod .. " + CTRL + c", hl.dsp.exec_cmd("hyprctl dispatch movetoworkspace empty"))
 
-      # same as above, but switch to the workspace
-      "$mod SHIFT, 1, movetoworkspacesilent, 1" # movetoworkspacesilent
-      "$mod SHIFT, 2, movetoworkspacesilent, 2"
-      "$mod SHIFT, 3, movetoworkspacesilent, 3"
-      "$mod SHIFT, 4, movetoworkspacesilent, 4"
-      "$mod SHIFT, 5, movetoworkspacesilent, 5"
-      "$mod SHIFT, 6, movetoworkspacesilent, 6"
-      "$mod SHIFT, 7, movetoworkspacesilent, 7"
-      "$mod SHIFT, 8, movetoworkspacesilent, 8"
-      "$mod SHIFT, 9, movetoworkspacesilent, 9"
-      "$mod SHIFT, 0, movetoworkspacesilent, 10"
-      "$mod CTRL, c, movetoworkspace, empty"
+  -- Window movement
+  hl.bind(mod .. " + SHIFT + left",  hl.dsp.window.move({ direction = "left" }))
+  hl.bind(mod .. " + SHIFT + right", hl.dsp.window.move({ direction = "right" }))
+  hl.bind(mod .. " + SHIFT + up",    hl.dsp.window.move({ direction = "up" }))
+  hl.bind(mod .. " + SHIFT + down",  hl.dsp.window.move({ direction = "down" }))
+  hl.bind(mod .. " + SHIFT + h",     hl.dsp.window.move({ direction = "left" }))
+  hl.bind(mod .. " + SHIFT + j",     hl.dsp.window.move({ direction = "down" }))
+  hl.bind(mod .. " + SHIFT + k",     hl.dsp.window.move({ direction = "up" }))
+  hl.bind(mod .. " + SHIFT + l",     hl.dsp.window.move({ direction = "right" }))
 
-      # window control
-      "$mod SHIFT, left, movewindow, l"
-      "$mod SHIFT, right, movewindow, r"
-      "$mod SHIFT, up, movewindow, u"
-      "$mod SHIFT, down, movewindow, d"
-      "$mod SHIFT, h, movewindow, l"
-      "$mod SHIFT, j, movewindow, d"
-      "$mod SHIFT, k, movewindow, u"
-      "$mod SHIFT, l, movewindow, r"
+  -- Resize
+  hl.bind(mod .. " + CTRL + left",  hl.dsp.window.resize({ x = -80, y = 0 }))
+  hl.bind(mod .. " + CTRL + right", hl.dsp.window.resize({ x = 80, y = 0 }))
+  hl.bind(mod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = -80 }))
+  hl.bind(mod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y = 80 }))
+  hl.bind(mod .. " + CTRL + h",     hl.dsp.window.resize({ x = -80, y = 0 }))
+  hl.bind(mod .. " + CTRL + j",     hl.dsp.window.resize({ x = 0, y = 80 }))
+  hl.bind(mod .. " + CTRL + k",     hl.dsp.window.resize({ x = 0, y = -80 }))
+  hl.bind(mod .. " + CTRL + l",     hl.dsp.window.resize({ x = 80, y = 0 }))
 
-      "$mod CTRL, left, resizeactive, -80 0"
-      "$mod CTRL, right, resizeactive, 80 0"
-      "$mod CTRL, up, resizeactive, 0 -80"
-      "$mod CTRL, down, resizeactive, 0 80"
-      "$mod CTRL, h, resizeactive, -80 0"
-      "$mod CTRL, j, resizeactive, 0 80"
-      "$mod CTRL, k, resizeactive, 0 -80"
-      "$mod CTRL, l, resizeactive, 80 0"
+  -- Move active window
+  hl.bind(mod .. " + ALT + left",  hl.dsp.window.move({ x = -80, y = 0, relative = true }))
+  hl.bind(mod .. " + ALT + right", hl.dsp.window.move({ x = 80, y = 0, relative = true }))
+  hl.bind(mod .. " + ALT + up",    hl.dsp.window.move({ x = 0, y = -80, relative = true }))
+  hl.bind(mod .. " + ALT + down",  hl.dsp.window.move({ x = 0, y = 80, relative = true }))
+  hl.bind(mod .. " + ALT + h",     hl.dsp.window.move({ x = -80, y = 0, relative = true }))
+  hl.bind(mod .. " + ALT + j",     hl.dsp.window.move({ x = 0, y = 80, relative = true }))
+  hl.bind(mod .. " + ALT + k",     hl.dsp.window.move({ x = 0, y = -80, relative = true }))
+  hl.bind(mod .. " + ALT + l",     hl.dsp.window.move({ x = 80, y = 0, relative = true }))
 
-      "$mod ALT, left, moveactive,  -80 0"
-      "$mod ALT, right, moveactive, 80 0"
-      "$mod ALT, up, moveactive, 0 -80"
-      "$mod ALT, down, moveactive, 0 80"
-      "$mod ALT, h, moveactive,  -80 0"
-      "$mod ALT, j, moveactive, 0 80"
-      "$mod ALT, k, moveactive, 0 -80"
-      "$mod ALT, l, moveactive, 80 0"
+  -- Media
+  hl.bind(", XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { repeating = true })
+  hl.bind(", XF86AudioNext", hl.dsp.exec_cmd("playerctl next"),       { repeating = true })
+  hl.bind(", XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"),   { repeating = true })
+  hl.bind(", XF86AudioStop", hl.dsp.exec_cmd("playerctl stop"),       { repeating = true })
 
-      # media and volume controls
-      ", XF86AudioPlay,exec, playerctl play-pause"
-      ", XF86AudioNext,exec, playerctl next"
-      ", XF86AudioPrev,exec, playerctl previous"
-      ", XF86AudioStop,exec, playerctl stop"
+  -- Mouse scroll
+  hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e-1" }))
+  hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e+1" }))
 
-      "$mod, mouse_down, workspace, e-1"
-      "$mod, mouse_up, workspace, e+1"
+  -- Clipboard
+  hl.bind(mod .. " + V", hl.dsp.exec_cmd([[toggle-rofi "cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"]]))
 
-      # clipboard manager
-      "$mod, V, exec, toggle-rofi \"cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\""
-    ];
+  -- Mouse binds
+  hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
+  hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
-    # mouse binding
-    bindm = [
-      "$mod, mouse:272, movewindow"
-      "$mod, mouse:273, resizewindow"
-    ];
-
-    bindl = [",switch:on:Lid Switch, exec, pidof hyprlock || hyprlock"];
-  };
-}
+  -- Lid switch
+  hl.bind("Lid Switch", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"), { locked = true })
+''
