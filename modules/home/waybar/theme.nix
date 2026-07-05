@@ -1,4 +1,4 @@
-{
+rec {
   css = import ../../gruvbox.nix;
   font = "Iosevka Nerd Font";
   font_size = "18px";

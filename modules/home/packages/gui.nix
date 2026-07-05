@@ -5,7 +5,7 @@
     obs-studio
     pavucontrol
     vlc
-firefox-bin-unwrapped
+    firefox-bin
 
     ## Office
     libreoffice
@@ -15,7 +15,7 @@ firefox-bin-unwrapped
     zenity
     kdePackages.polkit-kde-agent-1
     ## Creativity
-mission-center
+    mission-center
     ##
     filen-desktop
 

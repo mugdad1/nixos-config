@@ -7,6 +7,7 @@
   inputs,
   ...
 }: let
+  keyboard-brightness = "/sys/class/leds/asus::kbd_backlight/brightness";
   keyboard-cycle-script = pkgs.writeShellScriptBin "rog-keyboard-cycle" ''
     STEPS=15
     COLORS=(fb4934 fe8019 fabd2f b8bb26 83a598 458588 d3869b b16286)
@@ -15,6 +16,12 @@
     hex() { printf '%02x%02x%02x' "$1" "$2" "$3"; }
 
     while true; do
+      # pause when keyboard LEDs are turned off via FN+F4
+      if [ "$(cat ${keyboard-brightness} 2>/dev/null)" = "0" ]; then
+        sleep 1
+        continue
+      fi
+
       for ((i = 0; i < N; i++)); do
         j=$(( (i + 1) % N ))
         c1=''${COLORS[i]}; c2=''${COLORS[j]}

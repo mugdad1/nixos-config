@@ -1,5 +1,40 @@
-{
-  # Raw hex (no #) — for Nix/Hyprland/Limine
+rec {
+  hexVals = {
+    "0" = 0;
+    "1" = 1;
+    "2" = 2;
+    "3" = 3;
+    "4" = 4;
+    "5" = 5;
+    "6" = 6;
+    "7" = 7;
+    "8" = 8;
+    "9" = 9;
+    "A" = 10;
+    "B" = 11;
+    "C" = 12;
+    "D" = 13;
+    "E" = 14;
+    "F" = 15;
+    "a" = 10;
+    "b" = 11;
+    "c" = 12;
+    "d" = 13;
+    "e" = 14;
+    "f" = 15;
+  };
+
+  hexToDec = hex: let
+    v = c: hexVals.${c};
+    r = v (builtins.substring 0 1 hex) * 16 + v (builtins.substring 1 1 hex);
+    g = v (builtins.substring 2 1 hex) * 16 + v (builtins.substring 3 1 hex);
+    b = v (builtins.substring 4 1 hex) * 16 + v (builtins.substring 5 1 hex);
+  in {inherit r g b;};
+
+  hexToRgba = hex: alpha: let
+    rgb = hexToDec hex;
+  in "rgba(${toString rgb.r}, ${toString rgb.g}, ${toString rgb.b}, ${toString alpha})";
+
   raw = {
     bg0_h = "1D2021";
     bg0 = "282828";
@@ -31,7 +66,6 @@
     bright_orange = "FE8019";
   };
 
-  # CSS hex (with #) — for CSS files
   css = {
     bg0_h = "#1D2021";
     bg0 = "#282828";
