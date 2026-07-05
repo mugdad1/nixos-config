@@ -219,6 +219,7 @@ in {
           dockerls.enable = true; # Docker
           taplo.enable = true; # TOML
           terraformls.enable = true; # Terraform
+          hyprls.enable = true; # Hyprland
         };
       };
 
@@ -260,6 +261,8 @@ in {
               "prettier"
             ];
             terraform = ["terraform_fmt"];
+            sh = ["shfmt"];
+            bash = ["shfmt"];
             "*" = ["trim_whitespace"];
           };
           format_on_save = {
@@ -279,6 +282,14 @@ in {
             "buffer"
             "path"
           ];
+        };
+      };
+
+      luasnip = {
+        enable = true;
+        settings = {
+          history = true;
+          updateevents = "TextChanged,TextChangedI";
         };
       };
     })

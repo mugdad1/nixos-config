@@ -30,6 +30,10 @@
   services.throttled.enable = true;
   services.tlp.enable = false;
 
+  boot.postBootCommands = ''
+    echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold
+  '';
+
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "ignore";

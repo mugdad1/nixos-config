@@ -22,10 +22,10 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
-      rebuild = "nh os switch ~/nixos-config";
-      update = "nh os switch ~/nixos-config --update";
+      rebuild = "nh os switch ~/nixos-config 2>&1 | nom";
+      update = "nh os switch ~/nixos-config --update 2>&1 | nom";
       nft = "nh-notify nh os test";
-      nc = "nh-notify nh clean all --keep 5";
+      nc = "nh-notify nh clean all --keep 1";
       nsearch = "nh search";
 
       # python
