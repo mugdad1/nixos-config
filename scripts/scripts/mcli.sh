@@ -43,7 +43,7 @@ EOF
 
 cmd_rebuild() {
   info "Rebuilding NixOS for ${HOSTNAME}..."
-  sudo nh os switch "${FLAKE_DIR}"
+  nh os switch "${FLAKE_DIR}"
   ok "Rebuild complete"
 }
 
