@@ -1,15 +1,16 @@
 {
+  css = import ../../gruvbox.nix;
   font = "Iosevka Nerd Font";
   font_size = "18px";
   font_weight = "bold";
-  text_color = "#FBF1C7";
-  background_1 = "#282828";
-  border_color = "#928374";
-  red = "#CC241D";
-  green = "#98971A";
-  yellow = "#FABD2F";
-  blue = "#458588";
-  cyan = "#689D6A";
-  orange_bright = "#FE8019";
+  text_color = css.css.fg0;
+  background_1 = css.css.bg0;
+  border_color = css.css.light_gray;
+  red = css.css.red;
+  green = css.css.green;
+  yellow = css.css.bright_yellow;
+  blue = css.css.blue;
+  cyan = css.css.aqua;
+  orange_bright = css.css.bright_orange;
   opacity = "1";
 }

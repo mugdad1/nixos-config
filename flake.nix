@@ -1,5 +1,5 @@
 {
-  description = "FrostPhoenix's nixos configuration";
+  description = "mugdad's nixos configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -26,7 +26,11 @@
     };
   };
 
-  outputs = { nixpkgs, self, ... } @ inputs: let
+  outputs = {
+    nixpkgs,
+    self,
+    ...
+  } @ inputs: let
     username = "mugdad";
     system = "x86_64-linux";
     lib = nixpkgs.lib;
@@ -55,6 +59,30 @@
     nixosConfigurations = {
       rog = mkHost "rog" "amd-nvidia-hybrid";
       t480s = mkHost "t480s" "intel";
+
+      iso = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          "${nixpkgs}/nixos/modules/installer/cd-dvd/iso-image.nix"
+          ./modules/core
+          ({
+            pkgs,
+            lib,
+            ...
+          }: {
+            system.stateVersion = "26.05";
+            image.fileName = "nixos-26.05.iso";
+            services.openssh.enable = true;
+            services.getty.autologinUser = "root";
+            nixpkgs.config.allowUnfree = true;
+          })
+        ];
+        specialArgs = {
+          host = "iso";
+          gpu = "";
+          inherit self inputs username;
+        };
+      };
     };
   };
 }

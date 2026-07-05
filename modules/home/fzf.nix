@@ -1,4 +1,6 @@
-{...}: {
+{...}: let
+  c = (import ../gruvbox.nix).raw;
+in {
   programs.fzf = {
     enable = true;
 
@@ -17,10 +19,10 @@
 
     ## Theme
     defaultOptions = [
-      "--color=fg:-1,fg+:#FBF1C7,bg:-1,bg+:#282828"
-      "--color=hl:#98971A,hl+:#B8BB26,info:#928374,marker:#D65D0E"
-      "--color=prompt:#CC241D,spinner:#689D6A,pointer:#D65D0E,header:#458588"
-      "--color=border:#665C54,label:#928374,query:#FBF1C7"
+      "--color=fg:-1,fg+:${c.fg0},bg:-1,bg+:${c.bg0}"
+      "--color=hl:${c.green},hl+:${c.bright_green},info:${c.light_gray},marker:${c.orange}"
+      "--color=prompt:${c.red},spinner:${c.aqua},pointer:${c.orange},header:${c.blue}"
+      "--color=border:${c.bg3},label:${c.light_gray},query:${c.fg0}"
       "--border='double' --border-label='' --preview-window='border-sharp' --prompt='> '"
       "--marker='>' --pointer='>' --separator='─' --scrollbar='│'"
       "--info='right'"

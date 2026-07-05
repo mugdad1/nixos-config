@@ -48,7 +48,7 @@ Username:   $CURRENT_USERNAME
 Host:       ${HOST:-unknown}
 GPU:        ${GPU:-unknown}"
 
-if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "FrostPhoenix Installer"); then
+if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "NixOS Installer"); then
     exit 0
 fi
 

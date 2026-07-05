@@ -1,4 +1,6 @@
-{...}: {
+{...}: let
+  c = (import ../../gruvbox.nix).raw;
+in {
   wayland.windowManager.hyprland.settings = {
     "$mod" = "SUPER";
     "source" = "~/.config/hypr/monitors.conf";
@@ -25,8 +27,8 @@
       gaps_out = 12;
       border_size = 2;
 
-      "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
-      "col.inactive_border" = "rgb(504945)";
+      "col.active_border" = "rgb(${c.green}) rgb(${c.red}) 45deg";
+      "col.inactive_border" = "rgb(${c.bg2})";
     };
 
     misc = {

@@ -1,17 +1,3 @@
-:root {
-    --bg-primary: #1d2021;
-    --bg-secondary: #282828;
-    --bg-button: #504945;
-    --bg-button-hover: #665c54;
-    --text-primary: #EBDBB2;
-    --text-disabled: #7c6f64;
-    --border-color: #928374;
-    --priority-low: #EBDBB2;
-    --priority-normal: #83A598;
-    --priority-critical: #FB4934;
-    --transition-standard: 0.15s ease-in-out;
-}
-
 /* Base styles */
 * {
     outline: none;
@@ -193,7 +179,7 @@ scrollbar slider {
 
 .notification-content .inline-reply .inline-reply-button {
     margin-left: 4px;
-    background: #3c3836;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 0px;
     color: var(--text-primary);
@@ -201,7 +187,7 @@ scrollbar slider {
 
 .notification-content .inline-reply .inline-reply-button:disabled {
     background: initial;
-    color: #928374;
+    color: var(--text-disabled);
     border: 1px solid var(--border-color);
     border-color: transparent;
 }
