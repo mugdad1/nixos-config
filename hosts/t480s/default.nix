@@ -30,9 +30,15 @@
   services.throttled.enable = true;
   services.tlp.enable = false;
 
-  boot.postBootCommands = ''
-    echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold
-  '';
+  systemd.services.battery-threshold = {
+    description = "Set battery charge threshold";
+    after = ["multi-user.target"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'";
+    };
+  };
 
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
