@@ -189,7 +189,12 @@ in {
                     echo 1 > "$MUX_PATH"
                   fi
                   ;;
-                hybrid | manual)
+                hybrid)
+                  if [ "$CURRENT_MUX" != "1" ]; then
+                    echo 1 > "$MUX_PATH"
+                  fi
+                  ;;
+                manual)
                   if [ "$CURRENT_MUX" != "0" ]; then
                     echo 0 > "$MUX_PATH"
                   fi

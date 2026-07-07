@@ -66,6 +66,9 @@ run_gpu_cmd() {
             ;;
         hybrid)
             pkexec env PATH="$PATH" cardwire set hybrid
+            if [ "$mux" != "1" ]; then
+                pkexec env PATH="$PATH" bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+            fi
             ;;
     esac
 

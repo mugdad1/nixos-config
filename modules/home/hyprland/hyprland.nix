@@ -26,8 +26,8 @@ in {
     ---- MONITORS ----
     ------------------
 
-    -- Managed by nwg-displays
-    dofile(os.getenv("HOME") .. "/.config/hypr/monitors.lua")
+    -- Managed by nwg-displays (ignore if missing — fresh install)
+    pcall(dofile, os.getenv("HOME") .. "/.config/hypr/monitors.lua")
 
     -------------------------
     ---- ENVIRONMENT VARS ----
