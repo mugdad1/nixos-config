@@ -5,20 +5,19 @@
     obs-studio
     pavucontrol
     vlc
+
+    ## Browsers
     firefox-bin
 
-    ## Office
+    ## Office / Productivity
     onlyoffice-desktopeditors
-    ## Utility
+    filen-desktop
+
+    ## System / Utility
     gnome-disk-utility
     zenity
     kdePackages.polkit-kde-agent-1
-    ## Creativity
     mission-center
-    ##
-    filen-desktop
-
-    ## Night light
     hyprsunset
   ];
 }
