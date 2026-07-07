@@ -10,11 +10,15 @@
   keyboard-brightness = "/sys/class/leds/asus::kbd_backlight/brightness";
   keyboard-lock = "/tmp/rog-kb-cycle.lock";
   keyboard-cycle-script = pkgs.writeShellScriptBin "rog-keyboard-cycle" ''
+    BRIGHTNESS_PATH="${keyboard-brightness}"
     STEPS=15
     COLORS=(fb4934 fe8019 fabd2f b8bb26 83a598 458588 d3869b b16286)
     N=''${#COLORS[@]}
 
     hex() { printf '%02x%02x%02x' "$1" "$2" "$3"; }
+
+    # Ensure keyboard backlight is on
+    echo 3 > "$BRIGHTNESS_PATH" 2>/dev/null || true
 
     # Start paused - run rog-kb-toggle to begin
     touch ${keyboard-lock}
@@ -45,8 +49,10 @@
     done
   '';
   keyboard-toggle-script = pkgs.writeShellScriptBin "rog-kb-toggle" ''
+    BRIGHTNESS_PATH="${keyboard-brightness}"
     if [ -f ${keyboard-lock} ]; then
       rm -f ${keyboard-lock}
+      echo 3 > "$BRIGHTNESS_PATH" 2>/dev/null || true
       echo "LED cycling ON"
     else
       touch ${keyboard-lock}
