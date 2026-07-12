@@ -44,6 +44,8 @@ in {
 
     kernelParams = lib.mkBefore [
       "quiet"
+      "pcie_aspm=off"
+      "nvidia.NVreg_DynamicPowerManagement=0x00000000"
     ];
 
     kernelPackages = pkgs.linuxPackages_latest;
