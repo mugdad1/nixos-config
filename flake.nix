@@ -79,7 +79,7 @@
         ];
         specialArgs = {
           host = "iso";
-          gpu = "amd-nvidia-hybrid";
+          gpu = "intel";
           inherit self inputs username;
         };
       };
