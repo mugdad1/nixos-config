@@ -22,7 +22,6 @@ in {
       python312Packages.ipython
     ]
     ++ lib.optionals (host == "rog") [
-      jdk
       mesa-demos
     ];
 
