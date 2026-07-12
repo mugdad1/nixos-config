@@ -10,7 +10,7 @@ performance="<span color='${red}'>󰓅 </span>"
 
 mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2> /dev/null)
 
-amd_pci="0000:05:00.0"
+amd_pci="0000:06:00.0"
 nvidia_pci="0000:01:00.0"
 
 amd_id=$(cardwire list --json 2> /dev/null | jq -r "to_entries[] | select(.value.pci == \"$amd_pci\") | .value.id")
