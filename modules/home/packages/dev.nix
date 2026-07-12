@@ -22,18 +22,10 @@ in {
       python312Packages.ipython
     ]
     ++ lib.optionals (host == "rog") [
-      ## Android / Flutter
-      flutter
       jdk
       mesa-demos
-      android-studio
-      androidsdk
     ];
 
   home.sessionVariables =
-    { CHROME_EXECUTABLE = "zen-beta"; }
-    // lib.optionalAttrs (host == "rog") {
-      ANDROID_SDK_ROOT = "${pkgs.androidsdk}/libexec/android-sdk";
-      ANDROID_HOME = "${pkgs.androidsdk}/libexec/android-sdk";
-    };
+    { CHROME_EXECUTABLE = "zen-beta"; };
 }
