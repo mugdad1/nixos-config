@@ -40,7 +40,7 @@
 
         nvidia = {
           modesetting.enable = true;
-          open = true;
+          open = false;
           package = config.boot.kernelPackages.nvidiaPackages.stable;
           powerManagement.enable = true;
           powerManagement.finegrained = true;
@@ -126,9 +126,11 @@
             # Re-apply GPU mode so it survives reboots
             if [ -f "$MODE_FILE" ]; then
               MODE=$(jq -r '.mode' "$MODE_FILE")
-              if [ "$MODE" = "integrated" ] || [ "$MODE" = "hybrid" ]; then
+              if [ "$MODE" = "integrated" ] || [ "$MODE" = "hybrid" ] || [ "$MODE" = "manual" ]; then
                 cardwire set "$MODE" 2>/dev/null || true
               fi
+            else
+              cardwire set hybrid 2>/dev/null || true
             fi
 
             # Set MUX switch based on the active mode
