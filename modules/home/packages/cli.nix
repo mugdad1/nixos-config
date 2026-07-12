@@ -7,7 +7,7 @@
     ripdrag # drag-and-drop from terminal
     unzip
     wget
-
+btop
     ## Media / processing
     ffmpeg
     yt-dlp-light
