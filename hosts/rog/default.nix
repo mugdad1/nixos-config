@@ -40,10 +40,8 @@
 
         nvidia = {
           modesetting.enable = true;
-          open = false;
+          open = true;
           package = config.boot.kernelPackages.nvidiaPackages.stable;
-          powerManagement.enable = false;
-          powerManagement.finegrained = false;
 
           prime = {
             offload = {
@@ -99,7 +97,7 @@
         enable = true;
         settings = {
           auto_apply_gpu_state = true;
-          experimental_nvidia_block = true;
+          experimental_nvidia_block = false;
           battery_auto_switch = false;
         };
       };
