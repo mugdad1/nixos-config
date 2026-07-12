@@ -1,5 +1,9 @@
 {pkgs, lib, ...}: {
   security = {
+    sudo = {
+      enable = true;
+      wheelNeedsPassword = false;
+    };
     polkit.enable = true;
     rtkit.enable = true;
 
