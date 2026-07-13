@@ -9,7 +9,7 @@
       diff = "delta --diff-so-fancy --side-by-side";
       less = "bat";
       copy = "wl-copy";
-      py = "python";
+      py = "python3";
       ipy = "ipython";
       dsize = "du -hs";
       open = "xdg-open";

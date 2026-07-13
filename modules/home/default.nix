@@ -21,6 +21,7 @@
     ./swaync/swaync.nix # notification daemon
     ./waybar # status bar
     ./waypaper.nix # GUI wallpaper picker
+    ./wallpapers.nix # deploy repo wallpapers into ~/Pictures/wallpapers
     ./xdg-mimes.nix # xdg config
     ./zsh # shell
   ];
