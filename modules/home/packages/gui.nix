@@ -19,7 +19,6 @@
     kdePackages.polkit-kde-agent-1
     mission-center
     hyprsunset
-
-   
+    supertuxkart
   ];
 }
