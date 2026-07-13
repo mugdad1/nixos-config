@@ -4,7 +4,6 @@
       # Utils
       c = "clear";
       cd = "z";
-      tt = "gtrash put";
       cat = "bat";
 
       diff = "delta --diff-so-fancy --side-by-side";
@@ -13,7 +12,6 @@
       py = "python";
       ipy = "ipython";
       dsize = "du -hs";
-      pdf = "tdf";
       open = "xdg-open";
       space = "ncdu";
       man = "batman";

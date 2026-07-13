@@ -1,6 +1,10 @@
-{lib, ...}: let
+{
+  lib,
+  variables,
+  ...
+}: let
   defaultApps = {
-    text = ["ghostty.desktop"];
+    text = ["${variables.terminal}.desktop"];
     image = ["imv-dir.desktop"];
     audio = ["vlc.desktop"];
     video = ["vlc.desktop"];
@@ -72,9 +76,4 @@
 in {
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = associations;
-
-  home.sessionVariables = {
-    # prevent wine from creating file associations
-    WINEDLLOVERRIDES = "winemenubuilder.exe=d";
-  };
 }

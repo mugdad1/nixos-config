@@ -11,12 +11,11 @@
     ./gtk.nix # gtk theme
     ./hyprland # window manager
     ./nemo.nix # file manager
-    ./nvim.nix # neovim editor
     ./p10k/p10k.nix
     ./qt.nix # qt / kvantum theme
     ./packages # other packages
     ./rofi/rofi.nix # launcher
-    ./../../scripts/scripts.nix # personal scripts
+    ../../scripts/scripts.nix # personal scripts
 
     ./swayosd.nix # brightness / volume widget
     ./swaync/swaync.nix # notification daemon

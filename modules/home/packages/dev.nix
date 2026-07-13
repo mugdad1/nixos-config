@@ -1,7 +1,11 @@
-{ pkgs, lib, host, ... }: let
-in {
-  home.packages =
-    with pkgs; [
+{
+  pkgs,
+  lib,
+  host,
+  ...
+}: {
+  home.packages = with pkgs;
+    [
       ## Nix
       nixd
       nixfmt
@@ -24,7 +28,4 @@ in {
     ++ lib.optionals (host == "rog") [
       mesa-demos
     ];
-
-  home.sessionVariables =
-    { CHROME_EXECUTABLE = "zen-beta"; };
 }

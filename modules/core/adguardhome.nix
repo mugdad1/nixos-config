@@ -98,6 +98,4 @@
       };
     };
   };
-
-  services.resolved.enable = false;
 }

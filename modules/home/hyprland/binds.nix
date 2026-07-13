@@ -1,5 +1,8 @@
-{...}: let
+{variables, ...}: let
   mod = "SUPER";
+  t = variables.terminal;
+  b = variables.browser;
+  l = variables.launcher;
 in ''
   ---------------------
   ---- KEYBINDINGS ----
@@ -8,11 +11,11 @@ in ''
   local mod = "${mod}"
 
   -- App launchers
-  hl.bind(mod .. " + RETURN",      hl.dsp.exec_cmd("ghostty --gtk-single-instance=true"))
-  hl.bind("ALT + RETURN",          hl.dsp.exec_cmd("[float; size 1111 700] ghostty"))
-  hl.bind(mod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[fullscreen] ghostty"))
-  hl.bind(mod .. " + B",           hl.dsp.exec_cmd("zen-beta"))
-  hl.bind(mod .. " + D",           hl.dsp.exec_cmd("toggle-rofi rofi -show drun"))
+  hl.bind(mod .. " + RETURN",      hl.dsp.exec_cmd("${t} --gtk-single-instance=true"))
+  hl.bind("ALT + RETURN",          hl.dsp.exec_cmd("[float; size 1111 700] ${t}"))
+  hl.bind(mod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("[fullscreen] ${t}"))
+  hl.bind(mod .. " + B",           hl.dsp.exec_cmd("${b}"))
+  hl.bind(mod .. " + D",           hl.dsp.exec_cmd("toggle-rofi ${l} -show drun"))
   hl.bind(mod .. " + E",           hl.dsp.exec_cmd("nemo"))
   hl.bind("ALT + E",               hl.dsp.exec_cmd("[float; size 1111 700] nemo"))
   hl.bind(mod .. " + W",           hl.dsp.exec_cmd("wallpaper-picker"))
@@ -41,9 +44,6 @@ in ''
   hl.bind("Print",                    hl.dsp.exec_cmd("screenshot --copy"))
   hl.bind(mod .. " + Print",          hl.dsp.exec_cmd("screenshot --save"))
   hl.bind(mod .. " + SHIFT + Print",  hl.dsp.exec_cmd("screenshot --swappy"))
-
-  -- OCR
-  hl.bind(mod .. " + CTRL + O",       hl.dsp.exec_cmd("ocr"))
 
   -- Focus
   hl.bind(mod .. " + h",    hl.dsp.focus({ direction = "left" }))
@@ -108,7 +108,7 @@ in ''
   hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e+1" }))
 
   -- Clipboard
-  hl.bind(mod .. " + V", hl.dsp.exec_cmd([[toggle-rofi "cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"]]))
+  hl.bind(mod .. " + V", hl.dsp.exec_cmd([[toggle-rofi "cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"]]))
 
   -- Mouse binds
   hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })

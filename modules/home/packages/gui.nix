@@ -5,7 +5,7 @@
     obs-studio
     pavucontrol
     vlc
-
+    vscodium-fhs
     ## Browsers
     firefox-bin
 

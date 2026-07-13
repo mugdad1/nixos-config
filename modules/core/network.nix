@@ -19,6 +19,8 @@
     };
   };
 
+  services.resolved.enable = false;
+
   environment.etc."resolv.conf".text = "nameserver 127.0.0.1\n";
   environment.systemPackages = with pkgs; [networkmanagerapplet];
 }

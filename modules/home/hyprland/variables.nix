@@ -1,6 +1,6 @@
-{...}: {
+{variables, ...}: {
   home.sessionVariables = {
-    EDITOR = "nvim";
+    EDITOR = "${variables.editor}";
     NIXOS_OZONE_WL = 1;
     GDK_BACKEND = "wayland";
     DIRENV_LOG_FORMAT = "";
@@ -11,5 +11,7 @@
     XDG_SESSION_TYPE = "wayland";
     XDG_SESSION_DESKTOP = "Hyprland";
     GRIMBLAST_HIDE_CURSOR = 0;
+
+    WINEDLLOVERRIDES = "winemenubuilder.exe=d";
   };
 }

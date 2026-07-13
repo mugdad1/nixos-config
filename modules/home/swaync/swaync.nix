@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: let
+{pkgs, ...}: let
   c = (import ../../gruvbox.nix).css;
 in {
   home.packages = with pkgs; [swaynotificationcenter];

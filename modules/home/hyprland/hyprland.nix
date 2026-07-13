@@ -1,9 +1,19 @@
-{pkgs, ...}: let
-  settings = import ./settings.nix {};
-  binds = import ./binds.nix {};
+{
+  pkgs,
+  variables,
+  ...
+}: let
+  settings = import ./settings.nix {inherit variables;};
+  binds = import ./binds.nix {inherit variables;};
   rules = import ./windowrules.nix {};
-  autostart = import ./exec-once.nix {inherit pkgs;};
+  autostart = import ./exec-once.nix {inherit pkgs variables;};
 in {
+  imports = [
+    ./hyprlock.nix
+    ./hypridle.nix
+    ./variables.nix
+  ];
+
   home.packages = with pkgs; [
     awww
     grimblast

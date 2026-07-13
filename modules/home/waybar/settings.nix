@@ -1,4 +1,4 @@
-{...}: let
+{variables, ...}: let
   custom = import ./theme.nix;
 in {
   programs.waybar.settings.mainBar = with custom; {
@@ -65,13 +65,13 @@ in {
       format = "<span foreground='${green}'> </span> {usage}%";
       format-alt = "<span foreground='${green}'> </span> {avg_frequency} GHz";
       interval = 2;
-      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ghostty -e btop'";
+      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ${variables.terminal} -e btop'";
     };
     memory = {
       format = "<span foreground='${cyan}'>󰟜 </span>{}%";
       format-alt = "<span foreground='${cyan}'>󰟜 </span>{used} GiB";
       interval = 2;
-      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ghostty -e btop'";
+      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ${variables.terminal} -e btop'";
     };
     tray = {
       icon-size = 20;
@@ -110,7 +110,7 @@ in {
     "custom/launcher" = {
       format = "";
       on-click = "random-wallpaper";
-      on-click-right = "rofi -show drun";
+      on-click-right = "${variables.launcher} -show drun";
       tooltip = "true";
       tooltip-format = "Random Wallpaper";
     };

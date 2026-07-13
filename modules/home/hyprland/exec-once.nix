@@ -1,4 +1,8 @@
-{pkgs, ...}: ''
+{
+  pkgs,
+  variables,
+  ...
+}: ''
   -------------------
   ---- AUTOSTART ----
   -------------------
@@ -10,7 +14,7 @@
       hl.exec_cmd("poweralertd")
       hl.exec_cmd("wl-clip-persist --clipboard both")
       hl.exec_cmd("wl-paste --watch cliphist store")
-      hl.exec_cmd("waybar")
+      hl.exec_cmd("${variables.bar}")
       hl.exec_cmd("swaync")
       hl.exec_cmd("udiskie --automount --notify --smart-tray")
       hl.exec_cmd("hyprctl setcursor Bibata-Modern-Ice 24")

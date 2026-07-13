@@ -9,7 +9,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    ./../../modules/core
+    ../../modules/core
     inputs.cardwire.nixosModules.default
   ];
 
@@ -62,8 +62,6 @@
         enable = true;
         asusdConfig.text = ''
           (
-                charge_control_end_threshold: 80,
-                base_charge_control_end_threshold: 80,
               disable_nvidia_powerd_on_battery: true,
               platform_profile_linked_epp: true,
               platform_profile_on_battery: Quiet,
@@ -77,10 +75,6 @@
           )
         '';
       };
-
-      boot.postBootCommands = ''
-        echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold
-      '';
 
       systemd.services.battery-threshold = {
         description = "Set battery charge threshold after asusd";
@@ -165,7 +159,6 @@
           ''}";
         };
       };
-
 
       environment.systemPackages = with pkgs; [
         acpi

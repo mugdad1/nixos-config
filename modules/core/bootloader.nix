@@ -19,7 +19,6 @@ in {
           wallpaperStyle = "stretched";
 
           interface = {
-            resolution = "1920x1080";
             branding = "mugdad";
             brandingColor = gruvbox.fg;
             helpColor = gruvbox.gray;

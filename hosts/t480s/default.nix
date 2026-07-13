@@ -1,9 +1,5 @@
 {
   pkgs,
-  config,
-  lib,
-  username,
-  gpu,
   inputs,
   ...
 }: {
@@ -13,9 +9,12 @@
     ../../modules/core
   ];
 
-  hardware.intelgpu = {
-    computeRuntime = "legacy";
-    vaapiDriver = "intel-media-driver";
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      intel-compute-runtime
+    ];
   };
 
   boot.kernelParams = [
@@ -28,7 +27,6 @@
   ];
 
   services.throttled.enable = true;
-  services.tlp.enable = false;
 
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold";

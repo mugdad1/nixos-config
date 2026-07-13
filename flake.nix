@@ -18,7 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixvim.url = "github:nix-community/nixvim";
     zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
     cardwire = {
       url = "github:opengamingcollective/cardwire";
@@ -26,15 +25,12 @@
     };
   };
 
-  outputs = {
-    nixpkgs,
-    self,
-    ...
-  } @ inputs: let
+  outputs = {nixpkgs, ...} @ inputs: let
     username = "mugdad";
     system = "x86_64-linux";
-    lib = nixpkgs.lib;
-    mkHost = host: gpu:
+    mkHost = host: gpu: let
+      variables = import ./hosts/${host}/variables.nix;
+    in
       nixpkgs.lib.nixosSystem {
         modules = [
           ./hosts/${host}
@@ -43,46 +39,18 @@
           inherit
             host
             gpu
-            self
             inputs
             username
+            variables
             ;
         };
       };
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-    packages.${system}.nvim = inputs.nixvim.legacyPackages.${system}.makeNixvim {
-      imports = [./modules/home/nvim-config.nix];
-    };
-
     nixosConfigurations = {
       rog = mkHost "rog" "amd-nvidia-hybrid";
       t480s = mkHost "t480s" "intel";
-
-      iso = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          "${nixpkgs}/nixos/modules/installer/cd-dvd/iso-image.nix"
-          ./modules/core
-          ({
-            pkgs,
-            lib,
-            ...
-          }: {
-            system.stateVersion = "26.05";
-            image.fileName = "nixos-26.05.iso";
-            services.openssh.enable = true;
-            services.getty.autologinUser = "root";
-            nixpkgs.config.allowUnfree = true;
-          })
-        ];
-        specialArgs = {
-          host = "iso";
-          gpu = "intel";
-          inherit self inputs username;
-        };
-      };
     };
   };
 }

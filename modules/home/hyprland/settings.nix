@@ -1,4 +1,4 @@
-{...}: let
+{variables, ...}: let
   c = (import ../../gruvbox.nix).raw;
 in ''
   -----------------------
@@ -55,8 +55,8 @@ in ''
       },
 
       input = {
-          kb_layout      = "us,ara",
-          kb_options     = "grp:alt_shift_toggle",
+          kb_layout      = "${variables.keyboardLayout}",
+          kb_options     = "${variables.keyboardOptions}",
           repeat_delay   = 300,
           numlock_by_default = true,
           follow_mouse   = 1,
