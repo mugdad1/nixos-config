@@ -20,5 +20,6 @@
     mission-center
     hyprsunset
     supertuxkart
+    luanti
   ];
 }
