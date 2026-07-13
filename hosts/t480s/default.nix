@@ -27,6 +27,7 @@
   ];
 
   services.throttled.enable = true;
+  services.tlp.enable = false;
 
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold";
