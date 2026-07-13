@@ -33,6 +33,21 @@
     brightnessctl
   ];
 
+  # Periodic btrfs scrub to catch silent data corruption
+  services.btrfs.autoScrub = {
+    enable = true;
+    interval = "monthly";
+  };
+
+  # Kernel hardening (madaidan's Linux hardening guide / nix-mineral)
+  boot.kernel.sysctl = {
+    "kernel.yama.ptrace_scope" = 2;
+    "kernel.dmesg_restrict" = 1;
+    "kernel.unprivileged_bpf_disabled" = 1;
+    "net.ipv4.conf.all.rp_filter" = 1;
+    "net.ipv4.conf.default.rp_filter" = 1;
+  };
+
   time.timeZone = "Asia/Riyadh";
   i18n.defaultLocale = "en_US.UTF-8";
   nixpkgs.config = {

@@ -3,6 +3,9 @@
     ## File management
     eza # ls replacement
     ncdu # disk usage analyzer
+    fd # find alternative (used by fzf)
+    ripgrep # recursive grep (rg)
+    dnsutils # dig / host
     file # show file type info
     ripdrag # drag-and-drop from terminal
     unzip

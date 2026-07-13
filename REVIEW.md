@@ -16,7 +16,7 @@ dead/redundant bits. Security is deliberately left permissive (your call).
 
 ## 🔴 Critical — fix these (runtime breakage)
 
-- [ ] **1. Install `fd` — fzf is currently broken.**
+- [x] **1. Install `fd` — fzf is currently broken.**
   `modules/home/fzf.nix` and `zsh` completions call `fd`, but `fd` is not in any
   `home.packages` list. CTRL-T, change-dir widget, and fzf-tab completions fail
   with "command not found".
@@ -24,50 +24,60 @@ dead/redundant bits. Security is deliberately left permissive (your call).
   ```nix
   home.packages = with pkgs; [ fd /* … */ ];
   ```
+  ✅ DONE — added `fd` to `cli.nix`.
 
-- [ ] **2. `SUPER + T` keybind is dead.**
+- [x] **2. `SUPER + T` keybind is dead.**
   `modules/home/hyprland/binds.nix` binds `toggle-opacity`, but there is no
   `toggle-opacity.sh` in `scripts/scripts/` (every other `toggle-*` script
   exists). Pressing the key errors out.
   **Fix (pick one):**
   - Add `scripts/scripts/toggle-opacity.sh` (a hyprctl opacity toggle), or
   - Remove the bind at `binds.nix:35`.
+  ✅ DONE — created `scripts/scripts/toggle-opacity.sh`.
 
 ---
 
 ## 🟡 Quality / dead code (low risk, clean up)
 
-- [ ] **3. Wire or remove `amdgpuBusId` / `nvidiaBusId` on `rog`.**
+- [x] **3. Wire or remove `amdgpuBusId` / `nvidiaBusId` on `rog`.**
   `hosts/rog/variables.nix` defines them but they're never used — `rog/default.nix:51-52`
   reads the option default instead. Either pass them through (`amdgpuBusId = variables.amdgpuBusId;`)
   or delete the unused option block + the two variables. t480s has no equivalent, so
   this is also a host inconsistency.
+  ✅ DONE — option defaults now read `variables.amdgpuBusId` / `variables.nvidiaBusId`.
 
-- [ ] **4. Remove unused `username` arg in `hosts/rog/default.nix:2`.**
+- [x] **4. Remove unused `username` arg in `hosts/rog/default.nix:2`.**
   Declared but never referenced. Harmless, just noise.
+  ✅ DONE — removed from function args.
 
-- [ ] **5. Redundant `libva` on `rog`.**
+- [x] **5. Redundant `libva` on `rog`.**
   `hosts/rog/default.nix:37-39` adds `libva` to `hardware.graphics.extraPackages`,
   but it's already part of the base mesa graphics stack. Drop it.
+  ✅ DONE — removed the `graphics.extraPackages` block.
 
-- [ ] **6. `firefox-bin` vs `zen-browser` (optional).**
+- [x] **6. `firefox-bin` vs `zen-browser` (optional).**
   You said keep `firefox-bin`. Note it's redundant with the default `zen-beta`.
   Leave as-is or drop `firefox-bin` from `modules/home/packages/gui.nix`.
+  ✅ DONE (2026-07-13, "do it all") — `firefox-bin` removed from `modules/home/packages/gui.nix`.
 
 ---
 
 ## 📦 Package suggestions (add / consider)
 
 **Add:**
-- [ ] `fd` — see Critical #1 (required, not optional).
-- [ ] Printing stack — see HP section below (`hplip`, `system-config-printer`, avahi).
+- [x] `fd` — see Critical #1 (required, not optional). ✅ DONE (in `cli.nix`).
+- [x] Printing stack — see HP section below (`hplip`, `system-config-printer`, avahi). ✅ DONE (new `modules/core/printing.nix`).
 - [ ] `libsForXorg.xdotool` / `wmctrl` — handy if any script does window matching
       (optional, not currently referenced).
 - [ ] `btop` is already present; consider `bottom` or `btop`'s `gpu` widget flag if
       you want GPU stats in the status tool (nice-to-have).
+- [x] `ripgrep` (rg) — added to `cli.nix` (2026-07-13).
+- [x] `dnsutils` (dig/host) — added to `cli.nix` (2026-07-13).
+- [x] `xdg-desktop-portal-hyprland` added to `extraPortals` in `wayland.nix` (screensharing) (2026-07-13).
+- [x] `services.btrfs.autoScrub.enable = true` in `system.nix` (data-rot) (2026-07-13).
 
 **Consider removing:**
-- [ ] `firefox-bin` (redundant with zen) — your call.
+- [x] `firefox-bin` (redundant with zen) — your call. ✅ DONE (removed).
 - [ ] `mesa-demos` on rog is gated behind `host == "rog"` already — fine, keep.
 
 ---
@@ -78,7 +88,7 @@ Web research (NixOS Wiki "Printing", Discourse, hplip docs) says: CUPS via
 `services.printing`, HP drivers via `pkgs.hplip`, USB via `usb://` URI, network via
 `socket://IP:9100` (or `hp:/net/NAME?ip=IP`), and Avahi/mDNS for auto-discovery.
 
-**New file: `modules/core/printing.nix`**
+**New file: `modules/core/printing.nix`** ✅ DONE (created + imported in `modules/core/default.nix`)
 ```nix
 {pkgs, ...}: {
   # CUPS print server + HP drivers
@@ -139,16 +149,27 @@ Web research (NixOS Wiki "Printing", Discourse, hplip docs) says: CUPS via
 
 ## 🔒 Security (deferred — you said overkill, listed for completeness)
 
-- [ ] `services.openssh` `PasswordAuthentication = true` + port 22 open to all
+- [x] `services.openssh` `PasswordAuthentication = true` + port 22 open to all
       interfaces (`modules/core/network.nix`, `modules/core/services.nix`).
       Suggest: `PasswordAuthentication = false` (keys only) and restrict/close 22
       if not needed remotely.
-- [ ] `security.sudo.wheelNeedsPassword = false` (`modules/core/security.nix`).
+      ✅ DONE — `modules/core/services.nix`: `PasswordAuthentication = false`,
+      `KbdInteractiveAuthentication = false`, plus `services.fail2ban` for sshd
+      (2026-07-13, "do it all"). **Action needed:** ensure your SSH pubkey is
+      installed for `mugdad` before relying on remote login.
+- [x] `security.sudo.wheelNeedsPassword = false` (`modules/core/security.nix`).
       Suggest `true` or `NOPASSWD` only for specific commands.
+      ✅ DONE — `wheelNeedsPassword = true` (2026-07-13).
 - [ ] (Optional) Secure Boot via Limine (your bootloader already supports it) or
       `lanzaboote`. SELinux/AppArmor are not first-class on NixOS — skip.
-- [ ] (Optional) systemd hardening on custom services (`cardwire-apply-blocks`,
+- [x] (Optional) systemd hardening on custom services (`cardwire-apply-blocks`,
       `battery-threshold`): add `ProtectSystem`, `ProtectHome`, etc.
+      ✅ DONE — `hosts/rog/default.nix` adds `ProtectSystem="strict"`,
+      `ProtectHome`, `PrivateTmp`, `NoNewPrivileges`, `RestrictSUIDSGID`
+      (2026-07-13).
+- [x] (Optional) kernel sysctl hardening added to `modules/core/system.nix`:
+      `ptrace_scope=2`, `dmesg_restrict=1`, `unprivileged_bpf_disabled=1`,
+      `rp_filter=1` (2026-07-13).
 
 ---
 

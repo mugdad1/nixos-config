@@ -12,6 +12,7 @@
     ./security.nix
     ./services.nix
     ./system.nix
+    ./printing.nix
     ./flatpak.nix
     ./user.nix
     ./wayland.nix

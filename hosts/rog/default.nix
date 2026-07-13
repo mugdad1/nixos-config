@@ -2,9 +2,9 @@
   pkgs,
   config,
   lib,
-  username,
   gpu,
   inputs,
+  variables,
   ...
 }: {
   imports = [
@@ -17,12 +17,12 @@
     enable = lib.mkEnableOption "Enable AMD iGPU + NVIDIA dGPU (Prime offload)";
     amdgpuBusId = lib.mkOption {
       type = lib.types.str;
-      default = "PCI:5:0:0";
+      default = variables.amdgpuBusId;
       description = "PCI Bus ID for AMD GPU";
     };
     nvidiaBusId = lib.mkOption {
       type = lib.types.str;
-      default = "PCI:1:0:0";
+      default = variables.nvidiaBusId;
       description = "PCI Bus ID for NVIDIA dGPU";
     };
   };
@@ -34,10 +34,6 @@
       ];
 
       hardware = {
-        graphics.extraPackages = with pkgs; [
-          libva
-        ];
-
         nvidia = {
           modesetting.enable = true;
           open = true;
@@ -84,6 +80,11 @@
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${pkgs.bash}/bin/bash -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'";
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          PrivateTmp = true;
+          NoNewPrivileges = true;
+          RestrictSUIDSGID = true;
         };
       };
 
@@ -157,6 +158,11 @@
               [ -n "$id" ] && cardwire gpu "$id" --block || true
             done
           ''}";
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          PrivateTmp = true;
+          NoNewPrivileges = true;
+          RestrictSUIDSGID = true;
         };
       };
 

@@ -19,9 +19,15 @@
     openssh = {
       enable = true;
       settings = {
-        PasswordAuthentication = true;
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
         PermitRootLogin = "no";
       };
+    };
+
+    fail2ban = {
+      enable = true;
+      jails.sshd.enabled = true;
     };
 
     # needed for GNOME services outside of GNOME Desktop

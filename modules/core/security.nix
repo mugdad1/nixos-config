@@ -2,7 +2,7 @@
   security = {
     sudo = {
       enable = true;
-      wheelNeedsPassword = false;
+      wheelNeedsPassword = true;
     };
     polkit.enable = true;
     rtkit.enable = true;

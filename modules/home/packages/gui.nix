@@ -7,7 +7,6 @@
     vlc
     vscodium-fhs
     ## Browsers
-    firefox-bin
 
     ## Office / Productivity
     onlyoffice-desktopeditors
