@@ -12,6 +12,7 @@
     ## Office / Productivity
     onlyoffice-desktopeditors
     filen-desktop
+    libreoffice-fresh
 
     ## System / Utility
     gnome-disk-utility
