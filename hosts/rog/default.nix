@@ -181,12 +181,13 @@ in {
       environment.systemPackages = with pkgs; [
         acpi
         (ffmpeg-full.override {withNvcodec = true;})
-        power-profile-helper
       ];
 
-      security.sudo.extraConfig = ''
-        %wheel ALL=(root) NOPASSWD: ${power-profile-helper}/bin/power-profile-helper *
-      '';
+      security.wrappers.power-profile-helper = {
+        owner = "root";
+        group = "root";
+        source = "${power-profile-helper}/bin/power-profile-helper";
+      };
     }
   ];
 }

@@ -37,6 +37,8 @@ run_rofi() {
     echo -e "${power_saver}\n${balanced}\n${performance}" | rofi_cmd
 }
 
+HELPER=/run/wrappers/bin/power-profile-helper
+
 run_gpu_cmd() {
     local action="$1"
     local cpu_mode="$2"
@@ -48,26 +50,26 @@ run_gpu_cmd() {
 
     case $action in
         amd-only)
-            sudo power-profile-helper cardwire-set integrated
+            $HELPER cardwire-set integrated
             if [ "$mux" != "1" ]; then
-                sudo power-profile-helper mux 1
+                $HELPER mux 1
                 notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         nvidia-only)
-            sudo power-profile-helper cardwire-set manual
-            [ -n "$amd_id" ] && sudo power-profile-helper cardwire-block "$amd_id"
+            $HELPER cardwire-set manual
+            [ -n "$amd_id" ] && $HELPER cardwire-block "$amd_id"
             if [ "$mux" != "0" ]; then
-                sudo power-profile-helper mux 0
+                $HELPER mux 0
                 notify-send -u critical "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         hybrid)
-            sudo power-profile-helper cardwire-set hybrid
+            $HELPER cardwire-set hybrid
             if [ "$mux" != "1" ]; then
-                sudo power-profile-helper mux 1
+                $HELPER mux 1
             fi
             ;;
     esac
