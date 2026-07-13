@@ -6,7 +6,19 @@
   inputs,
   variables,
   ...
-}: {
+}: let
+  power-profile-helper = pkgs.writeShellScriptBin "power-profile-helper" ''
+    set -euo pipefail
+    CARDWIRE="${config.services.cardwire.package}/bin/cardwire"
+    MUX_PATH=/sys/devices/platform/asus-nb-wmi/gpu_mux_mode
+    case "$1" in
+      cardwire-set)   $CARDWIRE set "$2" ;;
+      cardwire-block) $CARDWIRE gpu "$2" --block ;;
+      mux)            echo "$2" > "$MUX_PATH" ;;
+      *)              echo "unknown: $1" >&2; exit 1 ;;
+    esac
+  '';
+in {
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
@@ -169,7 +181,12 @@
       environment.systemPackages = with pkgs; [
         acpi
         (ffmpeg-full.override {withNvcodec = true;})
+        power-profile-helper
       ];
+
+      security.sudo.extraConfig = ''
+        %wheel ALL=(root) NOPASSWD: ${power-profile-helper}/bin/power-profile-helper *
+      '';
     }
   ];
 }

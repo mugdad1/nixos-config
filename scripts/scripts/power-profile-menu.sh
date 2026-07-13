@@ -48,26 +48,26 @@ run_gpu_cmd() {
 
     case $action in
         amd-only)
-            pkexec env PATH="$PATH" cardwire set integrated
+            sudo power-profile-helper cardwire-set integrated
             if [ "$mux" != "1" ]; then
-                pkexec env PATH="$PATH" bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                sudo power-profile-helper mux 1
                 notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         nvidia-only)
-            pkexec env PATH="$PATH" cardwire set manual
-            [ -n "$amd_id" ] && pkexec env PATH="$PATH" cardwire gpu "$amd_id" --block
+            sudo power-profile-helper cardwire-set manual
+            [ -n "$amd_id" ] && sudo power-profile-helper cardwire-block "$amd_id"
             if [ "$mux" != "0" ]; then
-                pkexec env PATH="$PATH" bash -c 'echo 0 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                sudo power-profile-helper mux 0
                 notify-send -u critical "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         hybrid)
-            pkexec env PATH="$PATH" cardwire set hybrid
+            sudo power-profile-helper cardwire-set hybrid
             if [ "$mux" != "1" ]; then
-                pkexec env PATH="$PATH" bash -c 'echo 1 > /sys/devices/platform/asus-nb-wmi/gpu_mux_mode'
+                sudo power-profile-helper mux 1
             fi
             ;;
     esac
