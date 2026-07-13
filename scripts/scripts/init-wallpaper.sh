@@ -10,12 +10,5 @@ if ! pgrep -x awww-daemon > /dev/null; then
     done
 fi
 
-# Ensure a wallpaper symlink exists (first boot), then set it
-WP="$HOME/Pictures/wallpapers/wallpaper"
-if [ ! -e "$WP" ]; then
-  WP_DEFAULT=$(find -L "$HOME/Pictures/wallpapers/others" -type f \( -name '*.png' -o -name '*.jpg' \) | head -1)
-  [ -n "$WP_DEFAULT" ] && ln -sf "$WP_DEFAULT" "$WP"
-fi
-
 # Set wallpaper
-awww img -t none "$WP" &
+awww img -t none ~/Pictures/wallpapers/wallpaper &
