@@ -5,22 +5,35 @@
 }: {
   networking = {
     hostName = "${host}";
-    resolvconf.enable = false;
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";
-      dns = "none";
     };
     firewall = {
       enable = true;
       allowedTCPPorts = [
         22
       ];
+      allowedUDPPorts = [
+        41641
+      ];
     };
   };
 
-  services.resolved.enable = false;
+  services.resolved = {
+    enable = true;
+    dnssec = "allow-downgrade";
+    domains = ["~."];
+    fallbackDns = [
+      "9.9.9.9"
+      "149.112.112.112"
+    ];
+  };
 
-  environment.etc."resolv.conf".text = "nameserver 127.0.0.1\n";
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+  };
+
   environment.systemPackages = with pkgs; [networkmanagerapplet];
 }
