@@ -58,9 +58,12 @@
     (final: prev: {
       apparmor-parser = prev.apparmor-parser.overrideAttrs (old: {
         doCheck = false;
+        postPatch = (old.postPatch or "") + ''
+          cp rc.apparmor.functions $TMPDIR/rc.apparmor.functions.patched
+        '';
         postInstall = (old.postInstall or "") + ''
           mkdir -p $out/lib/apparmor
-          cp rc.apparmor.functions $out/lib/apparmor/rc.apparmor.functions
+          cp $TMPDIR/rc.apparmor.functions.patched $out/lib/apparmor/rc.apparmor.functions
         '';
       });
     })
