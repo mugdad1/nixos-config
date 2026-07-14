@@ -14,6 +14,7 @@ in {
         enableEditor = false;
         maxGenerations = 10;
         secureBoot.enable = true;
+        secureBoot.autoGenerateKeys = true;
 
         style = {
           wallpapers = [wallpaper];
