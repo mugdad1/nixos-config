@@ -30,7 +30,7 @@
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.rog = nixpkgs.lib.nixosSystem {
       modules = [./configuration.nix];
       specialArgs = {
         inherit inputs username variables;
