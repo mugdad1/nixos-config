@@ -53,5 +53,16 @@
   nixpkgs.config = {
     allowUnfree = true;
   };
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      apparmor-parser = prev.apparmor-parser.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          mkdir -p $out/lib/apparmor
+          cp parser/rc.apparmor.functions $out/lib/apparmor/rc.apparmor.functions
+        '';
+      });
+    })
+  ];
   system.stateVersion = "26.05";
 }
