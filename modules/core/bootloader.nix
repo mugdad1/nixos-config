@@ -41,6 +41,8 @@ in {
       efi.canTouchEfiVariables = true;
     };
 
+    secureBoot.enable = true;
+
     kernelParams = lib.mkBefore [
       "quiet"
     ];
