@@ -6,7 +6,7 @@
 
 ## Overall Rating: **8 / 10**
 
-Strong, well-structured personal config. Clean multi-host split, DRY variables
+Strong, well-structured personal config. Clean single-host config,
 threaded through `specialArgs`, forward-looking Hyprland **Lua** config, cohesive
 Gruvbox theming across the whole stack, sensible installer. Docked points for a
 couple of real runtime bugs (fzf is broken, one keybind errors out) and a few
@@ -42,9 +42,8 @@ dead/redundant bits. Security is deliberately left permissive (your call).
 - [x] **3. Wire or remove `amdgpuBusId` / `nvidiaBusId` on `rog`.**
   `hosts/rog/variables.nix` defines them but they're never used — `rog/default.nix:51-52`
   reads the option default instead. Either pass them through (`amdgpuBusId = variables.amdgpuBusId;`)
-  or delete the unused option block + the two variables. t480s has no equivalent, so
-  this is also a host inconsistency.
-  ✅ DONE — option defaults now read `variables.amdgpuBusId` / `variables.nvidiaBusId`.
+  or delete the unused option block + the two variables.
+   ✅ DONE — option defaults now read `variables.amdgpuBusId` / `variables.nvidiaBusId`.
 
 - [x] **4. Remove unused `username` arg in `hosts/rog/default.nix:2`.**
   Declared but never referenced. Harmless, just noise.

@@ -11,8 +11,6 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
-
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -26,31 +24,17 @@
   };
 
   outputs = {nixpkgs, ...} @ inputs: let
-    username = "mugdad";
     system = "x86_64-linux";
-    mkHost = host: gpu: let
-      variables = import ./hosts/${host}/variables.nix;
-    in
-      nixpkgs.lib.nixosSystem {
-        modules = [
-          ./hosts/${host}
-        ];
-        specialArgs = {
-          inherit
-            host
-            gpu
-            inputs
-            username
-            variables
-            ;
-        };
-      };
+    username = "mugdad";
+    variables = import ./variables.nix;
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-    nixosConfigurations = {
-      rog = mkHost "rog" "amd-nvidia-hybrid";
-      t480s = mkHost "t480s" "intel";
+    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      modules = [./configuration.nix];
+      specialArgs = {
+        inherit inputs username variables;
+      };
     };
   };
 }
