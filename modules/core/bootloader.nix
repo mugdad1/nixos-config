@@ -13,6 +13,7 @@ in {
         enable = true;
         enableEditor = false;
         maxGenerations = 10;
+        secureBoot.enable = true;
 
         style = {
           wallpapers = [wallpaper];
@@ -40,8 +41,6 @@ in {
 
       efi.canTouchEfiVariables = true;
     };
-
-    secureBoot.enable = true;
 
     kernelParams = lib.mkBefore [
       "quiet"
