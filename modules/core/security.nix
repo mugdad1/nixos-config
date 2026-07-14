@@ -8,5 +8,11 @@
     rtkit.enable = true;
 
     pam.services.hyprlock = {};
+
+    apparmor = {
+      enable = true;
+      killUnconfinedConfinables = true;
+      packages = [pkgs.apparmor-profiles];
+    };
   };
 }
