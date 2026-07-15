@@ -53,6 +53,7 @@ find ./modules flake.nix configuration.nix -type f -exec sed -i -e "s/mugdad/${C
 echo -e "${INFO}Clearing git config"
 sed -i 's/"Frost-Phoenix"/""/g' modules/home/git.nix
 sed -i 's/"67cyril6767@gmail.com"/""/g' modules/home/git.nix
+sed -i '/git@github.com:frost-phoenix\//d' modules/home/git.nix
 
 #--- Prepare environment ---#
 

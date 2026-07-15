@@ -22,7 +22,6 @@
           "gh:"
           "https://github.com/"
         ];
-        "git@github.com:frost-phoenix/".insteadOf = "fp:";
       };
 
       core.excludesFile = "/home/${username}/.config/git/.gitignore";

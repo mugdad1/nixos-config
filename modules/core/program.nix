@@ -11,5 +11,14 @@
     appimage.enable = true;
 
     nix-ld.enable = true;
+
+    java = {
+      enable = true;
+      package = pkgs.jdk17;
+    };
   };
+
+  environment.systemPackages = with pkgs; [
+    android-tools
+  ];
 }
