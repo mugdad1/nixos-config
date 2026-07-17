@@ -36,7 +36,7 @@
   # Periodic btrfs scrub to catch silent data corruption
   services.btrfs.autoScrub = {
     enable = true;
-    interval = "monthly";
+    interval = "weekly";
   };
 
   # Kernel hardening (madaidan's Linux hardening guide / nix-mineral)

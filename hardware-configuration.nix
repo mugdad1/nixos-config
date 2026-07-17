@@ -25,7 +25,7 @@
   fileSystems."/home" = {
     device = "/dev/disk/by-uuid/b8d0f34a-0741-4646-9005-704d2700a41b";
     fsType = "btrfs";
-    options = ["subvol=home"];
+    options = ["subvol=home" "compress=zstd" "noatime"];
   };
 
   fileSystems."/nix" = {
