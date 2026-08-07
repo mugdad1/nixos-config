@@ -22,7 +22,6 @@
     android-tools
     ninja
     pkg-config
-    anydesk
   ];
 
   environment.variables = {
