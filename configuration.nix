@@ -60,6 +60,16 @@ in {
     '';
   };
 
+  # asus-shutdown ignores SIGTERM (it defers exit until a real shutdown event)
+  # and has SendSIGKILL=no from upstream, so restarting it during a
+  # nixos-rebuild switch hangs and leaves a zombie process. Allow systemd to
+  # kill it after the stop timeout; 90s still gives the deferred GPU firmware
+  # apply (worst case ~45s) room to finish during a real shutdown.
+  systemd.services.asus-shutdown.serviceConfig = {
+    SendSIGKILL = true;
+    TimeoutStopSec = "90";
+  };
+
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold after asusd";
     after = ["asusd.service"];
