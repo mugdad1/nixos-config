@@ -14,9 +14,7 @@
       allowedTCPPorts = [
         22
       ];
-      allowedUDPPorts = [
-        41641
-      ];
+      allowedUDPPorts = [];
     };
   };
 
@@ -30,11 +28,6 @@
         "149.112.112.112"
       ];
     };
-  };
-
-  services.tailscale = {
-    enable = true;
-    openFirewall = true;
   };
 
   environment.systemPackages = with pkgs; [networkmanagerapplet];
