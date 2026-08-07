@@ -19,7 +19,7 @@
 in {
   imports = [
     ./hardware-configuration.nix
-    ./modules/core
+    ../../modules/core
     inputs.cardwire.nixosModules.default
   ];
 

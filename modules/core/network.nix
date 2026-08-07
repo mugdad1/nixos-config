@@ -1,9 +1,10 @@
 {
   pkgs,
+  host,
   ...
 }: {
   networking = {
-    hostName = "rog";
+    hostName = "${host}";
     networkmanager = {
       enable = true;
       wifi.backend = "iwd";

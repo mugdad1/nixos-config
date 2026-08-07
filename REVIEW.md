@@ -6,7 +6,7 @@
 
 ## Overall Rating: **8 / 10**
 
-Strong, well-structured personal config. Clean single-host config,
+Strong, well-structured personal config. Clean multi-host split, DRY variables
 threaded through `specialArgs`, forward-looking Hyprland **Lua** config, cohesive
 Gruvbox theming across the whole stack, sensible installer. Docked points for a
 couple of real runtime bugs (fzf is broken, one keybind errors out) and a few

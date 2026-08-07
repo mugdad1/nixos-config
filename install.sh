@@ -35,9 +35,20 @@ fi
 
 #--- Confirm ---#
 
+#--- Detect host + GPU ---#
+
+if grep -qi 'rog\|g513' /sys/class/dmi/id/product_name 2> /dev/null; then
+    HOST="rog"
+    GPU="amd-nvidia-hybrid"
+elif grep -qi 't480s\|thinkpad\|20L8' /sys/class/dmi/id/product_name 2> /dev/null; then
+    HOST="t480s"
+    GPU="intel"
+fi
+
 SUMMARY="\
 Username:   $CURRENT_USERNAME
-Host:       rog"
+Host:       ${HOST:-unknown}
+GPU:        ${GPU:-unknown}"
 
 if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "NixOS Installer"); then
     exit 0
@@ -46,7 +57,10 @@ fi
 #--- Replace username ---#
 
 echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
-find ./modules flake.nix configuration.nix -type f -exec sed -i -e "s/mugdad/${CURRENT_USERNAME}/g" {} +
+find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/mugdad/${CURRENT_USERNAME}/g" {} +
+
+echo -e "${INFO}Setting GPU profile to ${GREEN}$GPU${RESET}"
+sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" flake.nix
 
 #--- Clear git config ---#
 
@@ -69,11 +83,11 @@ if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
     echo -e "${ERROR}/etc/nixos/hardware-configuration.nix not found! Aborting."
     exit 1
 fi
-cp /etc/nixos/hardware-configuration.nix hardware-configuration.nix
+cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.nix"
 
 #--- Build ---#
 
 echo -e "${INFO}Starting system build..."
-sudo nixos-rebuild switch --flake .
+sudo nixos-rebuild switch --flake .#${HOST}
 
 echo -e "${OK}Done! Reboot to apply."
