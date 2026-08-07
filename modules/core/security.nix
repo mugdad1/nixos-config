@@ -4,7 +4,10 @@
       enable = true;
       wheelNeedsPassword = true;
     };
-    polkit.enable = true;
+    polkit = {
+      enable = true;
+      enablePkexecWrapper = true;
+    };
     rtkit.enable = true;
 
     pam.services.hyprlock = {};
