@@ -10,7 +10,6 @@
 in {
   imports = [
     ./hyprlock.nix
-    ./hypridle.nix
     ./variables.nix
   ];
 
