@@ -22,6 +22,7 @@
     android-tools
     heimdall
     usbutils
+    aria2
     lz4
     ninja
     pkg-config
