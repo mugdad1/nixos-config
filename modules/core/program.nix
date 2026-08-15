@@ -20,6 +20,9 @@
 
   environment.systemPackages = with pkgs; [
     android-tools
+    heimdall
+    usbutils
+    lz4
     ninja
     pkg-config
   ];
