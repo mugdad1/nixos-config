@@ -9,10 +9,15 @@
     set -euo pipefail
     CARDWIRE="${config.services.cardwire.package}/bin/cardwire"
     MUX_PATH=/sys/devices/platform/asus-nb-wmi/gpu_mux_mode
+    DESIRED_FILE=/etc/cardwire-desired-mode
     case "$1" in
       cardwire-set)   $CARDWIRE set "$2" ;;
       cardwire-block) $CARDWIRE gpu "$2" --block ;;
+      # Persist the desired GPU mode and flip the hardware MUX. The manual
+      # cardwire set below only succeeds AFTER rebooting (Desktop
+      # classification in dGPU mode), so we only persist the intent here.
       mux)            echo "$2" > "$MUX_PATH" ;;
+      desired-mode)   echo "$2" > "$DESIRED_FILE" ;;
       *)              echo "unknown: $1" >&2; exit 1 ;;
     esac
   '';
@@ -98,7 +103,7 @@ in {
   systemd.services.cardwire-apply-blocks = {
     description = "Re-apply cardwire GPU mode, MUX, and block states after boot";
     after = ["cardwired.service"];
-    requires = ["cardwired.service"];
+    wants = ["cardwired.service"];
     wantedBy = ["multi-user.target"];
     path = [
       config.services.cardwire.package
@@ -113,33 +118,58 @@ in {
         MODE_FILE=/var/lib/cardwire/mode.json
         STATE_FILE=/var/lib/cardwire/gpu_state.json
         MUX_PATH=/sys/devices/platform/asus-nb-wmi/gpu_mux_mode
+        DESIRED_FILE=/etc/cardwire-desired-mode
+        AMD_PCI=0000:06:00.0
 
-        # Re-apply GPU mode so it survives reboots
-        if [ -f "$MODE_FILE" ]; then
-          MODE=$(jq -r '.mode' "$MODE_FILE")
-          if [ "$MODE" = "integrated" ] || [ "$MODE" = "hybrid" ] || [ "$MODE" = "manual" ]; then
-            cardwire set "$MODE" 2>/dev/null || true
+        # Wait for cardwired to actually respond (it may still be starting up
+        # after a boot-time restart while NVIDIA device nodes are created).
+        for _ in $(seq 1 24); do
+          if cardwire list --json >/dev/null 2>&1; then
+            break
           fi
+          sleep 5
+        done
+
+        # Persisted desired mode wins (set by the power-profile-helper), else
+        # fall back to cardwire's own state.
+        MODE=""
+        if [ -f "$DESIRED_FILE" ]; then
+          MODE=$(cat "$DESIRED_FILE")
+          case "$MODE" in
+            amd)
+              cardwire set integrated 2>/dev/null || true
+              ;;
+            hybrid)
+              cardwire set hybrid 2>/dev/null || true
+              ;;
+            nvidia)
+              # In dGPU mode the system classifies as Desktop, so manual mode
+              # and per-GPU blocking become available: block AMD.
+              cardwire set manual 2>/dev/null || true
+              AMD_ID=$(cardwire list --json | jq -r \
+                "to_entries[] | select(.value.pci == \"$AMD_PCI\") | .value.id")
+              [ -n "$AMD_ID" ] && cardwire gpu "$AMD_ID" --block 2>/dev/null || true
+              ;;
+          esac
+        elif [ -f "$MODE_FILE" ]; then
+          MODE=$(jq -r '.mode' "$MODE_FILE")
+          case "$MODE" in
+            integrated|hybrid|manual) cardwire set "$MODE" 2>/dev/null || true ;;
+          esac
         else
           cardwire set hybrid 2>/dev/null || true
         fi
 
         # Set MUX switch based on the active mode
-        if [ -f "$MODE_FILE" ] && [ -f "$MUX_PATH" ]; then
-          MODE=$(jq -r '.mode' "$MODE_FILE")
+        if [ -f "$MUX_PATH" ]; then
           CURRENT_MUX=$(cat "$MUX_PATH")
           case "$MODE" in
-            integrated)
+            amd|hybrid|integrated)
               if [ "$CURRENT_MUX" != "1" ]; then
                 echo 1 > "$MUX_PATH"
               fi
               ;;
-            hybrid)
-              if [ "$CURRENT_MUX" != "1" ]; then
-                echo 1 > "$MUX_PATH"
-              fi
-              ;;
-            manual)
+            nvidia|manual)
               if [ "$CURRENT_MUX" != "0" ]; then
                 echo 0 > "$MUX_PATH"
               fi

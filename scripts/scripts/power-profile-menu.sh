@@ -13,9 +13,6 @@ mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2> /dev/null)
 amd_pci="0000:06:00.0"
 nvidia_pci="0000:01:00.0"
 
-amd_id=$(cardwire list --json 2> /dev/null | jq -r "to_entries[] | select(.value.pci == \"$amd_pci\") | .value.id")
-nvidia_id=$(cardwire list --json 2> /dev/null | jq -r "to_entries[] | select(.value.pci == \"$nvidia_pci\") | .value.id")
-
 current_gpu=$(cardwire get 2> /dev/null | xargs)
 case $current_gpu in
     Integrated) selected_row=0 ;;
@@ -50,23 +47,28 @@ run_gpu_cmd() {
 
     case $action in
         amd-only)
+            $HELPER desired-mode amd
             $HELPER cardwire-set integrated
             if [ "$mux" != "1" ]; then
                 $HELPER mux 1
-                notify-send -u critical "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
+                notify-send -u normal "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         nvidia-only)
-            $HELPER cardwire-set manual
-            [ -n "$amd_id" ] && $HELPER cardwire-block "$amd_id"
+            # cardwire v0.12+ refuses manual mode while the iGPU is live
+            # (Laptop classification). Persist the intent + flip the MUX to
+            # dGPU, then reboot: in dGPU mode the system classifies as Desktop
+            # and cardwire-apply-blocks applies manual + blocks AMD at boot.
+            $HELPER desired-mode nvidia
             if [ "$mux" != "0" ]; then
                 $HELPER mux 0
-                notify-send -u critical "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
+                notify-send -u normal "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         hybrid)
+            $HELPER desired-mode hybrid
             $HELPER cardwire-set hybrid
             if [ "$mux" != "1" ]; then
                 $HELPER mux 1
