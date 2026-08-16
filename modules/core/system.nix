@@ -40,12 +40,21 @@
   };
 
   # Kernel hardening (madaidan's Linux hardening guide / nix-mineral)
+  security.protectKernelImage = true;
+
   boot.kernel.sysctl = {
     "kernel.yama.ptrace_scope" = 2;
     "kernel.dmesg_restrict" = 1;
     "kernel.unprivileged_bpf_disabled" = 1;
+    "kernel.core_uses_pid" = 1;
     "net.ipv4.conf.all.rp_filter" = 1;
     "net.ipv4.conf.default.rp_filter" = 1;
+    "net.ipv4.tcp_syncookies" = 1;
+    "net.ipv4.conf.all.accept_redirects" = 0;
+    "net.ipv4.conf.default.accept_redirects" = 0;
+    "net.ipv4.conf.all.send_redirects" = 0;
+    "net.ipv6.conf.all.accept_redirects" = 0;
+    "net.ipv6.conf.default.accept_redirects" = 0;
   };
 
   time.timeZone = "Asia/Riyadh";

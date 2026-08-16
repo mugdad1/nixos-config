@@ -6,7 +6,6 @@
     pavucontrol
     vlc
     vscodium-fhs
-    ## Browsers
 
     ## Office / Productivity
     onlyoffice-desktopeditors

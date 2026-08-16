@@ -1,8 +1,19 @@
-{variables, ...}: let
+{
+  variables,
+  host,
+  ...
+}: let
   mod = "SUPER";
   t = variables.terminal;
   b = variables.browser;
   l = variables.launcher;
+  # rog-only: needs asusctl/cardwire + the power-profile-helper wrapper
+  power-profile-bind =
+    if host == "rog"
+    then ''
+      hl.bind(mod .. " + P",           hl.dsp.exec_cmd("power-profile-menu"))
+    ''
+    else "";
 in ''
   ---------------------
   ---- KEYBINDINGS ----
@@ -31,7 +42,7 @@ in ''
   hl.bind(mod .. " + F",           hl.dsp.window.fullscreen())
   hl.bind(mod .. " + SHIFT + F",   hl.dsp.window.fullscreen({ maximize = true }))
   hl.bind(mod .. " + Space",       hl.dsp.exec_cmd("toggle-float"))
-  hl.bind(mod .. " + P",           hl.dsp.exec_cmd("power-profile-menu"))
+  ${power-profile-bind}
   hl.bind(mod .. " + T",           hl.dsp.exec_cmd("toggle-opacity"))
   hl.bind(mod .. " + SHIFT + B",   hl.dsp.exec_cmd("toggle-waybar"))
 

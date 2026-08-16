@@ -25,7 +25,7 @@ in {
       selection-clear-on-copy = true;
       mouse-hide-while-typing = true;
 
-      ##### Window #####;
+      ##### Window #####
       window-padding-balance = true;
       window-padding-x = 4;
       window-padding-y = 4;

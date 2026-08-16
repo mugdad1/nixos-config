@@ -28,7 +28,7 @@
   outputs = {nixpkgs, ...} @ inputs: let
     username = "mugdad";
     system = "x86_64-linux";
-    mkHost = host: gpu: let
+    mkHost = host: let
       variables = import ./hosts/${host}/variables.nix;
     in
       nixpkgs.lib.nixosSystem {
@@ -38,7 +38,6 @@
         specialArgs = {
           inherit
             host
-            gpu
             inputs
             username
             variables
@@ -48,9 +47,21 @@
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
+    devShells.${system}.default = nixpkgs.legacyPackages.${system}.mkShell {
+      packages = with nixpkgs.legacyPackages.${system}; [
+        alejandra
+        statix
+        deadnix
+        shellcheck
+        shfmt
+        treefmt
+        nixd
+      ];
+    };
+
     nixosConfigurations = {
-      rog = mkHost "rog" "amd-nvidia-hybrid";
-      t480s = mkHost "t480s" "intel";
+      rog = mkHost "rog";
+      t480s = mkHost "t480s";
     };
   };
 }

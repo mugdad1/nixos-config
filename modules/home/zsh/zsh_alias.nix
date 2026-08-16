@@ -19,6 +19,11 @@
       l = "eza --icons -a --group-directories-first -1 --no-user --long --git"; # EZA_ICON_SPACING=2
       tree = "eza --icons --tree --group-directories-first";
 
+      # disk / docs
+      df = "duf";
+      du = "dust";
+      tldr = "tealdeer";
+
       # python
       piv = "python -m venv .venv";
       psv = "source .venv/bin/activate";

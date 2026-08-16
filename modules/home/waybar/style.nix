@@ -60,7 +60,7 @@ in {
       padding: 1px;
     }
 
-    #pulseaudio, #cpu, #memory, #disk, #battery, #custom-notification, #custom-nightlight, #custom-power-menu {
+    #pulseaudio, #cpu, #memory, #battery, #custom-notification, #custom-nightlight, #custom-power-menu {
       padding-left: 5px;
       padding-right: 5px;
       margin-right: 10px;

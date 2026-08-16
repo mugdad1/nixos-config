@@ -1,10 +1,11 @@
 {
   pkgs,
   variables,
+  host,
   ...
 }: let
   settings = import ./settings.nix {inherit variables;};
-  binds = import ./binds.nix {inherit variables;};
+  binds = import ./binds.nix {inherit variables host;};
   rules = import ./windowrules.nix {};
   autostart = import ./exec-once.nix {inherit pkgs variables;};
 in {

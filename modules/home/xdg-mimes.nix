@@ -1,10 +1,6 @@
-{
-  lib,
-  variables,
-  ...
-}: let
+{lib, ...}: let
   defaultApps = {
-    text = ["${variables.terminal}.desktop"];
+    text = ["com.mitchellh.ghostty.desktop"];
     image = ["imv-dir.desktop"];
     audio = ["vlc.desktop"];
     video = ["vlc.desktop"];

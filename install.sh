@@ -59,15 +59,10 @@ fi
 echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
 find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/mugdad/${CURRENT_USERNAME}/g" {} +
 
+#--- Set GPU profile ---#
+
 echo -e "${INFO}Setting GPU profile to ${GREEN}$GPU${RESET}"
-sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" flake.nix
-
-#--- Clear git config ---#
-
-echo -e "${INFO}Clearing git config"
-sed -i 's/"Frost-Phoenix"/""/g' modules/home/git.nix
-sed -i 's/"67cyril6767@gmail.com"/""/g' modules/home/git.nix
-sed -i '/git@github.com:frost-phoenix\//d' modules/home/git.nix
+sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" "hosts/${HOST}/variables.nix"
 
 #--- Prepare environment ---#
 

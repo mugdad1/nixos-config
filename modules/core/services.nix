@@ -27,7 +27,14 @@
 
     fail2ban = {
       enable = true;
-      jails.sshd.enabled = true;
+      jails.sshd = {
+        enabled = true;
+        settings = {
+          maxretry = 5;
+          bantime = "1h";
+          findtime = "10m";
+        };
+      };
     };
 
     # needed for GNOME services outside of GNOME Desktop

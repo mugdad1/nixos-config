@@ -3,14 +3,20 @@
     ## File management
     eza # ls replacement
     ncdu # disk usage analyzer
+    duf # friendlier `df`
+    dust # faster `du`
     fd # find alternative (used by fzf)
     ripgrep # recursive grep (rg)
+    ripgrep-all # search inside pdfs/zips/etc. (rga)
+    yazi # terminal file manager
     dnsutils # dig / host
     file # show file type info
     ripdrag # drag-and-drop from terminal
     unzip
     wget
     btop
+    tealdeer # tldr man pages
+    glow # render markdown in the terminal
     ## Media / processing
     ffmpeg
     yt-dlp-light

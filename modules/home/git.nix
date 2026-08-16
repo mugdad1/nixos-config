@@ -48,8 +48,6 @@
   '';
 
   programs.zsh.shellAliases = {
-    g = "git status";
-
     gs = "git status";
     gcl = "git clone";
     gd = "git diff";
@@ -62,6 +60,7 @@
 
     gpl = "git pull";
     gplo = "git pull origin";
+    gfa = "git fetch --all --prune --tags";
 
     gps = "git push";
     gpso = "git push origin";
@@ -72,6 +71,16 @@
     gb = "git branch";
     gch = "git checkout";
     gchb = "git checkout -b";
+    gsw = "git switch";
+    gswc = "git switch -c";
+
+    grb = "git rebase";
+    gcp = "git cherry-pick";
+
+    gst = "git stash";
+    gss = "git stash pop";
+    gwt = "git worktree";
+    gwth = "git worktree add";
 
     glg = "git log --oneline --decorate";
     glog = "git log --oneline --decorate --graph";
