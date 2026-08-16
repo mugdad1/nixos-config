@@ -81,6 +81,8 @@
     gss = "git stash pop";
     gwt = "git worktree";
     gwth = "git worktree add";
+    gwtl = "git worktree list";
+    gwtr = "git worktree remove";
 
     glg = "git log --oneline --decorate";
     glog = "git log --oneline --decorate --graph";
