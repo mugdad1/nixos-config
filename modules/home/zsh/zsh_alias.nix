@@ -24,6 +24,12 @@
       du = "dust";
       tldr = "tealdeer";
 
+      # git / nix
+      lg = "lazygit";
+      nr = "nh os switch";
+      nup = "nh os switch --update";
+      hms = "nh home switch";
+
       # python
       piv = "python -m venv .venv";
       psv = "source .venv/bin/activate";

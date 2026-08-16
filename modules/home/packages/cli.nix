@@ -43,5 +43,7 @@
     opencode
     cliamp
     poweralertd
+    lazygit # TUI git (pairs with the gh aliases above)
+    rsync # sync/copy
   ];
 }
