@@ -10,7 +10,7 @@ in {
       systemd-boot = {
         enable = true;
         editor = false;
-        maxGenerations = 10;
+        configurationLimit = 10;
       };
 
       efi.canTouchEfiVariables = true;
