@@ -4,40 +4,13 @@
   ...
 }: let
   gruvbox = (import ../../modules/gruvbox.nix).raw;
-
-  wallpaper = ../../wallpapers/otherWallpaper/nixos/nixos.png;
 in {
   boot = {
     loader = {
-      limine = {
+      systemd-boot = {
         enable = true;
         enableEditor = false;
         maxGenerations = 10;
-        secureBoot.enable = true;
-        secureBoot.autoGenerateKeys = true;
-
-        style = {
-          wallpapers = [wallpaper];
-          wallpaperStyle = "stretched";
-
-          interface = {
-            branding = "mugdad";
-            brandingColor = gruvbox.fg;
-            helpColor = gruvbox.gray;
-            helpColorBright = gruvbox.bright_yellow;
-          };
-
-          graphicalTerminal = {
-            foreground = gruvbox.fg;
-            background = "FF${gruvbox.bg0_h}";
-            brightForeground = gruvbox.fg0;
-            brightBackground = gruvbox.bg0;
-            palette = "${gruvbox.bg0_h};${gruvbox.red};${gruvbox.green};${gruvbox.yellow};${gruvbox.blue};${gruvbox.purple};${gruvbox.aqua};${gruvbox.gray}";
-            brightPalette = "${gruvbox.dark_gray};${gruvbox.bright_red};${gruvbox.bright_green};${gruvbox.bright_yellow};${gruvbox.bright_blue};${gruvbox.bright_purple};${gruvbox.bright_aqua};${gruvbox.fg}";
-            margin = 8;
-            marginGradient = 4;
-          };
-        };
       };
 
       efi.canTouchEfiVariables = true;
