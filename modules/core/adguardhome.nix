@@ -19,8 +19,7 @@
         bind_hosts = ["127.0.0.1"];
         port = 53;
         upstream_dns = [
-          "94.140.14.14"
-          "94.140.15.15"
+          "quic://dns.adguard-dns.com"
         ];
         fallback_dns = [
           "9.9.9.9"
