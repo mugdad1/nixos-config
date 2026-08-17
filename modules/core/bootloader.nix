@@ -9,7 +9,7 @@ in {
     loader = {
       systemd-boot = {
         enable = true;
-        enableEditor = false;
+        editor = false;
         maxGenerations = 10;
       };
 
