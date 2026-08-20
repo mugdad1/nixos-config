@@ -12,6 +12,6 @@ prog="$(which "$1")"
 }
 shift
 tty -s && exec < /dev/null
-tty -s <&1 && exec > /dev/null
-tty -s <&2 && exec 2>&1
+tty -s >&1 && exec > /dev/null
+tty -s >&2 && exec 2>&1
 "$prog" "$@" &

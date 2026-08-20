@@ -28,7 +28,7 @@ in {
         cycle: false;
         font: "Iosevka Nerd Font Bold 16";
         show-icons: true;
-        icon-theme: "Papirus-dark";
+        icon-theme: "Papirus-Dark";
         terminal: "${variables.terminal}";
         drun-display-format: "{icon} {name}";
         location: 0;

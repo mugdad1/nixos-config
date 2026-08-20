@@ -3,20 +3,25 @@ set -euo pipefail
 
 TEMPS=(4000 3000)
 
+if [[ $# -eq 0 ]]; then
+    echo "Usage: toggle-nightlight toggle | status" >&2
+    exit 1
+fi
+
 if [[ $1 == "toggle" ]]; then
     if ! pgrep -x hyprsunset > /dev/null; then
         hyprsunset -t "${TEMPS[0]}" > /dev/null 2>&1 &
     else
-        OLD=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+')
+        OLD=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+' || true)
         pkill -x hyprsunset
         sleep 0.5
         if [[ "$OLD" == "${TEMPS[0]}" ]]; then
             hyprsunset -t "${TEMPS[1]}" > /dev/null 2>&1 &
         fi
     fi
-elif [[ $1 == "status" ]] || [[ -z $1 ]]; then
+elif [[ $1 == "status" ]]; then
     if pgrep -x hyprsunset > /dev/null; then
-        TEMP=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+')
+        TEMP=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+' || true)
         if [[ "$TEMP" == "3000" ]]; then
             printf '{"text": "󰛨", "class": "warmer", "alt": "3000K"}\n'
         else

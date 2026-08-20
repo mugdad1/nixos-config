@@ -73,4 +73,7 @@ case ${chosen} in
     $logout)
         run_cmd --logout
         ;;
+    $quit)
+        exit 0
+        ;;
 esac

@@ -22,6 +22,11 @@ if [[ ! -d "$dir" ]]; then
     mkdir -p "$dir"
 fi
 
+if [[ $# -eq 0 ]]; then
+    echo "Usage: screenshot --copy | --save | --swappy" >&2
+    exit 1
+fi
+
 if [[ "$1" == "--copy" ]]; then
     copy
 elif [[ "$1" == "--save" ]]; then
@@ -29,7 +34,7 @@ elif [[ "$1" == "--save" ]]; then
 elif [[ "$1" == "--swappy" ]]; then
     swappy_
 else
-    echo -e "Available Options: --copy --save --swappy"
+    echo "Unknown option: $1" >&2
+    echo "Usage: screenshot --copy | --save | --swappy" >&2
+    exit 1
 fi
-
-exit 0

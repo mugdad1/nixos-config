@@ -11,9 +11,6 @@ performance="<span color='${red}'>󰓅 </span>"
 
 mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2> /dev/null)
 
-amd_pci="0000:06:00.0"
-nvidia_pci="0000:01:00.0"
-
 current_gpu=$(cardwire get 2> /dev/null | xargs)
 case $current_gpu in
     Integrated) selected_row=0 ;;

@@ -68,10 +68,7 @@
     dbus.enable = true;
 
     irqbalance.enable = true;
-    thermald.enable = true;
     bpftune.enable = true;
-
-
   };
 
   systemd.tmpfiles.rules = [

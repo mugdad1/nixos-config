@@ -1,4 +1,6 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  c = (import ../../gruvbox.nix).css;
+in {
   home.packages = with pkgs; [swayosd];
 
   xdg.configFile."swayosd/config.toml".text = ''
@@ -12,7 +14,7 @@
         padding: 0px 10px;
         border-radius: 25px;
         border: 10px;
-        background: alpha(#282828, 0.99);
+        background: alpha(${c.bg0}, 0.99);
     }
 
     #container {
@@ -20,7 +22,7 @@
     }
 
     image, label {
-        color: #FBF1C7;
+        color: ${c.fg0};
     }
 
     progressbar:disabled,
@@ -38,13 +40,13 @@
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: alpha(#665c54, 0.5);
+        background: alpha(${c.bg3}, 0.5);
     }
     progress {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: #98971A;
+        background: ${c.green};
     }
   '';
 }

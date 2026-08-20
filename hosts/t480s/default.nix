@@ -10,7 +10,6 @@
   ];
 
   hardware.graphics = {
-    enable = true;
     extraPackages = with pkgs; [
       intel-media-driver
       intel-compute-runtime
@@ -32,6 +31,7 @@
   ];
 
   services.throttled.enable = true;
+  services.thermald.enable = true;
   services.tlp.enable = false;
 
   systemd.services.battery-threshold = {
