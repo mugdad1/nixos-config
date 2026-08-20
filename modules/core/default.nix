@@ -17,5 +17,6 @@
     ./user.nix
     ./wayland.nix
     ./kernel-blacklist.nix
+    ./rust.nix
   ];
 }

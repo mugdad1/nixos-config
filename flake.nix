@@ -23,6 +23,8 @@
       url = "github:opengamingcollective/cardwire";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs = {nixpkgs, ...} @ inputs: let
