@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  c = (import ../../gruvbox.nix).css;
+  c = (import ../gruvbox.nix).css;
 in {
   home.packages = with pkgs; [swayosd];
 
