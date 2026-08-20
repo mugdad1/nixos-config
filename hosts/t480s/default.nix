@@ -24,6 +24,11 @@
     "i915.enable_dc=2"
     "mem_sleep_default=deep"
     "psmouse.synaptics_intertouch=1"
+    "preempt=voluntary"
+    "nowatchdog"
+    "psi=1"
+    "rootflags=noatime"
+    "fbcon=nodefer"
   ];
 
   services.throttled.enable = true;

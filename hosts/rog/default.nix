@@ -28,6 +28,20 @@ in {
     inputs.cardwire.nixosModules.default
   ];
 
+  boot.kernelParams = [
+    "amd_pstate=active"
+    "amd_iommu=force"
+    "preempt=voluntary"
+    "nowatchdog"
+    "psi=1"
+    "rootflags=noatime"
+    "fbcon=nodefer"
+  ];
+
+  boot.blacklistedKernelModules = [
+    "firewire-core"
+  ];
+
   hardware = {
     nvidia = {
       modesetting.enable = true;

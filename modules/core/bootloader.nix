@@ -18,6 +18,11 @@ in {
 
     kernelParams = lib.mkBefore [
       "quiet"
+      "slab_nomerge"
+      "page_poison=1"
+      "page_alloc.shuffle=1"
+      "randomize_kstack_offset=on"
+      "debugfs=off"
     ];
 
     kernelPackages = pkgs.linuxPackages_latest;

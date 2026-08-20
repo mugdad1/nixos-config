@@ -64,6 +64,14 @@
         };
       };
     };
+
+    dbus.enable = true;
+
+    irqbalance.enable = true;
+    thermald.enable = true;
+    bpftune.enable = true;
+
+
   };
 
   systemd.tmpfiles.rules = [
@@ -82,6 +90,4 @@
     enable = true;
     algorithm = "zstd";
   };
-
-  boot.kernel.sysctl."vm.swappiness" = 10;
 }
