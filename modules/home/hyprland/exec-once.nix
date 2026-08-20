@@ -1,8 +1,11 @@
 {
   pkgs,
   variables,
+  config,
   ...
-}: ''
+}: let
+  cursor = config.home.pointerCursor;
+in ''
   -------------------
   ---- AUTOSTART ----
   -------------------
@@ -18,7 +21,7 @@
       hl.exec_cmd("${variables.bar}")
       hl.exec_cmd("swaync")
       hl.exec_cmd("udiskie --automount --notify --smart-tray")
-      hl.exec_cmd("hyprctl setcursor Bibata-Modern-Ice 24")
+      hl.exec_cmd("hyprctl setcursor ${cursor.name} ${toString cursor.size}")
       hl.exec_cmd("init-wallpaper")
       hl.exec_cmd("swayosd-server")
       hl.exec_cmd("${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1")

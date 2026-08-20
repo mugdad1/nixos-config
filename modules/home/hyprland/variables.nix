@@ -12,6 +12,9 @@
     XDG_SESSION_DESKTOP = "Hyprland";
     GRIMBLAST_HIDE_CURSOR = 0;
 
+    # nh needs to know where the flake lives (no longer baked into nh.nix)
+    NH_FLAKE = "$HOME/nixos-config";
+
     WINEDLLOVERRIDES = "winemenubuilder.exe=d";
   };
 }

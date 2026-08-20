@@ -2,12 +2,13 @@
   pkgs,
   variables,
   host,
+  config,
   ...
 }: let
   settings = import ./settings.nix {inherit variables;};
   binds = import ./binds.nix {inherit variables host;};
   rules = import ./windowrules.nix {};
-  autostart = import ./exec-once.nix {inherit pkgs variables;};
+  autostart = import ./exec-once.nix {inherit pkgs variables config;};
 in {
   imports = [
     ./hyprlock.nix
@@ -19,8 +20,6 @@ in {
     grimblast
     hyprpicker
     nwg-displays
-    grim
-    slurp
     wl-clip-persist
     cliphist
     glib
@@ -43,8 +42,8 @@ in {
     ---- ENVIRONMENT VARS ----
     -------------------------
 
-    hl.env("XCURSOR_SIZE", "24")
-    hl.env("HYPRCURSOR_SIZE", "24")
+    hl.env("XCURSOR_SIZE", "${toString config.home.pointerCursor.size}")
+    hl.env("HYPRCURSOR_SIZE", "${toString config.home.pointerCursor.size}")
 
     ${settings}
 
