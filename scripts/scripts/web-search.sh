@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Multi-engine web search via rofi
 
 QUERY=$(rofi -dmenu -p "Search" -theme-str 'inputbar { children: [prompt, entry]; }')

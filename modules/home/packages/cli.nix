@@ -32,7 +32,6 @@
     killall
     strace
     libnotify
-    openssl
     socat
     udiskie # auto-mounter
     wl-clipboard # wayland clipboard

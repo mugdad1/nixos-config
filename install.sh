@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 CURRENT_USERNAME=$(whoami)
 
@@ -58,6 +58,8 @@ fi
 
 echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
 find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/mugdad/${CURRENT_USERNAME}/g" {} +
+# Fix email that got mangled by the username replacement
+find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/${CURRENT_USERNAME}02@tutamail.com/mugdad02@tutamail.com/g" {} +
 
 #--- Set GPU profile ---#
 
@@ -68,8 +70,6 @@ sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" "hosts/${HOST}/variables.nix"
 
 echo -e "${INFO}Preparing environment"
 mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
-cp -r wallpapers/otherWallpaper/gruvbox/* ~/Pictures/wallpapers/others/ 2> /dev/null || true
-cp -r wallpapers/otherWallpaper/nixos/* ~/Pictures/wallpapers/others/ 2> /dev/null || true
 ln -sf "$PWD/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
 
 #--- Hardware config ---#

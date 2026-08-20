@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 command="$@"
 
@@ -10,8 +11,8 @@ focus() {
 
 start_time=$(date +%s)
 
-$command
-exit_status=$?
+$command || exit_status=$?
+exit_status=${exit_status:-0}
 
 end_time=$(date +%s)
 duration=$(($end_time - $start_time))

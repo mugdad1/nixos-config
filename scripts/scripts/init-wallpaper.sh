@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Start awww daemon if not running
 if ! pgrep -x awww-daemon > /dev/null; then

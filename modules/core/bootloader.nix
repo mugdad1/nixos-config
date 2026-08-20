@@ -27,7 +27,13 @@ in {
 
     kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = ["ntfs"];
+    tmp.cleanOnBoot = true;
   };
+
+  systemd.tmpfiles.rules = [
+    "D /tmp 1777 root root 1d"
+    "D /var/tmp 1777 root root 7d"
+  ];
 
   console.colors = [
     gruvbox.bg0 # 0  black

@@ -1,18 +1,16 @@
 {...}: {
   imports = [
-    ./bat.nix # better cat command
-    ./browser.nix # firefox based browser
-    ./direnv.nix
+    ./bat-direnv.nix # bat + direnv
+    ./browser.nix # zen browser
     ./fastfetch/fastfetch.nix # fetch tool
     ./fzf.nix # fuzzy finder
     ./ghostty/ghostty.nix # terminal
     ./git.nix # version control
-    ./gnome.nix # gnome apps
-    ./gtk.nix # gtk theme
+    ./gui.nix # gui apps + gnome apps
     ./hyprland # window manager
     ./nemo.nix # file manager
     ./p10k/p10k.nix
-    ./qt.nix # qt / kvantum theme
+    ./theme.nix # gtk + qt / kvantum theme
     ./packages # other packages
     ./rofi/rofi.nix # launcher
     ../../scripts/scripts.nix # personal scripts

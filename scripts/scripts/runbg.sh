@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 [ $# -eq 0 ] && {
     echo "$(basename "$0"): missing command" >&2

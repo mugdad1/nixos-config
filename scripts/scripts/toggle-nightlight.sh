@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 TEMPS=(4000 3000)
 

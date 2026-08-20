@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 animations=("outer" "center" "any" "wipe")
 random_animation=${animations[RANDOM % ${#animations[@]}]}

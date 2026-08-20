@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 dir="$HOME/Pictures/Screenshots"
 time=$(date +'%Y_%m_%d_at_%Hh%Mm%Ss')

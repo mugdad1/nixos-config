@@ -5,6 +5,5 @@
       enable = true;
       extraArgs = "--keep-since 1d --keep 1";
     };
-    flake = builtins.toString ../../.;
   };
 }

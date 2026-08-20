@@ -4,7 +4,6 @@
     ./hardware.nix
     ./adguardhome.nix
     ./network.nix
-    ./cleanup.nix
     ./fonts.nix
     ./nh.nix
     ./pipewire.nix

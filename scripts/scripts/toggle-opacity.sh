@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Toggle transparency of the currently focused window
 addr=$(hyprctl activewindow -j | jq -r '.address')
 current=$(hyprctl activewindow -j | jq -r '.alpha')

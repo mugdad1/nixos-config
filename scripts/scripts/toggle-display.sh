@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 DISPLAYS=("eDP-1" "eDP-2")
 

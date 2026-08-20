@@ -25,7 +25,6 @@
     aria2
     lz4
     ninja
-    bpftune
     pkg-config
   ];
 

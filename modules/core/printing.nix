@@ -16,27 +16,4 @@
 
   # GUI printer manager
   programs.system-config-printer.enable = true;
-
-  # Declarative printers (optional). Fill in after running:
-  #   lpinfo -v            # -> deviceUri (usb://... or socket://IP:9100)
-  #   lpinfo -m | grep hp  # -> model ppd
-  # hardware.printers = {
-  #   ensurePrinters = [
-  #     {
-  #       name = "hp-usb";
-  #       location = "Desk (USB)";
-  #       deviceUri = "usb://HP/...";
-  #       model = "drv:///hp/hpcups.drv/hp-..._series.ppd";
-  #       ppdOptions = { PageSize = "A4"; };
-  #     }
-  #     {
-  #       name = "hp-network";
-  #       location = "Network (IP)";
-  #       deviceUri = "socket://192.168.1.50:9100";
-  #       model = "drv:///hp/hpcups.drv/hp-..._series.ppd";
-  #       ppdOptions = { PageSize = "A4"; };
-  #     }
-  #   ];
-  #   ensureDefaultPrinter = "hp-network";
-  # };
 }
