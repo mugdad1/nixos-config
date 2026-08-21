@@ -12,11 +12,6 @@
 
     nix-ld.enable = true;
 
-    localsend = {
-      enable = true;
-      openFirewall = true;
-    };
-
     java = {
       enable = true;
       package = pkgs.jdk21;

@@ -28,8 +28,12 @@ in {
       enable = true;
       allowedTCPPorts = [
         22
+        42000
+        42001
       ];
-      allowedUDPPorts = [];
+      allowedUDPPorts = [
+        42000
+      ];
     };
   };
 
@@ -43,7 +47,7 @@ in {
 
   services.resolved = lib.mkIf (!adguardOn) {
     enable = true;
-    settings = {
+    settings.Resolve = {
       DNSSEC = "allow-downgrade";
       Domains = ["~."];
       FallbackDNS = [
@@ -51,6 +55,7 @@ in {
         "149.112.112.112"
       ];
     };
+  };
   };
 
   # When AdGuard owns :53, let it be the system resolver end-to-end.
