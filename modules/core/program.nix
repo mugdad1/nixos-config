@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  programs = {
+    programs = {
     dconf.enable = true;
     zsh.enable = true;
 
@@ -11,6 +11,11 @@
     appimage.enable = true;
 
     nix-ld.enable = true;
+
+    localsend = {
+      enable = true;
+      openFirewall = true;
+    };
 
     java = {
       enable = true;

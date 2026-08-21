@@ -43,7 +43,7 @@ in {
 
   services.resolved = lib.mkIf (!adguardOn) {
     enable = true;
-    settings.Resolve = {
+    settings = {
       DNSSEC = "allow-downgrade";
       Domains = ["~."];
       FallbackDNS = [

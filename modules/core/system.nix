@@ -78,8 +78,8 @@
     "net.ipv6.conf.default.accept_redirects" = 0;
 
     # Log suspicious packets
-    "net.ipv4.conf.all.log_martians" = true;
-    "net.ipv4.conf.default.log_martians" = true;
+    "net.ipv4.conf.all.log_martians" = 1;
+    "net.ipv4.conf.default.log_martians" = 1;
 
     # TCP optimization
     "net.ipv4.tcp_fastopen" = 3;

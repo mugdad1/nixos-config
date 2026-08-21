@@ -15,7 +15,6 @@
 
       ## System / Utility
       gnome-disk-utility
-      localsend
       zenity
       kdePackages.polkit-kde-agent-1
       mission-center
