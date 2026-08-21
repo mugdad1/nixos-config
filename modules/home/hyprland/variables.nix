@@ -1,6 +1,6 @@
 {variables, config, ...}: {
   home.sessionVariables = {
-    EDITOR = "${variables.editor}";
+    EDITOR = variables.editor;
     NIXOS_OZONE_WL = 1;
     GDK_BACKEND = "wayland";
     DIRENV_LOG_FORMAT = "";

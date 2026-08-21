@@ -8,7 +8,7 @@
 
     settings = {
       user = {
-        name = "mugdad";
+        name = username;
         email = "mugdad02@tutamail.com";
       };
 
@@ -24,7 +24,7 @@
         ];
       };
 
-      core.excludesFile = "/home/${username}/.config/git/.gitignore";
+      core.excludesFile = "~/.config/git/.gitignore";
     };
   };
 

@@ -6,16 +6,6 @@
 }: {
   home.packages = with pkgs;
     [
-      ## Nix
-      alejandra # nix formatter (matches the flake formatter)
-      nixd
-      nixfmt
-      statix # nix lints
-      deadnix # find dead nix code
-      shfmt
-      shellcheck # shell lints
-      treefmt
-
       ## C / C++
       gcc
       gdb

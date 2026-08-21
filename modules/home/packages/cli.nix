@@ -27,6 +27,7 @@
 
     ## System / debugging
     binutils
+    brightnessctl
     entr # run command on file change
     jq
     killall

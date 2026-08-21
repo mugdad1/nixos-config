@@ -16,12 +16,6 @@
     };
     fwupd.enable = true;
 
-    # needed for GNOME services outside of GNOME Desktop
-    dbus.packages = [
-      pkgs.gcr
-      pkgs.gnome-settings-daemon
-    ];
-
     logind.settings.Login = {
       # don’t shutdown when power button is short-pressed
       HandlePowerKey = "ignore";
@@ -49,10 +43,6 @@
     irqbalance.enable = true;
     bpftune.enable = true;
   };
-
-  systemd.tmpfiles.rules = [
-    "d /var/cache/tuigreet 0755 greeter greeter"
-  ];
 
   services.upower = {
     enable = true;

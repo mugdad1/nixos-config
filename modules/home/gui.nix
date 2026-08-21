@@ -24,7 +24,6 @@
 
       ## GNOME apps (PDF viewer, archive manager)
       evince
-      file-roller
     ]
   );
 }

@@ -33,6 +33,7 @@ in {
   systemd.tmpfiles.rules = [
     "D /tmp 1777 root root 1d"
     "D /var/tmp 1777 root root 7d"
+    "d /var/cache/tuigreet 0755 greeter greeter"
   ];
 
   console.colors = [

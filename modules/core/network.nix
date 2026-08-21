@@ -11,7 +11,7 @@
   adguardOn = config.services.adguardhome.enable or false;
 in {
   networking = {
-    hostName = "${host}";
+    hostName = host;
     networkmanager = {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant on
@@ -38,10 +38,7 @@ in {
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
   # module when wifi.backend = "iwd".
-  networking.wireless = {
-    enable = false;
-    iwd.enable = true;
-  };
+  networking.wireless.iwd.enable = true;
 
   services.resolved = lib.mkIf (!adguardOn) {
     enable = true;
