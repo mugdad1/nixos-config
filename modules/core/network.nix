@@ -33,6 +33,7 @@ in {
       ];
       allowedUDPPorts = [
         42000
+        5353
       ];
     };
   };
@@ -56,7 +57,8 @@ in {
       ];
     };
   };
-  };
+
+  # When
 
   # When AdGuard owns :53, let it be the system resolver end-to-end.
   networking.resolvconf.enable = lib.mkIf adguardOn false;
