@@ -15,7 +15,7 @@
 
       ## System / Utility
       gnome-disk-utility
-      warpinator
+      localsend
       zenity
       kdePackages.polkit-kde-agent-1
       mission-center

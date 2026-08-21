@@ -16,27 +16,6 @@
     };
     fwupd.enable = true;
 
-    openssh = {
-      enable = true;
-      settings = {
-        PasswordAuthentication = true;
-        KbdInteractiveAuthentication = true;
-        PermitRootLogin = "no";
-      };
-    };
-
-    fail2ban = {
-      enable = true;
-      jails.sshd = {
-        enabled = true;
-        settings = {
-          maxretry = 5;
-          bantime = "1h";
-          findtime = "10m";
-        };
-      };
-    };
-
     # needed for GNOME services outside of GNOME Desktop
     dbus.packages = [
       pkgs.gcr

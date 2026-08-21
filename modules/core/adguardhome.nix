@@ -12,7 +12,7 @@
       users = [
         {
           name = "mugdad";
-          password = "$2b$05$Ql8dSXIbLyBwncygqV.2JeTW6Kiop/sWmDLYaMGJXzMzbOKqyM.G.";
+          password = "$2b$10$cZkkSL1IbwAXhC2Pi5TOZu5DWUOAgmotLfUkmc3oO5a4orMWslM.q";
         }
       ];
       dns = {

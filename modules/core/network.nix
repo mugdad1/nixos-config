@@ -27,13 +27,10 @@ in {
     firewall = {
       enable = true;
       allowedTCPPorts = [
-        22
-        42000
-        42001
+        53317
       ];
       allowedUDPPorts = [
-        42000
-        5353
+        53317
       ];
     };
   };

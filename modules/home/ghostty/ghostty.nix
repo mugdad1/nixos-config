@@ -47,9 +47,9 @@ in {
 
       auto-update = "off";
 
-      clipboard-read = "allow";
+      clipboard-read = "request";
       clipboard-write = "allow";
-      clipboard-paste-protection = false;
+      clipboard-paste-protection = true;
     };
 
     themes.gruvbox = {

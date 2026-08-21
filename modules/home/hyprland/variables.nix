@@ -1,4 +1,4 @@
-{variables, ...}: {
+{variables, config, ...}: {
   home.sessionVariables = {
     EDITOR = "${variables.editor}";
     NIXOS_OZONE_WL = 1;
@@ -13,7 +13,7 @@
     GRIMBLAST_HIDE_CURSOR = 0;
 
     # nh needs to know where the flake lives (no longer baked into nh.nix)
-    NH_FLAKE = "$HOME/nixos-config";
+    NH_FLAKE = "${config.home.homeDirectory}/nixos-config";
 
     WINEDLLOVERRIDES = "winemenubuilder.exe=d";
   };
