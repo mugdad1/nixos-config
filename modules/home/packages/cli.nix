@@ -19,7 +19,9 @@
     glow # render markdown in the terminal
     ## Media / processing
     ffmpeg
-    yt-dlp-light
+    yt-dlp
+    deno
+    nodejs
     pamixer # pulseaudio cli mixer
     playerctl # media player controller
     swappy # screenshot editor
