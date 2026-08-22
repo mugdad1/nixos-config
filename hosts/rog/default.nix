@@ -211,11 +211,19 @@ in {
     nvtopPackages.full
     acpi
     (ffmpeg-full.override {withNvcodec = true;})
+    power-profile-helper
   ];
 
-  security.wrappers.power-profile-helper = {
-    owner = "root";
-    group = "root";
-    source = "${power-profile-helper}/bin/power-profile-helper";
-  };
+  # Privileged ops (MUX flip, desired-mode persist) run through pkexec with a
+  # polkit rule instead of a setuid script wrapper (setuid is ignored on
+  # shebang scripts).
+  environment.etc."polkit-1/rules.d/10-power-profile-helper.rules".text = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.policykit.exec" &&
+          subject.user == "mugdad" &&
+          action.lookup("program").endsWith("/power-profile-helper")) {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 }

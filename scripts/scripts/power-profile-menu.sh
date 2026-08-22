@@ -32,7 +32,7 @@ run_rofi() {
     echo -e "${power_saver}\n${balanced}\n${performance}" | rofi_cmd
 }
 
-HELPER=/run/wrappers/bin/power-profile-helper
+HELPER="pkexec /run/current-system/sw/bin/power-profile-helper"
 
 run_gpu_cmd() {
     local action="$1"
