@@ -14,31 +14,31 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/mapper/luks-d22c4f5c-3d5d-442e-900e-3733c11cd615";
+    { device = "/dev/disk/by-uuid/f3f32226-2234-4eec-b45d-a863d764413a";
       fsType = "btrfs";
     };
 
-  boot.initrd.luks.devices."luks-d22c4f5c-3d5d-442e-900e-3733c11cd615".device = "/dev/disk/by-uuid/d22c4f5c-3d5d-442e-900e-3733c11cd615";
-
   fileSystems."/home" =
-    { device = "/dev/mapper/luks-d22c4f5c-3d5d-442e-900e-3733c11cd615";
+    { device = "/dev/disk/by-uuid/f3f32226-2234-4eec-b45d-a863d764413a";
       fsType = "btrfs";
       options = [ "subvol=home" ];
     };
 
   fileSystems."/nix" =
-    { device = "/dev/mapper/luks-d22c4f5c-3d5d-442e-900e-3733c11cd615";
+    { device = "/dev/disk/by-uuid/f3f32226-2234-4eec-b45d-a863d764413a";
       fsType = "btrfs";
       options = [ "subvol=nix" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/1D17-531C";
+    { device = "/dev/disk/by-uuid/1BE8-B43F";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-  swapDevices = [ ];
+  swapDevices =
+    [ { device = "/dev/disk/by-uuid/d592942f-e186-42e1-8bd5-0cb907b275c8"; }
+    ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
