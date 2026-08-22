@@ -47,7 +47,7 @@ in {
 
       auto-update = "off";
 
-      clipboard-read = "request";
+      clipboard-read = "ask";
       clipboard-write = "allow";
       clipboard-paste-protection = true;
     };

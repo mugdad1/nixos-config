@@ -6,6 +6,15 @@
 }: {
   home.packages = with pkgs;
     [
+      ## Nix
+      alejandra
+      nixd
+      statix
+      deadnix
+      shfmt
+      shellcheck
+      treefmt
+
       ## C / C++
       gcc
       gdb
@@ -16,7 +25,7 @@
       llvmPackages_latest.clang-tools
 
       ## Python
-      python3
+      (python3.withPackages (ps: with ps; [pip fpdf2]))
       python312Packages.ipython
 
       ## Tauri
