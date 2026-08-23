@@ -13,9 +13,10 @@
       upstreams = {
         init.strategy = "fast"; # don't block startup on upstream probes
         groups.default = [
-          "quic:dns.adguard-dns.com" # DoQ
-          "tcp-tls:dns.adguard-dns.com" # DoT
-          "https://dns.adguard-dns.com/dns-query" # DoH
+          "quic://2b44bd66.d.adguard-dns.com" # DoQ
+          "192.168.44.187"
+          "192.168.44.188"
+
         ];
       };
 
