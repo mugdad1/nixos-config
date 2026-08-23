@@ -1,4 +1,27 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  ...
+}: let
+  # Seeded ONCE into ~/.config/VSCodium/User/settings.json (only if the file
+  # doesn't exist yet). Afterwards it's a normal editable file - GUI changes
+  # survive rebuilds.
+  defaultSettings = pkgs.writeText "codium-default-settings.json" (
+    builtins.toJSON {
+      "security.workspace.trust.enabled" = false;
+      "extensions.autoUpdate" = false;
+      "extensions.autoCheckUpdates" = false;
+      "update.mode" = "none";
+      "telemetry.telemetryLevel" = "off";
+      "workbench.colorTheme" = "Gruvbox Dark Medium";
+      "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
+      "editor.fontSize" = 14;
+      "editor.formatOnSave" = true;
+      "files.autoSave" = "afterDelay";
+      "terminal.integrated.defaultProfile.linux" = "zsh";
+    }
+  );
+in {
   programs.vscodium = {
     enable = true;
     # FHS wrapper keeps runtime compatibility (e.g. extension host binaries)
@@ -26,24 +49,18 @@
 
         ## QoL
         usernamehw.errorlens
-        eamodio.gitlens
         jdinhlife.gruvbox
       ];
-
-      userSettings = {
-        "workbench.colorTheme" = "Gruvbox Dark Medium";
-        "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
-        "editor.fontSize" = 14;
-        "editor.fontLigatures" = true;
-        "editor.formatOnSave" = true;
-        "files.autoSave" = "afterDelay";
-        "extensions.autoUpdate" = false;
-        "extensions.autoCheckUpdates" = false;
-        "update.mode" = "none";
-        "telemetry.telemetryLevel" = "off";
-        "terminal.integrated.defaultProfile.linux" = "zsh";
-        "[php]"."editor.defaultFormatter" = "bmewburn.vscode-intelephense-client";
-      };
     };
   };
+
+  home.activation.seedVSCodiumSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    S="$HOME/.config/VSCodium/User/settings.json"
+    if [ ! -f "$S" ]; then
+      mkdir -p "$(dirname "$S")"
+      # install instead of cp so it doesn't inherit the store path's
+      # read-only mode
+      install -m 644 ${defaultSettings} "$S"
+    fi
+  '';
 }

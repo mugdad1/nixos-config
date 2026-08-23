@@ -9,7 +9,7 @@
     ./gui.nix # gui apps + gnome apps
     ./hyprland # window manager
     ./nemo.nix # file manager
-    ./nvim.nix # neovim via nixvim (web dev + php + bash + c)
+    ./lazyvim.nix # neovim = LazyVim (starter seeded to ~/.config/nvim)
     ./p10k/p10k.nix
     ./theme.nix # gtk + qt / kvantum theme
     ./packages # other packages

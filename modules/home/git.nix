@@ -18,9 +18,11 @@
       pull.ff = "only";
 
       url = {
-        "git@github.com:".insteadOf = [
-          "gh:"
-          "https://github.com/"
+        # SSH only for your own repos; everything else (e.g. lazy.nvim
+        # cloning plugins) stays HTTPS so it works without SSH keys/port 22.
+        "git@github.com:mugdad1/".insteadOf = [
+          "gh:mugdad1/"
+          "https://github.com/mugdad1/"
         ];
       };
 

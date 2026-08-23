@@ -2,8 +2,8 @@
   imports = [
     ./bootloader.nix
     ./hardware.nix
-    ./adguardhome.nix
     ./network.nix
+    ./blocky.nix
     ./fonts.nix
     ./nh.nix
     ./pipewire.nix

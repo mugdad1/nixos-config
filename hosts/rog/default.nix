@@ -108,7 +108,10 @@ in {
     wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold'";
+      # stop charging at 80%, only resume once the battery drains to 70%
+      # (gaming laptop: frequent full-range cycling would wear the cell fast;
+      # a wide hysteresis avoids the 79->80 micro-recharge loop)
+      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold && echo 70 > /sys/class/power_supply/BAT0/charge_control_start_threshold'";
       ProtectSystem = "strict";
       PrivateTmp = true;
       NoNewPrivileges = true;

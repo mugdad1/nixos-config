@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-    programs = {
+  programs = {
     dconf.enable = true;
     zsh.enable = true;
 
@@ -9,6 +9,9 @@
     };
 
     appimage.enable = true;
+
+    # lets Mason-installed (dynamically linked) LSP servers/tools run
+    nix-ld.enable = true;
 
     java = {
       enable = true;

@@ -28,6 +28,21 @@
       (python3.withPackages (ps: with ps; [pip fpdf2]))
       python312Packages.ipython
 
+      ## Web dev (PHP / SQL)
+      php
+      phpPackages.composer
+      sqlite
+      dbeaver-bin
+
+      ## Web LSPs & formatters system-wide (Mason-independent fallbacks)
+      intelephense # PHP LSP
+      vtsls # JS/TS LSP
+      vscode-langservers-extracted # html/css/json LSPs
+      typescript
+      typescript-language-server
+      bash-language-server
+      prettierd
+
       ## Tauri
       cargo-tauri
       webkitgtk_4_1

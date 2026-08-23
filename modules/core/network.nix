@@ -8,7 +8,7 @@
   # AdGuard Home owns 127.0.0.1:53, so when it is enabled systemd-resolved is
   # disabled and the system DNS is pointed at AdGuard instead. With AdGuard
   # off, fall back to systemd-resolved (DNSSEC + Quad9).
-  adguardOn = config.services.adguardhome.enable or false;
+  localDns = config.services.blocky.enable;
 in {
   networking = {
     hostName = host;
@@ -17,12 +17,8 @@ in {
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant on
       # Intel: the t480s was flapping between two BSSIDs of one SSID after the
       # backend was switched to wpa_supplicant. iwd is also the NixOS default
-      # for wifi. With AdGuard on, NetworkManager does not manage DNS itself.
+      # for wifi. With Blocky on, NetworkManager does not manage DNS itself.
       wifi.backend = "iwd";
-      dns =
-        if adguardOn
-        then "none"
-        else "default";
     };
     firewall = {
       enable = true;
@@ -40,7 +36,7 @@ in {
   # module when wifi.backend = "iwd".
   networking.wireless.iwd.enable = true;
 
-  services.resolved = lib.mkIf (!adguardOn) {
+  services.resolved = lib.mkIf (!localDns) {
     enable = true;
     settings.Resolve = {
       DNSSEC = "allow-downgrade";
@@ -54,9 +50,9 @@ in {
 
   # When
 
-  # When AdGuard owns :53, let it be the system resolver end-to-end.
-  networking.resolvconf.enable = lib.mkIf adguardOn false;
-  environment.etc."resolv.conf".text = lib.mkIf adguardOn ''
+  # When Blocky owns :53, let it be the system resolver end-to-end.
+  networking.resolvconf.enable = lib.mkIf localDns false;
+  environment.etc."resolv.conf".text = lib.mkIf localDns ''
     nameserver 127.0.0.1
     options edns0
   '';
