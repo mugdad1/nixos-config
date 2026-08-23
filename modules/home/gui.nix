@@ -23,7 +23,7 @@ in {
       ## Office / Productivity
       onlyoffice-desktopeditors
       filen-desktop
-      libreoffice-fresh
+      libreoffice-stable
 
       ## System / Utility
       gnome-disk-utility
