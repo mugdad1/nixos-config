@@ -24,6 +24,7 @@ in ''
       hl.exec_cmd("hyprctl setcursor ${cursor.name} ${toString cursor.size}")
       hl.exec_cmd("init-wallpaper")
       hl.exec_cmd("swayosd-server")
+      hl.exec_cmd("safeeyes")
       hl.exec_cmd("${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1")
   end)
 ''
