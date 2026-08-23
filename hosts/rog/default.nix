@@ -22,6 +22,50 @@
       *)              echo "unknown: $1" >&2; exit 1 ;;
     esac
   '';
+  battery-hysteresis = pkgs.writeShellScript "battery-hysteresis" ''
+    set -euo pipefail
+    BAT=/sys/class/power_supply/BAT0
+    END=$BAT/charge_control_end_threshold
+    STATE_FILE=/var/lib/battery-threshold/state
+
+    cap=$(cat "$BAT/capacity")
+    status=$(cat "$BAT/status")
+    cur=$(cat "$END")
+
+    # This platform has no charge_control_start_threshold, so emulate the
+    # 80/70 hysteresis: once charging completes at 80, drop the end threshold
+    # to 71 so the EC cannot recharge; restore 80 only below 70.
+    state=allowed
+    if [ -f "$STATE_FILE" ]; then
+      state=$(cat "$STATE_FILE")
+    fi
+
+    case "$state" in
+      blocked)
+        if [ "$cap" -le 70 ]; then
+          state=allowed
+          echo allowed > "$STATE_FILE"
+        fi
+        ;;
+      *)
+        # Only latch "blocked" when the charge cycle has finished (>=80 and
+        # no longer actively charging), never mid-charge.
+        if [ "$cap" -ge 80 ] && [ "$status" != "Charging" ]; then
+          state=blocked
+          echo blocked > "$STATE_FILE"
+        fi
+        ;;
+    esac
+
+    target=80
+    if [ "$state" = blocked ]; then
+      target=71
+    fi
+
+    if [ "$cur" != "$target" ]; then
+      echo "$target" > "$END"
+    fi
+  '';
 in {
   imports = [
     ./hardware-configuration.nix
@@ -102,20 +146,27 @@ in {
   };
 
   systemd.services.battery-threshold = {
-    description = "Set battery charge threshold after asusd";
+    description = "Battery charge hysteresis (stop 80, resume 70)";
     after = ["asusd.service"];
     requires = ["asusd.service"];
     wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
-      # stop charging at 80%, only resume once the battery drains to 70%
-      # (gaming laptop: frequent full-range cycling would wear the cell fast;
-      # a wide hysteresis avoids the 79->80 micro-recharge loop)
-      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 80 > /sys/class/power_supply/BAT0/charge_control_end_threshold && echo 70 > /sys/class/power_supply/BAT0/charge_control_start_threshold'";
+      ExecStart = battery-hysteresis;
+      StateDirectory = "battery-threshold";
       ProtectSystem = "strict";
       PrivateTmp = true;
       NoNewPrivileges = true;
       RestrictSUIDSGID = true;
+    };
+  };
+
+  systemd.timers.battery-threshold = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "45s";
+      OnUnitActiveSec = "30s";
+      Unit = "battery-threshold.service";
     };
   };
 
