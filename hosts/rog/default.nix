@@ -48,9 +48,11 @@
         fi
         ;;
       *)
-        # Only latch "blocked" when the charge cycle has finished (>=80 and
-        # no longer actively charging), never mid-charge.
-        if [ "$cap" -ge 80 ] && [ "$status" != "Charging" ]; then
+        # Latch "blocked" as soon as a charge cycle completes. The EC
+        # oscillates 79<->80 near the top, so requiring an exact 80 sample
+        # races with the polling interval: any non-charging rest at >=75
+        # means the end threshold did its job.
+        if [ "$cap" -ge 75 ] && [ "$status" != "Charging" ]; then
           state=blocked
           echo blocked > "$STATE_FILE"
         fi
@@ -165,7 +167,7 @@ in {
     wantedBy = ["timers.target"];
     timerConfig = {
       OnBootSec = "45s";
-      OnUnitActiveSec = "30s";
+      OnUnitActiveSec = "15s";
       Unit = "battery-threshold.service";
     };
   };
