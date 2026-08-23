@@ -40,6 +40,11 @@ in {
           install_url = "https://addons.mozilla.org/en-US/firefox/downloads/latest/ublock-origin/latest.xpi";
           installation_mode = "normal_installed";
         };
+        # DownThemAll (verified guid via AMO API)
+        "{DDC359D1-844A-42a7-9AA1-88A850A938A8}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/downthemall/latest.xpi";
+          installation_mode = "normal_installed";
+        };
       };
     };
 

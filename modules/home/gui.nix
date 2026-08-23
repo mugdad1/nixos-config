@@ -6,7 +6,10 @@
       obs-studio
       pavucontrol
       vlc
-      vscodium-fhs
+
+      ## Browsers (vanilla, un-nixified profiles: editable directly)
+      chromium
+      firefox
 
       ## Office / Productivity
       onlyoffice-desktopeditors

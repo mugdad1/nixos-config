@@ -1,6 +1,7 @@
 {variables, config, ...}: {
   home.sessionVariables = {
-    EDITOR = variables.editor;
+    # NOTE: $EDITOR is owned by programs.nixvim (modules/home/nvim.nix);
+    # `variables.editor` only drives GUI launchers/hyprland binds.
     NIXOS_OZONE_WL = 1;
     GDK_BACKEND = "wayland";
     DIRENV_LOG_FORMAT = "";

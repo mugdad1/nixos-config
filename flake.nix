@@ -25,6 +25,10 @@
     };
 
     rust-overlay.url = "github:oxalica/rust-overlay";
+
+    # NOTE: deliberately NOT pinning nixpkgs.follows - nixvim tests against its
+    # own pinned nixpkgs and mismatches cause vimPlugins eval failures.
+    nixvim.url = "github:nix-community/nixvim";
   };
 
   outputs = {nixpkgs, ...} @ inputs: let

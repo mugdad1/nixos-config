@@ -9,6 +9,7 @@
     ./gui.nix # gui apps + gnome apps
     ./hyprland # window manager
     ./nemo.nix # file manager
+    ./nvim.nix # neovim via nixvim (web dev + php + bash + c)
     ./p10k/p10k.nix
     ./theme.nix # gtk + qt / kvantum theme
     ./packages # other packages
@@ -20,6 +21,7 @@
     ./waybar # status bar
     ./waypaper.nix # GUI wallpaper picker
     ./wallpapers.nix # deploy repo wallpapers into ~/Pictures/wallpapers
+    ./vscodium.nix # declarative vscodium + web dev extensions
     ./xdg-mimes.nix # xdg config
     ./zsh # shell
   ];
