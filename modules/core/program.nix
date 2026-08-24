@@ -27,6 +27,10 @@
     lz4
     ninja
     pkg-config
+    poppler-utils
+    tesseract
+    imagemagick
+    antiword
   ];
 
   environment.variables = {

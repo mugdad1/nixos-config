@@ -1,7 +1,7 @@
 {
   browser = "zen-beta";
   terminal = "ghostty";
-  editor = "codium";
+  editor = "nvim";
   launcher = "rofi";
   bar = "waybar";
 
