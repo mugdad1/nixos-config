@@ -24,7 +24,7 @@ in {
       onlyoffice-desktopeditors
       filen-desktop
       libreoffice-stable
-
+      odin
       ## System / Utility
       gnome-disk-utility
       localsend
