@@ -11,7 +11,7 @@ performance="<span color='${red}'>󰓅 </span>"
 
 mux=$(cat /sys/devices/platform/asus-nb-wmi/gpu_mux_mode 2> /dev/null)
 
-current_gpu=$(cardwire get 2> /dev/null | xargs)
+current_gpu=$(cardwire get 2>/dev/null | xargs || true)
 case $current_gpu in
     Integrated) selected_row=0 ;;
     Hybrid) selected_row=1 ;;
@@ -40,36 +40,32 @@ run_gpu_cmd() {
     local label="$3"
 
     profile="${cpu_mode/power-saver/quiet}"
-    asusctl profile set -a "$profile"
-    asusctl profile set -b "$profile"
+    asusctl profile set -a "$profile" || true
+    asusctl profile set -b "$profile" || true
 
     case $action in
         amd-only)
-            $HELPER desired-mode amd
-            $HELPER cardwire-set integrated
+            $HELPER desired-mode amd || true
+            $HELPER cardwire-set integrated || true
             if [ "$mux" != "1" ]; then
-                $HELPER mux 1
+                $HELPER mux 1 || true
                 notify-send -u normal "Profile" "AMD Only — MUX flipped to Optimus. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         nvidia-only)
-            # cardwire v0.12+ refuses manual mode while the iGPU is live
-            # (Laptop classification). Persist the intent + flip the MUX to
-            # dGPU, then reboot: in dGPU mode the system classifies as Desktop
-            # and cardwire-apply-blocks applies manual + blocks AMD at boot.
-            $HELPER desired-mode nvidia
+            $HELPER desired-mode nvidia || true
             if [ "$mux" != "0" ]; then
-                $HELPER mux 0
+                $HELPER mux 0 || true
                 notify-send -u normal "Profile" "NVIDIA Only — MUX flipped to dGPU. Rebooting..."
                 sleep 2 && systemctl reboot
             fi
             ;;
         hybrid)
-            $HELPER desired-mode hybrid
-            $HELPER cardwire-set hybrid
+            $HELPER desired-mode hybrid || true
+            $HELPER cardwire-set hybrid || true
             if [ "$mux" != "1" ]; then
-                $HELPER mux 1
+                $HELPER mux 1 || true
             fi
             ;;
     esac
