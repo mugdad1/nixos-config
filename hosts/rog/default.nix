@@ -280,10 +280,6 @@ in {
     acpi
     (ffmpeg-full.override {withNvcodec = true;})
     power-profile-helper
-    pdftk
-    qpdf
-    poppler_utils
-    ghostscript
   ];
 
   # Privileged ops (MUX flip, desired-mode persist) run through pkexec with a

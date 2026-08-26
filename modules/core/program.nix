@@ -31,6 +31,9 @@
     tesseract
     imagemagick
     antiword
+    pdftk
+    qpdf
+    ghostscript
   ];
 
   environment.variables = {
