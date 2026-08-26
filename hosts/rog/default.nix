@@ -108,16 +108,7 @@ in {
 
   services.xserver.videoDrivers = ["nvidia"];
 
-  # VirtualBox host: kernel modules (vboxdrv/vboxnetflt/vboxnetadp), udev
-  # rules and setuid wrappers are all handled by this option. Do NOT also add
-  # the virtualbox package to environment.systemPackages — that breaks driver
-  # access (NS_ERROR_FAILURE). Extension pack is unfree but allowUnfree is set
-  # in modules/core/system.nix; it provides USB 2/3 passthrough.
-  virtualisation.virtualbox.host = {
-    enable = true;
-    enableExtensionPack = true;
-  };
-  users.extraGroups.vboxusers.members = [username];
+
 
   services.asusd = {
     enable = true;
