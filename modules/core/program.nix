@@ -1,4 +1,6 @@
 {pkgs, ...}: {
+  documentation.nixos.enable = false;
+
   programs = {
     dconf.enable = true;
     zsh.enable = true;
