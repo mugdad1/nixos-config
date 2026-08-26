@@ -19,6 +19,7 @@ in {
       ## Browsers (vanilla, un-nixified profiles: editable directly)
       chromium
       firefox
+      tor-browser
 
       ## Office / Productivity
       onlyoffice-desktopeditors
@@ -26,6 +27,7 @@ in {
       libreoffice-stable
       odin
       ## System / Utility
+      qbittorrent
       gnome-disk-utility
       localsend
       zenity
