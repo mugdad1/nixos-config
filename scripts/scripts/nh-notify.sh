@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-command="$@"
-
 command_window_address=$(hyprctl activewindow -j | jq -r '.address')
 
 focus() {
@@ -11,7 +9,7 @@ focus() {
 
 start_time=$(date +%s)
 
-$command || exit_status=$?
+"$@" || exit_status=$?
 exit_status=${exit_status:-0}
 
 end_time=$(date +%s)
@@ -26,14 +24,14 @@ if [ "$active_window_address" != "$command_window_address" ]; then
             notify-send -u critical \
                 --action="focus=focus" \
                 "NixOS Flake" \
-                "\'$command\' failed after $duration_formatted" 2> /dev/null
+                "\'$*\' failed after $duration_formatted" 2> /dev/null
         )
 
         [ "$action" = "focus" ] && focus
     else
         notify-send -u normal \
             "NixOS Flake" \
-            "\'$command\' succeeded after $duration_formatted" 2> /dev/null
+            "\'$*\' succeeded after $duration_formatted" 2> /dev/null
     fi
 fi
 

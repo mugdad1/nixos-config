@@ -48,8 +48,6 @@ in {
     };
   };
 
-  # When
-
   # When Blocky owns :53, let it be the system resolver end-to-end.
   networking.resolvconf.enable = lib.mkIf localDns false;
   environment.etc."resolv.conf".text = lib.mkIf localDns ''

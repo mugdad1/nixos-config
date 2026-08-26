@@ -50,6 +50,30 @@
       libsoup_3
       libappindicator-gtk3
       librsvg
+
+      ## Rust
+      cargo-watch
+      cargo-deny
+      cargo-audit
+      cargo-update
+      cargo-edit
+      cargo-outdated
+      cargo-license
+      cargo-tarpaulin
+      cargo-cross
+      cargo-zigbuild
+      cargo-nextest
+      cargo-spellcheck
+      cargo-modules
+      cargo-bloat
+      cargo-sweep
+      cargo-unused-features
+      cargo-feature
+      cargo-features-manager
+      worker-build
+      bacon
+      evcxr
+      rust-script
     ]
     ++ lib.optionals (host == "rog") [
       mesa-demos

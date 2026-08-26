@@ -5,8 +5,7 @@ set -euo pipefail
     echo "$(basename "$0"): missing command" >&2
     exit 1
 }
-prog="$(which "$1")"
-[ -z "$prog" ] && {
+prog="$(command -v "$1")" || {
     echo "$(basename "$0"): unknown command: $1" >&2
     exit 1
 }
