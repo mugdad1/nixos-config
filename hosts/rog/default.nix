@@ -3,7 +3,6 @@
   config,
   lib,
   inputs,
-  username,
   ...
 }: let
   power-profile-helper = pkgs.writeShellScriptBin "power-profile-helper" ''
