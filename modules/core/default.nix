@@ -6,6 +6,7 @@
     ./blocky.nix
     ./fonts.nix
     ./nh.nix
+    ./snapper.nix
     ./pipewire.nix
     ./program.nix
     ./security.nix
