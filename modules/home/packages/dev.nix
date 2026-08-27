@@ -1,7 +1,5 @@
 {
   pkgs,
-  lib,
-  host,
   ...
 }: {
   home.packages = with pkgs;
@@ -74,8 +72,5 @@
       bacon
       evcxr
       rust-script
-    ]
-    ++ lib.optionals (host == "rog") [
-      mesa-demos
     ];
 }

@@ -19,10 +19,6 @@
     };
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
-    cardwire = {
-      url = "github:opengamingcollective/cardwire";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
@@ -62,7 +58,6 @@
     };
 
     nixosConfigurations = {
-      rog = mkHost "rog";
       t480s = mkHost "t480s";
     };
   };
