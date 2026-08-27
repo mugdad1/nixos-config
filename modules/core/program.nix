@@ -36,6 +36,8 @@
     pdftk
     qpdf
     ghostscript
+    testdisk
+    trash-cli
   ];
 
   environment.variables = {

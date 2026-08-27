@@ -33,6 +33,14 @@
       # python
       piv = "python -m venv .venv";
       psv = "source .venv/bin/activate";
+
+      # safe delete — uses trash-cli instead of permanent rm
+      rm = "trash-put";
+      rmrf = "trash-put";
+      rmi = "rm -i";
+      rmt = "trash-list"; # list trash contents
+      rmr = "trash-restore"; # restore from trash
+      rmempty = "trash-empty"; # empty the trash
     };
   };
 }
