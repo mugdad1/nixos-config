@@ -36,7 +36,6 @@
     pdftk
     qpdf
     ghostscript
-    testdisk
     trash-cli
   ];
 
