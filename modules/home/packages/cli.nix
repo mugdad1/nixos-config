@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     ## File management
     eza # ls replacement
@@ -8,7 +8,6 @@
     fd # find alternative (used by fzf)
     ripgrep # recursive grep (rg)
     ripgrep-all # search inside pdfs/zips/etc. (rga)
-    yazi # terminal file manager
     dnsutils # dig / host
     file # show file type info
     ripdrag # drag-and-drop from terminal
