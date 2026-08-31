@@ -47,7 +47,10 @@
       openssl
       libsoup_3
       libappindicator-gtk3
-      librsvg
+      gtk3
+      gobject-introspection
+      gdk-pixbuf
+      atk
 
       ## Rust
       cargo-watch
