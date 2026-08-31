@@ -13,7 +13,7 @@
     buildInputs = [pkgs.makeWrapper];
     postBuild = ''
       wrapProgram $out/bin/libreoffice \
-        --set GTK_THEME "Adwaita:dark"
+        --set SAL_USE_VCLPLUGIN "gen"
     '';
   };
 in {
