@@ -4,7 +4,7 @@
   ...
 }: {
   services.snapper = {
-    snapshotInterval = "12h";
+    snapshotInterval = "hourly";
     persistentTimer = true;
     cleanupInterval = "daily";
 

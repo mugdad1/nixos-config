@@ -29,7 +29,6 @@
       fira-code
       fira-code-symbols
       cascadia-code
-      cascadia-fonts
       source-sans
       source-serif
       source-code-pro
@@ -38,20 +37,16 @@
       roboto-mono
       roboto-slab
       lato
-      opensans
       ubuntu-classic
       liberation_ttf
       freefont_ttf
-      google-fonts
-     proggyfonts
+      proggyfonts
       cantarell-fonts
       dejavu_fonts
       gyre-fonts
       font-awesome
       material-icons
       material-design-icons
-      twentieth-century-font
-      helvetica-neue-clone
 
       (pkgs.stdenv.mkDerivation {
         name = "century-schoolbook";
