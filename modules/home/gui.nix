@@ -7,6 +7,15 @@
         croniter
       ]);
   });
+  libreoffice-wrapped = pkgs.symlinkJoin {
+    name = "libreoffice-wrapped";
+    paths = [pkgs.libreoffice-stable];
+    buildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      wrapProgram $out/bin/libreoffice \
+        --set GTK_THEME "Adwaita:dark"
+    '';
+  };
 in {
   home.packages = (
     with pkgs; [
@@ -24,7 +33,7 @@ in {
       ## Office / Productivity
       onlyoffice-desktopeditors
       filen-desktop
-      libreoffice-stable
+      libreoffice-wrapped
       odin
       ## System / Utility
       qbittorrent
