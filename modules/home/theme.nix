@@ -39,6 +39,9 @@ in {
       icon-theme = icon-theme-name;
       color-scheme = "prefer-dark";
     };
+    "org/gnome/libreoffice/general" = {
+      gtk-theme = "Adwaita-dark";
+    };
   };
 
   home.pointerCursor = {
