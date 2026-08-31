@@ -12,6 +12,7 @@
 in {
   networking = {
     hostName = host;
+    enableIPv6 = false;
     networkmanager = {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant on

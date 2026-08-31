@@ -32,6 +32,8 @@
 
   services.throttled.enable = true;
   services.tlp.enable = false;
+  services.power-profiles-daemon.enable = true;
+  environment.systemPackages = [ pkgs.powertop ];
 
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold";
