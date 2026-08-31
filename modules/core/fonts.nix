@@ -22,6 +22,15 @@
       nerd-fonts.symbols-only
 
       noto-fonts-color-emoji
+
+      (pkgs.stdenv.mkDerivation {
+        name = "century-schoolbook";
+        src = /home/mugdad/nixos-config/fonts;
+        installPhase = ''
+          mkdir -p $out/share/fonts/truetype
+          cp *.TTF $out/share/fonts/truetype/
+        '';
+      })
     ];
   };
 }
