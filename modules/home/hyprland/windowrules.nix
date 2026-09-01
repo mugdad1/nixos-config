@@ -56,12 +56,6 @@
   })
 
   hl.window_rule({
-      name  = "obs-workspace",
-      match = { class = "^com.obsproject.Studio$" },
-      workspace = 8,
-  })
-
-  hl.window_rule({
       name  = "dim-portal-gtk",
       match = { class = "^xdg-desktop-portal-gtk$" },
       dim_around = true,
