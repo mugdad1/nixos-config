@@ -80,6 +80,14 @@ in {
 
   home.packages = with pkgs; [waypaper];
 
+  home.file."Pictures/wallpapers/others".source = pkgs.symlinkJoin {
+    name = "wallpapers-others";
+    paths = [
+      ../../wallpapers/otherWallpaper/gruvbox
+      ../../wallpapers/otherWallpaper/nixos
+    ];
+  };
+
   xdg.configFile."waypaper/config.ini".text = ''
     [Settings]
     language = en
