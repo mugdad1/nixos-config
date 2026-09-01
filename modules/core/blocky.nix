@@ -1,6 +1,4 @@
-{ lib
-, ...
-}: {
+{lib, ...}: {
   # Blocky owns 127.0.0.1:53 as local resolver. Upstreams are all encrypted
   # transports of dns.adguard-dns.com raced in parallel_best - a stalled QUIC
   # connection can never take resolution down.
@@ -15,7 +13,6 @@
           "quic://2b44bd66.d.adguard-dns.com" # DoQ
           "192.168.44.187"
           "192.168.44.188"
-
         ];
       };
 

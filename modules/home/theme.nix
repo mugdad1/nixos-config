@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: let
+{pkgs, ...}: let
   gtk-theme-name = "Colloid-Green-Dark-Gruvbox";
   gtk-theme = pkgs.colloid-gtk-theme.override {
     colorVariants = ["dark"];

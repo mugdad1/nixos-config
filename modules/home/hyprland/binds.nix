@@ -1,7 +1,4 @@
-{
-  variables,
-  ...
-}: let
+{variables, ...}: let
   mod = "SUPER";
   t = variables.terminal;
   b = variables.browser;

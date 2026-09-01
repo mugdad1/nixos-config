@@ -1,4 +1,8 @@
-{variables, config, ...}: {
+{
+  variables,
+  config,
+  ...
+}: {
   home.sessionVariables = {
     # NOTE: $EDITOR is owned by programs.nixvim (modules/home/nvim.nix);
     # `variables.editor` only drives GUI launchers/hyprland binds.

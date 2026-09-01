@@ -19,7 +19,7 @@
         NUMBER_CLEANUP = true;
         NUMBER_LIMIT = 1;
         NUMBER_LIMIT_IMPORTANT = 1;
-        ALLOW_USERS = [ username ];
+        ALLOW_USERS = [username];
       };
     };
   };
