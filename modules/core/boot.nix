@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  gruvbox = (import ../../modules/gruvbox.nix).raw;
+  gruvbox = (import ../../lib/gruvbox.nix).raw;
 in {
   boot = {
     loader = {

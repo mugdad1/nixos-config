@@ -1,4 +1,23 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  c = (import ../../lib/gruvbox.nix).css;
+in {
+  programs.bat = {
+    enable = true;
+    config = {
+      pager = "less -FR";
+      theme = "gruvbox-dark";
+    };
+    extraPackages = with pkgs.bat-extras; [
+      batman
+      batpipe
+    ];
+  };
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
   programs.zsh = {
     enable = true;
 
@@ -16,7 +35,6 @@
 
     plugins = [
       {
-        # Must be before plugins that wrap widgets, such as zsh-autosuggestions or fast-syntax-highlighting
         name = "fzf-tab";
         src = "${pkgs.zsh-fzf-tab}/share/fzf-tab";
       }
@@ -41,6 +59,49 @@
         };
       }
     ];
+
+    shellAliases = {
+      # Utils
+      c = "clear";
+      cd = "z";
+      cat = "bat";
+
+      diff = "delta --diff-so-fancy --side-by-side";
+      less = "bat";
+      copy = "wl-copy";
+      py = "python3";
+      ipy = "ipython";
+      dsize = "du -hs";
+      open = "xdg-open";
+      space = "ncdu";
+      man = "batman";
+
+      l = "eza --icons -a --group-directories-first -1 --no-user --long --git";
+      tree = "eza --icons --tree --group-directories-first";
+
+      # disk / docs
+      df = "duf";
+      du = "dust";
+      tldr = "tealdeer";
+
+      # git / nix
+      lg = "lazygit";
+      nr = "nh os switch";
+      nup = "nh os switch --update";
+      hms = "nh home switch";
+
+      # python
+      piv = "python -m venv .venv";
+      psv = "source .venv/bin/activate";
+
+      # safe delete
+      rm = "trash-put";
+      rmrf = "trash-put";
+      rmi = "rm -i";
+      rmt = "trash-list";
+      rmr = "trash-restore";
+      rmempty = "trash-empty";
+    };
 
     completionInit = ''
       # Initialize colors
@@ -194,4 +255,35 @@
       secrets_filter = true;
     };
   };
+
+  programs.fzf = {
+    enable = true;
+
+    defaultCommand = "fd --hidden --strip-cwd-prefix --exclude .git";
+    fileWidget = {
+      options = [
+        "--preview 'if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :500 {}; fi'"
+      ];
+    };
+    changeDirWidget = {
+      command = "fd --type=d --hidden --strip-cwd-prefix --exclude .git";
+      options = [
+        "--preview 'eza --tree --color=always {} | head -200'"
+      ];
+    };
+
+    ## Theme
+    defaultOptions = [
+      "--color=fg:-1,fg+:${c.fg0},bg:-1,bg+:${c.bg0}"
+      "--color=hl:${c.green},hl+:${c.bright_green},info:${c.light_gray},marker:${c.orange}"
+      "--color=prompt:${c.red},spinner:${c.aqua},pointer:${c.orange},header:${c.blue}"
+      "--color=border:${c.bg3},label:${c.light_gray},query:${c.fg0}"
+      "--border='double' --border-label='' --preview-window='border-sharp' --prompt='> '"
+      "--marker='>' --pointer='>' --separator='─' --scrollbar='│'"
+      "--info='right'"
+      "--bind change:top"
+    ];
+  };
+
+  home.file.".p10k.zsh".source = ./p10k/.p10k.zsh;
 }

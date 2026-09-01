@@ -9,6 +9,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
@@ -23,8 +28,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = {nixpkgs, ...} @ inputs: let
-    username = "mugdad";
+  outputs = {nixpkgs, self, ...} @ inputs: let
     system = "x86_64-linux";
     mkHost = host: let
       variables = import ./hosts/${host}/variables.nix;
@@ -37,9 +41,9 @@
           inherit
             host
             inputs
-            username
             variables
             ;
+          username = variables.username;
         };
       };
   in {

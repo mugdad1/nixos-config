@@ -1,4 +1,9 @@
-{lib, ...}: let
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}: let
   defaultApps = {
     text = ["com.mitchellh.ghostty.desktop"];
     image = ["imv-dir.desktop"];
@@ -72,4 +77,28 @@
 in {
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = associations;
+
+  home.packages = with pkgs; [waypaper];
+
+  xdg.configFile."waypaper/config.ini".text = ''
+    [Settings]
+    language = en
+    folder = ${config.home.homeDirectory}/Pictures/wallpapers/others
+    monitors = All
+    wallpaper = ${config.home.homeDirectory}/Pictures/wallpapers/others/nixos.png
+    backend = awww
+    fill = fill
+    sort = name
+    color = #ffffff
+    subfolders = False
+    show_hidden = False
+    show_gifs_only = False
+    number_of_columns = 3
+    awww_transition_type = any
+    awww_transition_step = 90
+    awww_transition_angle = 0
+    awww_transition_duration = 2
+    awww_transition_fps = 60
+    use_xdg_state = False
+  '';
 }

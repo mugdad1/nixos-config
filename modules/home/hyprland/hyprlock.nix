@@ -1,5 +1,5 @@
 {...}: let
-  g = import ../../gruvbox.nix;
+  g = import ../../../lib/gruvbox.nix;
   rgba = g.hexToRgba;
   raw = g.raw;
 in {

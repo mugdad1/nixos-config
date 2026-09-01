@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  c = (import ../gruvbox.nix).raw;
+  c = (import ../../lib/gruvbox.nix).raw;
 in {
   imports = [inputs.zen-browser.homeModules.beta];
 
@@ -105,7 +105,7 @@ in {
       };
 
       userChrome = let
-        c = (import ../gruvbox.nix).css;
+        c = (import ../../lib/gruvbox.nix).css;
       in
         with c; ''
           :root {

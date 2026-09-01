@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  variables,
   ...
 }: {
   nix = {
@@ -39,6 +40,9 @@
     # Kernel hardening
     "kernel.kptr_restrict" = 2;
     "kernel.dmesg_restrict" = 1;
+    "kernel.sysrq" = 0;
+    "kernel.yama.ptrace_scope" = 1;
+    "kernel.unprivileged_bpf_disabled" = 1;
 
     # Network hardening
     "net.ipv4.tcp_syncookies" = 1;
@@ -46,6 +50,10 @@
     "net.ipv4.conf.default.accept_redirects" = 0;
     "net.ipv4.conf.all.secure_redirects" = 0;
     "net.ipv4.conf.default.secure_redirects" = 0;
+    "net.ipv4.conf.all.accept_source_route" = 0;
+    "net.ipv4.conf.default.accept_source_route" = 0;
+    "net.ipv4.conf.all.rp_filter" = 1;
+    "net.ipv4.conf.default.rp_filter" = 1;
 
     # TCP optimization
     "net.ipv4.tcp_fastopen" = 3;
@@ -57,8 +65,8 @@
     "vm.vfs_cache_pressure" = 50;
   };
 
-  time.timeZone = lib.mkDefault "Asia/Riyadh";
-  i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
+  time.timeZone = lib.mkDefault variables.timezone;
+  i18n.defaultLocale = lib.mkDefault variables.locale;
   nixpkgs.config.allowUnfree = lib.mkDefault true;
   system.stateVersion = "26.05";
 }

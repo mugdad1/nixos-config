@@ -1,28 +1,13 @@
-{...}: {
-  imports = [
-    ./bat-direnv.nix # bat + direnv
-    ./browser.nix # zen browser
-    ./fastfetch/fastfetch.nix # fetch tool
-    ./fzf.nix # fuzzy finder
-    ./ghostty/ghostty.nix # terminal
-    ./git.nix # version control
-    ./gui.nix # gui apps + gnome apps
-    ./hyprland # window manager
-    ./nemo.nix # file manager
-    ./lazyvim.nix # neovim = LazyVim (starter seeded to ~/.config/nvim)
-    ./p10k/p10k.nix
-    ./theme.nix # gtk + qt / kvantum theme
-    ./packages # other packages
-    ./rofi/rofi.nix # launcher
-    ../../scripts/scripts.nix # personal scripts
-
-    ./swayosd.nix # brightness / volume widget
-    ./swaync/swaync.nix # notification daemon
-    ./waybar # status bar
-    ./waypaper.nix # GUI wallpaper picker
-    ./wallpapers.nix # deploy repo wallpapers into ~/Pictures/wallpapers
-    ./vscodium.nix # declarative vscodium + web dev extensions
-    ./xdg-mimes.nix # xdg config
-    ./zsh # shell
+{lib, ...}: let
+  inherit (import ../../lib {inherit lib;}) scanPaths;
+in {
+  imports = (scanPaths ./.) ++ [
+    ./waybar
+    ./hyprland
+    ./rofi/rofi.nix
+    ./swaync/swaync.nix
+    ./fastfetch/fastfetch.nix
+    ./ghostty/ghostty.nix
+    ../../scripts/scripts.nix
   ];
 }

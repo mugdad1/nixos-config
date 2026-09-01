@@ -1,5 +1,5 @@
 {...}: let
-  c = (import ../../gruvbox.nix).raw;
+  c = (import ../../../lib/gruvbox.nix).raw;
 in {
   programs.ghostty = {
     enable = true;
@@ -84,7 +84,7 @@ in {
   };
 
   xdg.configFile."ghostty/styles/tabs.css".text = let
-    c = (import ../../gruvbox.nix).css;
+    c = (import ../../../lib/gruvbox.nix).css;
   in ''
     headerbar {
         min-height: 30px;

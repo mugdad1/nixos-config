@@ -1,5 +1,5 @@
 {variables, ...}: let
-  c = (import ../../gruvbox.nix).raw;
+  c = (import ../../../lib/gruvbox.nix).raw;
 in ''
   -----------------------
   ---- LOOK AND FEEL ----
