@@ -1,7 +1,8 @@
-{pkgs, ...}: let
+{ pkgs, ... }:
+let
   safeeyes-wrapped = pkgs.safeeyes.overridePythonAttrs (old: {
     propagatedBuildInputs =
-      (old.propagatedBuildInputs or [])
+      (old.propagatedBuildInputs or [ ])
       ++ (with pkgs.python3Packages; [
         pywayland
         croniter
@@ -9,14 +10,15 @@
   });
   libreoffice-wrapped = pkgs.symlinkJoin {
     name = "libreoffice-wrapped";
-    paths = [pkgs.libreoffice-stable];
-    buildInputs = [pkgs.makeWrapper];
+    paths = [ pkgs.libreoffice-stable ];
+    buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/libreoffice \
         --set SAL_USE_VCLPLUGIN "gen"
     '';
   };
-in {
+in
+{
   home.packages = (
     with pkgs; [
       ## Multimedia
@@ -24,7 +26,7 @@ in {
       obs-studio
       pavucontrol
       vlc
-
+      freetube
       ## Browsers (vanilla, un-nixified profiles: editable directly)
       chromium
       firefox
