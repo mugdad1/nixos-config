@@ -8,6 +8,6 @@ in {
     ./swaync/swaync.nix
     ./fastfetch/fastfetch.nix
     ./ghostty/ghostty.nix
-    ../../scripts/scripts.nix
+    ../../scripts/default.nix
   ];
 }
