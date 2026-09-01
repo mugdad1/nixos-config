@@ -89,6 +89,20 @@
           libappindicator-gtk3
         ];
       };
+
+      kernel = nixpkgs.legacyPackages.${system}.mkShell {
+        packages = with nixpkgs.legacyPackages.${system}; [
+          gnumake
+          gcc
+          linuxPackages_latest.kernel.dev
+        ];
+        shellHook = ''
+          export KDIR="${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev}/lib/modules/${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev.version}/build"
+          echo "Kernel dev shell ready"
+          echo "Kernel: $(uname -r)"
+          echo "KDIR: $KDIR"
+        '';
+      };
     };
 
     nixosConfigurations = {
