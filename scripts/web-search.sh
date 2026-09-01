@@ -13,5 +13,5 @@ ENCODED=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.arg
 case "$ENGINE" in
   "DuckDuckGo")    xdg-open "https://duckduckgo.com/?q=$ENCODED" ;;
   "NixOS Packages") xdg-open "https://search.nixos.org/packages?query=$ENCODED" ;;
-  "FreeTube")        xdg-open "freetube://search/$ENCODED" ;;
+  "FreeTube")        freetube "https://www.youtube.com/results?search_query=$ENCODED" & ;;
 esac
