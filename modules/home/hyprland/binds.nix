@@ -25,6 +25,7 @@ in ''
   hl.bind(mod .. " + XF86Display", hl.dsp.exec_cmd("toggle-display"))
 
   hl.bind(mod .. " + S",           hl.dsp.exec_cmd("web-search"))
+  hl.bind(mod .. " + Y",           hl.dsp.exec_cmd("yt-audio"))
 
   -- Window management
   hl.bind(mod .. " + Q",           hl.dsp.window.close())
