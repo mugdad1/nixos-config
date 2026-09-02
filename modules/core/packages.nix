@@ -37,6 +37,7 @@
     qpdf
     ghostscript
     trash-cli
+    superTuxKart
   ];
 
   environment.variables = {
