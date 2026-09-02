@@ -62,38 +62,6 @@
         ];
       };
 
-      tauri = nixpkgs.legacyPackages.${system}.mkShell {
-        packages = with nixpkgs.legacyPackages.${system}; [
-          cargo-tauri
-          gtk3
-          glib
-          gobject-introspection
-          gdk-pixbuf
-          pango
-          cairo
-          atk
-          webkitgtk_4_1
-          libsoup_3
-          openssl
-          libappindicator-gtk3
-          pkg-config
-          cargo-watch
-          cargo-nextest
-        ];
-        buildInputs = with nixpkgs.legacyPackages.${system}; [
-          gtk3
-          glib
-          gdk-pixbuf
-          pango
-          cairo
-          atk
-          webkitgtk_4_1
-          libsoup_3
-          openssl
-          libappindicator-gtk3
-        ];
-      };
-
       kernel = nixpkgs.legacyPackages.${system}.mkShell {
         packages = with nixpkgs.legacyPackages.${system}; [
           gnumake

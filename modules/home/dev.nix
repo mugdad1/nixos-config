@@ -37,17 +37,6 @@
     bash-language-server
     prettierd
 
-    ## Tauri
-    cargo-tauri
-    webkitgtk_4_1
-    openssl
-    libsoup_3
-    libappindicator-gtk3
-    gtk3
-    gobject-introspection
-    gdk-pixbuf
-    atk
-
     ## Rust
     cargo-watch
     cargo-deny
