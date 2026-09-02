@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+pkill -f "ffplay.*pipe:0" 2>/dev/null && exit 0
+
 URL=$(rofi -dmenu -p "YouTube URL" -theme-str 'inputbar { children: [prompt, entry]; }')
 [ -z "$URL" ] && exit 0
 
