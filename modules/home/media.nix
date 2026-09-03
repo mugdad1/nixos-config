@@ -39,7 +39,6 @@ in
       onlyoffice-desktopeditors
       filen-desktop
       libreoffice-wrapped
-      odin
       ## System / Utility
       qbittorrent
       gnome-disk-utility

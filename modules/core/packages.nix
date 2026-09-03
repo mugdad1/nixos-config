@@ -29,6 +29,8 @@
     lz4
     ninja
     pkg-config
+    libusb1
+    cryptopp
     poppler-utils
     tesseract
     imagemagick
@@ -37,7 +39,7 @@
     qpdf
     ghostscript
     trash-cli
-    superTuxKart
+    supertuxkart
   ];
 
 
