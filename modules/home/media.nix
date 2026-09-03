@@ -30,6 +30,7 @@ in
       pavucontrol
       vlc
       freetube
+
       ## Browsers (vanilla, un-nixified profiles: editable directly)
       firefox
       tor-browser

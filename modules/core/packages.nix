@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   documentation.nixos.enable = false;
 
   programs = {
@@ -39,6 +39,7 @@
     trash-cli
     superTuxKart
   ];
+
 
   environment.variables = {
     JAVA_HOME = "${pkgs.jdk21}/lib/openjdk";
