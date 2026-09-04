@@ -33,7 +33,6 @@ nixos-config/
 │   │   ├── fonts.nix         # System fonts
 │   │   ├── services.nix      # Desktop services
 │   │   ├── flatpak.nix       # Flatpak
-│   │   └── printing.nix      # CUPS
 │   └── home/                 # Home-manager modules
 │       ├── shell.nix         # Zsh + p10k + aliases
 │       ├── git.nix           # Git config
