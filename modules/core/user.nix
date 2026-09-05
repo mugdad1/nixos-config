@@ -21,10 +21,8 @@
     backupFileExtension = "hm-backup";
   };
 
-  # Android flashing: udev rules + adbusers group so adb/fastboot
-  # work as non-root (needed for the OnePlus 7T Pro on Tuesday)
-  programs.adb.enable = true;
-
+  # Note: no adb udev setup needed — systemd 258 handles device
+  # access automatically; android-tools is already in system packages.
   users.users.${username} = {
     isNormalUser = true;
     description = username;
@@ -34,7 +32,6 @@
       "input"
       "video"
       "render"
-      "adbusers"
     ];
     shell = pkgs.zsh;
   };
