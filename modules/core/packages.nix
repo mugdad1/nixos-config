@@ -24,6 +24,7 @@
   environment.systemPackages = with pkgs; [
     android-tools
     heimdall
+    flutter
     usbutils
     aria2
     lz4
