@@ -1,4 +1,4 @@
-{...}: let
+_: let
   c = (import ../../../lib/gruvbox.nix).raw;
 in {
   programs.ghostty = {

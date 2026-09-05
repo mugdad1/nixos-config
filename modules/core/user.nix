@@ -21,6 +21,10 @@
     backupFileExtension = "hm-backup";
   };
 
+  # Android flashing: udev rules + adbusers group so adb/fastboot
+  # work as non-root (needed for the OnePlus 7T Pro on Tuesday)
+  programs.adb.enable = true;
+
   users.users.${username} = {
     isNormalUser = true;
     description = username;
@@ -30,6 +34,7 @@
       "input"
       "video"
       "render"
+      "adbusers"
     ];
     shell = pkgs.zsh;
   };

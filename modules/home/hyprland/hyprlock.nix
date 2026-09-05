@@ -1,4 +1,4 @@
-{...}: let
+_: let
   g = import ../../../lib/gruvbox.nix;
   rgba = g.hexToRgba;
   raw = g.raw;

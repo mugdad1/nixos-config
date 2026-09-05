@@ -1,6 +1,5 @@
 {
   inputs,
-  pkgs,
   ...
 }: let
   c = (import ../../lib/gruvbox.nix).raw;

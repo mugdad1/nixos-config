@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: {
+_: {
   services.tailscale = {
     enable = true;
     openFirewall = true;

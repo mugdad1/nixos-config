@@ -24,6 +24,7 @@
   environment.systemPackages = with pkgs; [
     android-tools
     heimdall
+    ollama
     usbutils
     aria2
     lz4

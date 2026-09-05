@@ -1,4 +1,4 @@
-{lib}:
+_:
 # Auto-import all .nix files in a directory except default.nix
 # Usage: scanPaths ./modules/core
 {
