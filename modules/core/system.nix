@@ -42,6 +42,8 @@
     loadModels = ["qwen2.5:3b"];
     environmentVariables = {
       OLLAMA_NUM_THREAD = "4";
+      # Keep model loaded 30min so opencode doesn't pay cold-start per message
+      OLLAMA_KEEP_ALIVE = "30m";
     };
   };
 
