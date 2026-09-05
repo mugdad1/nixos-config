@@ -67,5 +67,6 @@
   time.timeZone = lib.mkDefault variables.timezone;
   i18n.defaultLocale = lib.mkDefault variables.locale;
   nixpkgs.config.allowUnfree = lib.mkDefault true;
+  nixpkgs.config.android_sdk.accept_license = true;
   system.stateVersion = "26.05";
 }

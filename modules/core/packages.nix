@@ -1,4 +1,14 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+let
+  # Android SDK for Flutter APK builds (Noor app)
+  androidSdk = pkgs.androidenv.composeAndroidPackages {
+    platformVersions = ["34" "35" "36"];
+    buildToolsVersions = ["34.0.0" "35.0.0" "36.0.0"];
+    includeNDK = false;
+    includeEmulator = false;
+    includeSystemImages = false;
+  };
+in {
   documentation.nixos.enable = false;
 
   programs = {
@@ -23,8 +33,8 @@
 
   environment.systemPackages = with pkgs; [
     android-tools
+    androidSdk
     heimdall
-    flutter
     usbutils
     aria2
     lz4
@@ -46,5 +56,7 @@
 
   environment.variables = {
     JAVA_HOME = "${pkgs.jdk21}/lib/openjdk";
+    ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+    ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
   };
 }
