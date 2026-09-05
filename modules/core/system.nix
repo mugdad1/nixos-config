@@ -1,5 +1,4 @@
 {
-  pkgs,
   lib,
   variables,
   ...
@@ -30,21 +29,6 @@
   services.btrfs.autoScrub = {
     enable = true;
     interval = "weekly";
-  };
-
-  # Local AI (fully offline): CPU-only package, 4 threads to keep
-  # the T480s cool. Small 3B model preloaded at first start — light
-  # enough to actually run smooth. Zero manual setup.
-  # Chat: ollama run qwen2.5:3b
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama-cpu;
-    loadModels = ["qwen2.5:3b"];
-    environmentVariables = {
-      OLLAMA_NUM_THREAD = "4";
-      # Keep model loaded 30min so opencode doesn't pay cold-start per message
-      OLLAMA_KEEP_ALIVE = "30m";
-    };
   };
 
   security.protectKernelImage = true;
