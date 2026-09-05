@@ -1,13 +1,13 @@
 { pkgs, ... }:
 let
   # Android SDK for Flutter APK builds (Noor app)
-  androidSdk = pkgs.androidenv.composeAndroidPackages {
+  androidSdk = (pkgs.androidenv.composeAndroidPackages {
     platformVersions = ["34" "35" "36"];
     buildToolsVersions = ["34.0.0" "35.0.0" "36.0.0"];
     includeNDK = false;
     includeEmulator = false;
     includeSystemImages = false;
-  };
+  }).androidsdk;
 in {
   documentation.nixos.enable = false;
 
@@ -34,6 +34,7 @@ in {
   environment.systemPackages = with pkgs; [
     android-tools
     androidSdk
+    flutter
     heimdall
     usbutils
     aria2
