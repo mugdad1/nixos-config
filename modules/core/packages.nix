@@ -51,6 +51,7 @@ in {
     qpdf
     ghostscript
     trash-cli
+    onefetch
     supertuxkart
   ];
 
