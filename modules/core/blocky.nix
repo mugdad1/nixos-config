@@ -29,6 +29,18 @@ _: {
         maxTime = "30m";
         prefetching = true;
       };
+
+      # Tailnet names still resolve through Blocky: forward the whole
+      # tailnet suffix to Tailscale's MagicDNS at quad-100. Everything
+      # else keeps using the encrypted upstreams above. Tailscale itself
+      # must NOT own DNS (tailscale set --accept-dns=false, kept as
+      # extraUpFlags in tailscale.nix for fresh installs).
+      conditional = {
+        fallbackUpstream = false;
+        mapping = {
+          "tailbc99bb.ts.net" = "100.100.100.100";
+        };
+      };
     };
   };
 }
