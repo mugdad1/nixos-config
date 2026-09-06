@@ -53,6 +53,7 @@ in {
     trash-cli
     onefetch
     supertuxkart
+    whisper-cpp
   ];
 
 
