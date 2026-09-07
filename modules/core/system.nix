@@ -31,6 +31,8 @@
     interval = "weekly";
   };
 
+  services.cron.enable = true;
+
   security.protectKernelImage = true;
 
   boot.kernelModules = ["tcp_bbr"];

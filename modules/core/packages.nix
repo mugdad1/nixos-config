@@ -54,6 +54,7 @@ in {
     onefetch
     supertuxkart
     whisper-cpp
+    cronie
   ];
 
 
