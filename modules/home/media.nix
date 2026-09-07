@@ -11,15 +11,6 @@ let
         croniter
       ]);
   });
-  libreoffice-wrapped = pkgs.symlinkJoin {
-    name = "libreoffice-wrapped";
-    paths = [ pkgs.libreoffice-stable ];
-    buildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/libreoffice \
-        --set SAL_USE_VCLPLUGIN "gen"
-    '';
-  };
 in
 {
   home.packages = (
@@ -38,7 +29,7 @@ in
       ## Office / Productivity
       onlyoffice-desktopeditors
       filen-desktop
-      libreoffice-wrapped
+      libreoffice-stable
       ## System / Utility
       qbittorrent
       gnome-disk-utility
