@@ -2,6 +2,6 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cpu;
-    loadModels = ["qwen2.5:1b"];
+    loadModels = ["llama3.2:1b"];
   };
 }
