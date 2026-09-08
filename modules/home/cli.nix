@@ -55,7 +55,7 @@
     udiskie # auto-mounter
     wl-clipboard # wayland clipboard
     xdg-utils
-
+    opencode
     ## Misc
     just # command runner
     cliamp
