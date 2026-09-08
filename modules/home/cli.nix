@@ -1,7 +1,6 @@
-{
-  inputs,
-  pkgs,
-  ...
+{ inputs
+, pkgs
+, ...
 }: {
   imports = [
     inputs.nix-index-database.homeModules.nix-index
@@ -59,7 +58,6 @@
 
     ## Misc
     just # command runner
-    opencode
     cliamp
     poweralertd
     lazygit # TUI git (pairs with the gh aliases above)
