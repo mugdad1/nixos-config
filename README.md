@@ -24,11 +24,15 @@ nixos-config/
 │   │   ├── network.nix       # Network, DNS, firewall
 │   │   ├── security.nix      # Sudo, polkit, apparmor
 │   │   ├── system.nix        # Nix settings, sysctl
-│   │   ├── packages.nix      # System packages
+│   │   ├── packages.nix      # System packages + Android SDK
 │   │   ├── rust.nix          # Rust toolchain
-│   │   └── user.nix          # User accounts
+│   │   ├── user.nix          # Home-manager + user accounts
+│   │   ├── blocky.nix        # Encrypted local DNS resolver
+│   │   ├── tailscale.nix     # Tailnet + MagicDNS
+│   │   ├── snapper.nix       # Btrfs snapshots
+│   │   └── nh.nix            # nix helper + GC
 │   ├── desktop/              # Desktop environment
-│   │   ├── greetd.nix        # Login manager
+│   │   ├── wayland.nix       # greetd / wayland login
 │   │   ├── pipewire.nix      # Audio
 │   │   ├── fonts.nix         # System fonts
 │   │   ├── services.nix      # Desktop services
@@ -37,17 +41,22 @@ nixos-config/
 │       ├── shell.nix         # Zsh + p10k + aliases
 │       ├── git.nix           # Git config
 │       ├── browser.nix       # Zen Browser
-│       ├── terminal.nix      # Ghostty
+│       ├── terminal.nix      # Ghostty (via ghostty/)
 │       ├── cli.nix           # CLI packages
 │       ├── dev.nix           # Dev packages
 │       ├── media.nix         # GUI apps
 │       ├── theme.nix         # GTK/Qt theme
 │       ├── xdg.nix           # XDG + mime types
+│       ├── osd.nix           # On-screen display / degradation
+│       ├── vscodium.nix      # VSCodium editor
+│       ├── lazyvim.nix       # Neovim + LazyVim
 │       ├── waybar/           # Status bar
 │       ├── hyprland/         # Window manager (Lua)
 │       ├── rofi/             # App launcher
-│       └── swaync/           # Notification center
-├── scripts/                  # Shell scripts
+│       ├── swaync/           # Notification center
+│       ├── fastfetch/        # Shell fetch
+│       └── ghostty/          # Terminal emulator
+├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
 └── wallpapers/               # Wallpaper files
 ```
