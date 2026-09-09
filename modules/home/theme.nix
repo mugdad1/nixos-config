@@ -24,6 +24,11 @@ in {
       name = gtk-theme-name;
       package = gtk-theme;
     };
+    # HM 26.05+: gtk4 theme no longer mirrors gtk.theme, set explicitly
+    gtk4.theme = {
+      name = gtk-theme-name;
+      package = gtk-theme;
+    };
     iconTheme = {
       name = icon-theme-name;
       package = pkgs.papirus-icon-theme;

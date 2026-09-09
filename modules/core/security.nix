@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: {
+{pkgs, ...}: {
   security = {
     sudo = {
       enable = true;
@@ -18,21 +14,11 @@
 
     apparmor = {
       enable = true;
+      enableCache = true;
       killUnconfinedConfinables = true;
       packages = [pkgs.apparmor-profiles];
     };
   };
-
-  systemd.services.apparmor = {
-    reloadIfChanged = lib.mkForce false;
-    serviceConfig.ExecReload = lib.mkForce [];
-  };
-
-  environment.etc."apparmor/parser.conf".text = ''
-    write-cache
-    Optimize=compress-fast
-    cache-loc /var/cache/apparmor/
-  '';
 
   systemd.coredump.settings = {
     Coredump = {

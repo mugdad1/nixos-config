@@ -15,7 +15,7 @@ nixos-config/
 ├── hosts/
 │   └── t480s/
 │       ├── default.nix       # Host config
-│       ├── hardware.nix      # Hardware config
+│       ├── hardware-configuration.nix # Generated hardware config
 │       └── variables.nix     # Centralized variables
 ├── modules/
 │   ├── core/                 # System-level

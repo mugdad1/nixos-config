@@ -5,8 +5,8 @@
   host,
   ...
 }: let
-  # AdGuard Home owns 127.0.0.1:53, so when it is enabled systemd-resolved is
-  # disabled and the system DNS is pointed at AdGuard instead. With AdGuard
+  # Blocky owns 127.0.0.1:53, so when it is enabled systemd-resolved is
+  # disabled and the system DNS is pointed at Blocky instead. With Blocky
   # off, fall back to systemd-resolved (DNSSEC + Quad9).
   localDns = config.services.blocky.enable;
 in {

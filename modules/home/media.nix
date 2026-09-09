@@ -1,18 +1,17 @@
-{ pkgs
-, lib
-, ...
-}:
-let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   safeeyes-wrapped = pkgs.safeeyes.overridePythonAttrs (old: {
     propagatedBuildInputs =
-      (old.propagatedBuildInputs or [ ])
+      (old.propagatedBuildInputs or [])
       ++ (with pkgs.python3Packages; [
         pywayland
         croniter
       ]);
   });
-in
-{
+in {
   home.packages = (
     with pkgs; [
       ## Multimedia

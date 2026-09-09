@@ -80,6 +80,6 @@ cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.n
 #--- Build ---#
 
 echo -e "${INFO}Starting system build..."
-sudo nixos-rebuild switch --flake .#${HOST}
+sudo nixos-rebuild switch --flake ."#${HOST}"
 
 echo -e "${OK}Done! Reboot to apply."
