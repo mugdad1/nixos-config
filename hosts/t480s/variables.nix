@@ -5,7 +5,6 @@
 
   browser = "zen-beta";
   terminal = "ghostty";
-  editor = "nvim";
   launcher = "rofi";
   bar = "waybar";
 

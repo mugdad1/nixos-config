@@ -43,10 +43,10 @@ nixos-config/
 │       ├── browser.nix       # Zen Browser
 │       ├── cli.nix           # CLI packages
 │       ├── dev.nix           # Dev packages
-│       ├── media.nix         # GUI apps
+│       ├── gui.nix           # GUI apps (media, office, browser, file mgr)
 │       ├── theme.nix         # GTK/Qt theme
 │       ├── xdg.nix           # XDG + mime types
-│       ├── osd.nix           # On-screen display / degradation
+│       ├── osd.nix           # On-screen display (swayosd)
 │       ├── vscodium.nix      # VSCodium editor
 │       ├── lazyvim.nix       # Neovim + LazyVim
 │       ├── waybar/           # Status bar
