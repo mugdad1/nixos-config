@@ -8,15 +8,6 @@
   launcher = "rofi";
   bar = "waybar";
 
-  gpu = "intel";
-
   keyboardLayout = "us,ara";
   keyboardOptions = "grp:alt_shift_toggle";
-
-  displays = {
-    primary = "eDP-1";
-    resolution = "1920x1080";
-    refreshRate = 60;
-    scale = 1.2;
-  };
 }

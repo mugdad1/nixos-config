@@ -50,27 +50,17 @@ in {
     size = 24;
   };
 
-  # Qt / Kvantum
+  # Qt / Kvantum (HM qt module installs qt5ct/qt6ct/kvantum plugins itself)
   qt = {
     enable = true;
     platformTheme.name = "qtct";
     style.name = "kvantum";
+    kvantum = {
+      enable = true;
+      settings.General.theme = "Gruvbox-Dark-Green";
+      themes = [gruvbox-kvantum-theme];
+    };
   };
-
-  home.packages = with pkgs; [
-    gruvbox-kvantum-theme
-    libsForQt5.qt5ct
-    qt6Packages.qt6ct
-    libsForQt5.qtstyleplugin-kvantum
-    qt6Packages.qtstyleplugin-kvantum
-  ];
-
-  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
-    [General]
-    theme=Gruvbox-Dark-Green
-  '';
-
-  home.file.".local/share/Kvantum/Gruvbox-Dark-Green".source = "${gruvbox-kvantum-theme}/share/Kvantum/Gruvbox-Dark-Green";
 
   qt.qt5ctSettings = {
     Appearance = {
