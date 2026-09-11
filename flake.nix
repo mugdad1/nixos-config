@@ -62,6 +62,8 @@
           shellcheck
           shfmt
           treefmt
+          stylua
+          taplo
           nixd
         ];
       };

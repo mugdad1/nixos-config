@@ -47,9 +47,9 @@ rec {
     fg2 = "D5C4A1";
     fg3 = "BDAE93";
     fg4 = "A89984";
-    gray = "A89984";
+    gray = "928374";
     dark_gray = "7C6F64";
-    light_gray = "928374";
+    light_gray = "A89984";
     red = "CC241D";
     green = "98971A";
     yellow = "D79921";
@@ -78,9 +78,9 @@ rec {
     fg2 = "#D5C4A1";
     fg3 = "#BDAE93";
     fg4 = "#A89984";
-    gray = "#A89984";
+    gray = "#928374";
     dark_gray = "#7C6F64";
-    light_gray = "#928374";
+    light_gray = "#A89984";
     red = "#CC241D";
     green = "#98971A";
     yellow = "#D79921";

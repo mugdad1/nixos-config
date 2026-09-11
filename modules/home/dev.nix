@@ -19,8 +19,7 @@
     llvmPackages_latest.clang-tools
 
     ## Python
-    (python3.withPackages (ps: with ps; [pip fpdf2]))
-    python312Packages.ipython
+    (python3.withPackages (ps: with ps; [pip fpdf2 ipython]))
 
     ## Web dev (PHP / SQL)
     php

@@ -121,7 +121,7 @@ scrollbar slider {
 
 .notification-content .app-icon {
     -gtk-icon-filter: none;
-    -gtk-icon-size: calc(25px / 3);
+    -gtk-icon-size: 25px;
     -gtk-icon-shadow: 0 1px 4px black;
     margin: 6px;
 }
@@ -160,7 +160,7 @@ scrollbar slider {
 
 .notification-content .body-image {
     margin-top: 4px;
-    background-color: white;
+    background-color: var(--bg-secondary);
     -gtk-icon-filter: none;
 }
 
@@ -199,8 +199,8 @@ scrollbar slider {
 /* Alternative actions */
 .notification-alt-actions {
     background: none;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
     padding: 4px;
 }
 

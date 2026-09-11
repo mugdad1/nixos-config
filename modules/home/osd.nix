@@ -1,5 +1,6 @@
 {pkgs, ...}: let
   c = (import ../../lib/gruvbox.nix).css;
+  rgba = (import ../../lib/gruvbox.nix).hexToRgba;
 in {
   home.packages = with pkgs; [swayosd];
 
@@ -13,8 +14,7 @@ in {
     window {
         padding: 0px 10px;
         border-radius: 25px;
-        border: 10px;
-        background: alpha(${c.bg0}, 0.99);
+        background: ${rgba "282828" "0.99"};
     }
 
     #container {
@@ -40,7 +40,7 @@ in {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: alpha(${c.bg3}, 0.5);
+        background: ${rgba "665C54" "0.5"};
     }
     progress {
         min-height: inherit;

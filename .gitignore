@@ -3,4 +3,3 @@ result-*
 .direnv
 .envrc
 *.qcow2
-.secrets

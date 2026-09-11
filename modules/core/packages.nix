@@ -54,11 +54,9 @@ in {
     onefetch
     supertuxkart
     whisper-cpp
-    cronie
   ];
 
   environment.variables = {
-    JAVA_HOME = "${pkgs.jdk21}/lib/openjdk";
     ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
     ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
   };

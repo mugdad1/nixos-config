@@ -69,11 +69,12 @@
     ];
   };
 
-  associations = builtins.listToAttrs (
-    lib.lists.flatten (
-      lib.attrsets.mapAttrsToList (key: map (type: lib.attrsets.nameValuePair type defaultApps."${key}")) mimeMap
+  associations =
+    lib.concatMapAttrs (
+      key: types:
+        lib.genAttrs types (_: defaultApps.${key})
     )
-  );
+    mimeMap;
 in {
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = associations;

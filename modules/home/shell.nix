@@ -183,9 +183,6 @@ in {
               source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
             fi
 
-            # Load secrets
-            [[ -f ~/.config/nixos-config/.secrets ]] && source ~/.config/nixos-config/.secrets
-
             DISABLE_AUTO_UPDATE=true
             DISABLE_MAGIC_FUNCTIONS=true
 
@@ -204,7 +201,7 @@ in {
               fd --type=d --hidden --exclude .git . "$1"
             }
 
-            # Sensible fallback preview for fzf (matches the preview in fzf.nix).
+            # Sensible fallback preview for fzf (matches the preview in shell.nix).
             show_file_or_dir_preview="$(
               cat <<'EOF'
       if [ -d {} ]; then eza --tree --color=always --group-directories-first {} | head -200; else bat -n --color=always --line-range :500 {}; fi

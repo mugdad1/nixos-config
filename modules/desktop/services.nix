@@ -38,8 +38,6 @@
       };
     };
 
-    dbus.enable = true;
-
     irqbalance.enable = true;
     bpftune.enable = true;
   };

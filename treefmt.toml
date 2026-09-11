@@ -10,8 +10,6 @@ excludes = [
     "*.zip",
     "*.css",
     "*.json",
-    "*.zsh",
-    "*/packages/*",
     "treefmt.toml",
 ]
 
@@ -21,9 +19,19 @@ includes = [ "*.nix" ]
 
 [formatter.sh]
 command = "shfmt"
-options = [ "-l", "-w", "-ci", "-sr", "-i", "4" ]
+options = [ "-w", "-ci", "-sr", "-i", "4" ]
 includes = [ "*.sh" ]
 excludes = []
+
+[formatter.lua]
+command = "stylua"
+options = [ "-q" ]
+includes = [ "*.lua" ]
+
+[formatter.toml]
+command = "taplo"
+options = [ "fmt" ]
+includes = [ "*.toml" ]
 
 
 # Log paths that did not match any formatters at the specified log level

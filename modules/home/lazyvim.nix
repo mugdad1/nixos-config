@@ -32,6 +32,7 @@
   # Edit the repo files, run nh os switch - never edit ~/.config/nvim
   # directly, local changes there are overwritten.
   home.activation.syncLazyVim = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    set -eu
     rm -rf "$HOME/.config/nvim"
     mkdir -p "$HOME/.config/nvim"
     cp -r ${./lazyvim-config}/. "$HOME/.config/nvim/"
