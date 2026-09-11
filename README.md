@@ -32,7 +32,7 @@ nixos-config/
 │   │   ├── snapper.nix       # Btrfs snapshots
 │   │   └── nh.nix            # nix helper + GC
 │   ├── desktop/              # Desktop environment
-│   │   ├── wayland.nix       # greetd / wayland login
+│   │   ├── wayland.nix       # Hyprland + xdg portals
 │   │   ├── pipewire.nix      # Audio
 │   │   ├── fonts.nix         # System fonts
 │   │   ├── services.nix      # Desktop services
@@ -41,7 +41,6 @@ nixos-config/
 │       ├── shell.nix         # Zsh + p10k + aliases
 │       ├── git.nix           # Git config
 │       ├── browser.nix       # Zen Browser
-│       ├── terminal.nix      # Ghostty (via ghostty/)
 │       ├── cli.nix           # CLI packages
 │       ├── dev.nix           # Dev packages
 │       ├── media.nix         # GUI apps
@@ -55,7 +54,9 @@ nixos-config/
 │       ├── rofi/             # App launcher
 │       ├── swaync/           # Notification center
 │       ├── fastfetch/        # Shell fetch
-│       └── ghostty/          # Terminal emulator
+│       ├── ghostty/          # Terminal emulator
+│       ├── p10k/             # powerlevel10k config
+│       └── lazyvim-config/   # Neovim source (synced on rebuild)
 ├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
 └── wallpapers/               # Wallpaper files

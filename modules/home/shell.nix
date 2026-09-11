@@ -183,7 +183,7 @@ in {
               source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
             fi
 
-            # Load secrets (notion token, etc.)
+            # Load secrets
             [[ -f ~/.config/nixos-config/.secrets ]] && source ~/.config/nixos-config/.secrets
 
             DISABLE_AUTO_UPDATE=true
