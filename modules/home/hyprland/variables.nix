@@ -1,6 +1,6 @@
 {config, ...}: {
   home.sessionVariables = {
-    # NOTE: $EDITOR is owned by programs.nixvim (modules/home/nvim.nix);
+    # NOTE: $EDITOR is owned by modules/home/lazyvim.nix;
     # `variables.editor` only drives GUI launchers/hyprland binds.
     NIXOS_OZONE_WL = 1;
     GDK_BACKEND = "wayland";
