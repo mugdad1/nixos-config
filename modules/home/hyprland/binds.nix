@@ -104,8 +104,8 @@ in ''
   hl.bind("XF86AudioStop", hl.dsp.exec_cmd("playerctl stop"),       { locked = true })
 
   -- Mouse scroll
-  hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e-1" }))
-  hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e+1" }))
+  hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+  hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
   -- Clipboard
   hl.bind(mod .. " + V", hl.dsp.exec_cmd([[toggle-rofi "cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"]]))

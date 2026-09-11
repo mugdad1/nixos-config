@@ -40,6 +40,7 @@ in {
 
       ## GNOME apps (PDF viewer, archive manager)
       evince
+      file-roller
 
       ## File manager
       nemo-with-extensions

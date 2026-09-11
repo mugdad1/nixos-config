@@ -23,7 +23,7 @@ in {
   '';
   xdg.configFile."rofi/config.rasi".text = ''
     configuration{
-        modi: "run,drun,window";
+        modes: "run,drun,window";
         lines: 5;
         cycle: false;
         font: "Iosevka Nerd Font Bold 16";

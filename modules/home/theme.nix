@@ -57,7 +57,13 @@ in {
     style.name = "kvantum";
   };
 
-  home.packages = [gruvbox-kvantum-theme];
+  home.packages = with pkgs; [
+    gruvbox-kvantum-theme
+    libsForQt5.qt5ct
+    qt6Packages.qt6ct
+    libsForQt5.qtstyleplugin-kvantum
+    qt6Packages.qtstyleplugin-kvantum
+  ];
 
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
     [General]
