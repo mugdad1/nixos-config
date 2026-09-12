@@ -130,61 +130,200 @@ in {
     settings = {
       palette = "gruvbox_dark";
 
+      # Official starship gruvbox-rainbow preset, palette sourced from lib/gruvbox.nix
       palettes.gruvbox_dark = {
-        bg = c.bg0;
-        fg = c.fg;
-        black = c.bg1;
-        red = c.bright_red;
-        green = c.bright_green;
-        yellow = c.bright_yellow;
-        blue = c.bright_blue;
-        purple = c.bright_purple;
-        cyan = c.bright_aqua;
-        white = c.fg0;
-        orange = c.bright_orange;
-        gray = c.gray;
+        color_fg0 = c.fg0;
+        color_bg1 = c.bg1;
+        color_bg3 = c.bg3;
+        color_blue = c.blue;
+        color_aqua = c.aqua;
+        color_green = c.green;
+        color_orange = c.orange;
+        color_purple = c.purple;
+        color_red = c.red;
+        color_yellow = c.yellow;
       };
 
-      # LEFT: dir -> git -> nix, newline; RIGHT: status -> duration -> jobs -> time
-      format = "$directory$git_branch$git_status$nix_shell$line_break$character";
-      right_format = "$status$cmd_duration$jobs$time";
+      format = ''
+        [(bg:color_orange)]()
+        $os\
+        $username\
+        [(bg:color_yellow fg:color_orange)]()
+        $directory\
+        [(fg:color_yellow bg:color_aqua)]()
+        $git_branch\
+        $git_status\
+        [(fg:color_aqua bg:color_blue)]()
+        $c\
+        $cpp\
+        $rust\
+        $golang\
+        $nodejs\
+        $bun\
+        $php\
+        $java\
+        $kotlin\
+        $haskell\
+        $python\
+        [(fg:color_blue bg:color_bg3)]()
+        $docker_context\
+        $conda\
+        $pixi\
+        $nix_shell\
+        [(fg:color_bg3 bg:color_bg1)]()
+        $time\
+        [(fg:color_bg1)]()
+        $line_break$character'';
 
-      character = {
-        success_symbol = "[❯](bold green)";
-        error_symbol = "[❯](bold red)";
+      # Kept from your p10k taste on top of the preset: status/duration/jobs right
+      right_format = "$status$cmd_duration$jobs";
+
+      os = {
+        disabled = false;
+        style = "bg:color_orange fg:color_fg0";
+        symbols = {
+          NixOS = "";
+        };
+      };
+
+      username = {
+        show_always = true;
+        style_user = "bg:color_orange fg:color_fg0";
+        style_root = "bg:color_orange fg:color_fg0";
+        format = "[ $user ]($style)";
       };
 
       directory = {
+        style = "fg:color_fg0 bg:color_yellow";
+        format = "[ $path ]($style)";
         truncation_length = 3;
         truncation_symbol = "…/";
-        style = "bold blue";
-        read_only = " 🔒";
-        read_only_style = "red";
+        substitutions = {
+          Documents = "󰈙 ";
+          Downloads = " ";
+          Music = "󰝚 ";
+          Pictures = " ";
+          Developer = "󰲋 ";
+        };
       };
 
       git_branch = {
-        symbol = " ";
-        style = "bold purple";
-        truncation_length = 32;
+        symbol = "";
+        style = "bg:color_aqua";
+        format = "[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)";
       };
 
       git_status = {
-        ahead = "⇡";
-        behind = "⇣";
-        diverged = "⇕";
-        untracked = "?";
-        modified = "!";
-        staged = "+";
-        stashed = "\\$";
-        renamed = "»";
-        deleted = "✘";
-        style = "bold yellow";
+        style = "bg:color_aqua";
+        format = "[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)";
       };
 
+      nodejs = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      bun = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      c = {
+        symbol = " ";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      cpp = {
+        symbol = " ";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      rust = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      golang = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      php = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      java = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      kotlin = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      haskell = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      python = {
+        symbol = "";
+        style = "bg:color_blue";
+        format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)";
+      };
+
+      docker_context = {
+        symbol = "";
+        style = "bg:color_bg3";
+        format = "[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)";
+      };
+
+      conda = {
+        style = "bg:color_bg3";
+        format = "[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)";
+      };
+
+      pixi = {
+        style = "bg:color_bg3";
+        format = "[[ $symbol( $version)( $environment) ](fg:color_fg0 bg:color_bg3)]($style)";
+      };
+
+      # Not in the preset — your  segment, styled into the env (bg3) block
       nix_shell = {
         symbol = " ";
-        format = "via [$symbol]($style)";
-        style = "bold blue";
+        style = "bg:color_bg3";
+        format = "[[ $symbol ](fg:color_fg0 bg:color_bg3)]($style)";
+      };
+
+      time = {
+        disabled = false;
+        time_format = "%R";
+        style = "bg:color_bg1";
+        format = "[[  $time ](fg:color_fg0 bg:color_bg1)]($style)";
+      };
+
+      line_break.disabled = false;
+
+      character = {
+        disabled = false;
+        success_symbol = "[🐟](bold fg:color_green)";
+        error_symbol = "[🐟](bold fg:color_red)";
+        vimcmd_symbol = "[🐟](bold fg:color_green)";
+        vimcmd_replace_one_symbol = "[🐟](bold fg:color_purple)";
+        vimcmd_replace_symbol = "[🐟](bold fg:color_purple)";
+        vimcmd_visual_symbol = "[🐟](bold fg:color_yellow)";
       };
 
       cmd_duration = {
@@ -205,15 +344,6 @@ in {
         symbol = "[✘](bold red)";
         map_symbol = true;
       };
-
-      time = {
-        disabled = false;
-        format = "at [$time]($style)";
-        time_format = "%H:%M";
-        style = "bold gray";
-      };
-
-      line_break.disabled = false;
     };
   };
 }
