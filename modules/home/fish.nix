@@ -145,34 +145,7 @@ in {
       };
 
       format = ''
-        [](color_orange)\
-        $os\
-        $username\
-        [](bg:color_yellow fg:color_orange)\
-        $directory\
-        [](fg:color_yellow bg:color_aqua)\
-        $git_branch\
-        $git_status\
-        [](fg:color_aqua bg:color_blue)\
-        $c\
-        $cpp\
-        $rust\
-        $golang\
-        $nodejs\
-        $bun\
-        $php\
-        $java\
-        $kotlin\
-        $haskell\
-        $python\
-        [](fg:color_blue bg:color_bg3)\
-        $docker_context\
-        $conda\
-        $pixi\
-        [](fg:color_bg3 bg:color_bg1)\
-        $time\
-        [ ](fg:color_bg1)\
-        $line_break$character'';
+        [](color_orange)$os$username[](bg:color_yellow fg:color_orange)$directory[](fg:color_yellow bg:color_aqua)$git_branch$git_status[](fg:color_aqua bg:color_blue)$c$cpp$rust$golang$nodejs$bun$php$java$kotlin$haskell$python[](fg:color_blue bg:color_bg3)$docker_context$conda$pixi[](fg:color_bg3 bg:color_bg1)$time[ ](fg:color_bg1)$line_break$character'';
 
       # Kept from your p10k taste on top of the preset: status/duration/jobs right
       right_format = "$status$cmd_duration$jobs";
