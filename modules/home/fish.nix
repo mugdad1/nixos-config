@@ -145,15 +145,15 @@ in {
       };
 
       format = ''
-        [(bg:color_orange)]()
+        [](color_orange)\
         $os\
         $username\
-        [(bg:color_yellow fg:color_orange)]()
+        [](bg:color_yellow fg:color_orange)\
         $directory\
-        [(fg:color_yellow bg:color_aqua)]()
+        [](fg:color_yellow bg:color_aqua)\
         $git_branch\
         $git_status\
-        [(fg:color_aqua bg:color_blue)]()
+        [](fg:color_aqua bg:color_blue)\
         $c\
         $cpp\
         $rust\
@@ -165,14 +165,13 @@ in {
         $kotlin\
         $haskell\
         $python\
-        [(fg:color_blue bg:color_bg3)]()
+        [](fg:color_blue bg:color_bg3)\
         $docker_context\
         $conda\
         $pixi\
-        $nix_shell\
-        [(fg:color_bg3 bg:color_bg1)]()
+        [](fg:color_bg3 bg:color_bg1)\
         $time\
-        [(fg:color_bg1)]()
+        [ ](fg:color_bg1)\
         $line_break$character'';
 
       # Kept from your p10k taste on top of the preset: status/duration/jobs right
@@ -182,7 +181,29 @@ in {
         disabled = false;
         style = "bg:color_orange fg:color_fg0";
         symbols = {
-          NixOS = "";
+          Windows = "󰍲";
+          Ubuntu = "󰕈";
+          SUSE = "";
+          Raspbian = "󰐿";
+          Mint = "󰣭";
+          Macos = "󰀵";
+          Manjaro = "";
+          Linux = "󰌽";
+          Gentoo = "󰣨";
+          Fedora = "󰣛";
+          Alpine = "";
+          Amazon = "";
+          Android = "";
+          AOSC = "";
+          Arch = "󰣇";
+          Artix = "󰣇";
+          EndeavourOS = "";
+          CentOS = "";
+          Debian = "󰣚";
+          Redhat = "󱄛";
+          RedHatEnterprise = "󱄛";
+          Pop = "";
+          NixOS = "";
         };
       };
 
@@ -318,12 +339,12 @@ in {
 
       character = {
         disabled = false;
-        success_symbol = "[🐟](bold fg:color_green)";
-        error_symbol = "[🐟](bold fg:color_red)";
-        vimcmd_symbol = "[🐟](bold fg:color_green)";
-        vimcmd_replace_one_symbol = "[🐟](bold fg:color_purple)";
-        vimcmd_replace_symbol = "[🐟](bold fg:color_purple)";
-        vimcmd_visual_symbol = "[🐟](bold fg:color_yellow)";
+        success_symbol = "[](bold fg:color_green)";
+        error_symbol = "[](bold fg:color_red)";
+        vimcmd_symbol = "[](bold fg:color_green)";
+        vimcmd_replace_one_symbol = "[](bold fg:color_purple)";
+        vimcmd_replace_symbol = "[](bold fg:color_purple)";
+        vimcmd_visual_symbol = "[](bold fg:color_yellow)";
       };
 
       cmd_duration = {
