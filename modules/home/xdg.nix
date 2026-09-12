@@ -87,6 +87,7 @@ in {
     paths = [
       ../../wallpapers/otherWallpaper/gruvbox
       ../../wallpapers/otherWallpaper/nixos
+      ../../wallpapers/otherWallpaper/thinkpad
     ];
   };
 
