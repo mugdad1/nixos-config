@@ -176,7 +176,7 @@ in {
           Redhat = "󱄛";
           RedHatEnterprise = "󱄛";
           Pop = "";
-          NixOS = "";
+          NixOS = "";
         };
       };
 
