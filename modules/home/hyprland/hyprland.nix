@@ -42,6 +42,7 @@ in {
     ---- ENVIRONMENT VARS ----
     -------------------------
 
+    hl.env("XCURSOR_THEME", config.home.pointerCursor.name)
     hl.env("XCURSOR_SIZE", "${toString config.home.pointerCursor.size}")
     hl.env("HYPRCURSOR_SIZE", "${toString config.home.pointerCursor.size}")
 
