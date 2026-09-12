@@ -32,6 +32,7 @@ in {
   };
 
   environment.systemPackages = with pkgs; [
+    cachix
     android-tools
     androidSdk
     flutter

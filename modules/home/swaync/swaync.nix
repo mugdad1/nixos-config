@@ -37,8 +37,13 @@ in {
       "hide-on-action" = true;
       "text-empty" = "No Notifications";
       "script-fail-notify" = true;
-      widgets = ["dnd" "mpris" "notifications" "volume" "backlight"];
+      widgets = ["title" "dnd" "mpris" "notifications" "volume" "backlight"];
       "widget-config" = {
+        title = {
+          text = "Notification Center";
+          "clear-all-button" = true;
+          "button-text" = "󰆴 Clear All";
+        };
         dnd.text = "Do Not Disturb";
         mpris.show-album-art = "always";
         mpris.loop-carousel = false;

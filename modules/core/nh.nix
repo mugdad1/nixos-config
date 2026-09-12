@@ -1,4 +1,4 @@
-_: {
+{pkgs, ...}: {
   programs.nh = {
     enable = true;
     clean = {
@@ -6,4 +6,9 @@ _: {
       extraArgs = "--keep-since 1d --keep 1";
     };
   };
+
+  environment.systemPackages = with pkgs; [
+    nix-output-monitor
+    nvd
+  ];
 }

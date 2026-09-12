@@ -2,6 +2,7 @@
   home.sessionVariables = {
     # NOTE: $EDITOR is owned by modules/home/lazyvim.nix;
     NIXOS_OZONE_WL = 1;
+    ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     GDK_BACKEND = "wayland";
     DIRENV_LOG_FORMAT = "";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = 1;
