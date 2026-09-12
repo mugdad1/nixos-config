@@ -2,7 +2,9 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  g = (import ../../lib/gruvbox.nix).raw;
+in {
   services = {
     gvfs.enable = true;
 
@@ -32,7 +34,7 @@
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --theme 'container=black;border=green;text=white;prompt=yellow;time=gray;action=blue;button=cyan;title=light_blue;greet=light_green;input=white' --cmd start-hyprland";
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --theme 'container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}' --cmd start-hyprland";
           user = "greeter";
         };
       };

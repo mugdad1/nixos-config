@@ -4,7 +4,7 @@
     "separator": " 󰑃  "
   },
   "logo": {
-    "source": "Linux",
+    "source": "nixos",
     "type": "builtin",
     "padding": {
       "top": 6,
@@ -16,8 +16,8 @@
     {
       "type": "title",
       "color": {
-        "user": "35",
-        "host": "36"
+        "user": "32",
+        "host": "34"
       }
     },
     {

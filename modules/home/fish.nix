@@ -77,6 +77,10 @@ in {
 
       # 'done' plugin: only notify for commands longer than 8s
       set -g __done_min_command_duration 8000
+
+      # gruvbox file colors everywhere (ls/eza/fd/fzf)
+      set -gx LS_COLORS (vivid generate gruvbox-dark)
+      set -gx EZA_COLORS $LS_COLORS
     '';
 
     plugins = [

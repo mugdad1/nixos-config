@@ -4,6 +4,7 @@
   config,
   ...
 }: let
+  c = (import ../../lib/gruvbox.nix).css;
   defaultApps = {
     text = ["com.mitchellh.ghostty.desktop"];
     image = ["imv-dir.desktop"];
@@ -98,7 +99,7 @@ in {
     backend = awww
     fill = fill
     sort = name
-    color = #ffffff
+    color = ${c.bg0_h}
     subfolders = False
     show_hidden = False
     show_gifs_only = False

@@ -83,6 +83,7 @@ in {
       side-by-side = true;
       diff-so-fancy = true;
       navigate = true;
+      syntax-theme = "gruvbox-dark";
     };
   };
 

@@ -32,7 +32,7 @@
     ripdrag # drag-and-drop from terminal
     unzip
     wget
-    btop
+    vivid # LS_COLORS generator (gruvbox-dark wired in shell init)
     tealdeer # tldr man pages
     glow # render markdown in the terminal
     ## Media / processing
@@ -62,11 +62,42 @@
     just # command runner
     cliamp
     poweralertd
-    lazygit # TUI git (pairs with the gh aliases above)
     rsync # sync/copy
 
     ## Nix
     nvd # Nix/NixOS package version diff tool
     nix-output-monitor # Processes output of Nix commands to show helpful and pretty information
   ];
+
+  programs.btop = {
+    enable = true;
+    settings = {
+      color_theme = "gruvbox_material_dark";
+      vim_keys = true;
+    };
+  };
+
+  programs.lazygit = let
+    gl = (import ../../lib/gruvbox.nix).raw;
+    H = v: "#${v}";
+  in {
+    enable = true;
+    settings = {
+      gui = {
+        theme = {
+          activeBorderColor = [(H gl.bright_orange) "bold"];
+          inactiveBorderColor = [(H gl.gray)];
+          searchingActiveBorderColor = [(H gl.bright_orange) "bold"];
+          optionsTextColor = [(H gl.bright_blue)];
+          selectedLineBgColor = [(H gl.bg1)];
+          cherryPickedCommitFgColor = [(H gl.bright_blue)];
+          cherryPickedCommitBgColor = [(H gl.red)];
+          markedBaseCommitFgColor = [(H gl.bright_blue)];
+          markedBaseCommitBgColor = [(H gl.yellow)];
+          unstagedChangesColor = [(H gl.red)];
+          defaultFgColor = [(H gl.fg)];
+        };
+      };
+    };
+  };
 }

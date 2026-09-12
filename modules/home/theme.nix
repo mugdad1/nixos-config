@@ -10,7 +10,7 @@
     ];
   };
   icon-theme-name = "Papirus-Dark";
-  cursor-name = "Bibata-Modern-Ice";
+  cursor-name = "Bibata-Modern-Amber";
   gruvbox-kvantum-theme = pkgs.gruvbox-kvantum.override {variant = "Gruvbox-Dark-Green";};
 in {
   # GTK

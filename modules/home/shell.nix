@@ -222,6 +222,10 @@ in {
               esac
             }
 
+            # gruvbox file colors everywhere (ls/eza/fd/fzf)
+            export LS_COLORS="$(vivid generate gruvbox-dark)"
+            export EZA_COLORS="$LS_COLORS"
+
             # Make sure that the terminal is in application mode when zle is active, since
             # only then values from $terminfo are valid
             if (( ''${+terminfo[smkx]} )) && (( ''${+terminfo[rmkx]} )); then
