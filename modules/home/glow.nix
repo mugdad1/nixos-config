@@ -1,15 +1,6 @@
-{...}: let
+{pkgs, ...}: let
   c = (import ../../lib/gruvbox.nix).css;
-in {
-  # glow renders markdown in the terminal; point it at a gruvbox glamour style
-  xdg.configFile."glow/glow.yml".text = ''
-    style: "${./gruvbox-glamour.json}"
-    mouse: true
-    pager: true
-    width: 100
-  '';
-
-  xdg.configFile."glow/gruvbox-glamour.json".text = builtins.toJSON {
+  glamourTheme = {
     document = {
       style_block = {
         style_primitive = {
@@ -262,4 +253,16 @@ in {
       };
     };
   };
+  glamourJson = pkgs.writeText "gruvbox-glamour.json" (builtins.toJSON glamourTheme);
+in {
+  # glow renders markdown in the terminal; point it at a gruvbox glamour style
+  xdg.configFile."glow/glow.yml".text = ''
+    style: "${glamourJson}"
+    mouse: true
+    pager: true
+    width: 100
+  '';
+
+  # Same file also dropped in ~/.config for easy tweaking
+  xdg.configFile."glow/gruvbox-glamour.json".source = glamourJson;
 }
