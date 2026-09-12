@@ -153,6 +153,7 @@ in {
       os = {
         disabled = false;
         style = "bg:color_orange fg:color_fg0";
+        format = "[$symbol ]($style)";
         symbols = {
           Windows = "󰍲";
           Ubuntu = "󰕈";
