@@ -33,7 +33,7 @@
       "video"
       "render"
     ];
-    shell = pkgs.zsh;
+    shell = pkgs.fish;
   };
   nix.settings.allowed-users = [username];
 }

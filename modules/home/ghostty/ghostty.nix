@@ -4,6 +4,7 @@ in {
   programs.ghostty = {
     enable = true;
     enableZshIntegration = true;
+    enableFishIntegration = true;
 
     settings = {
       ##### Font #####
@@ -62,7 +63,7 @@ in {
       selection-foreground = "cell-background";
 
       palette = [
-        "0=32302f"
+        "0=${c.bg0}"
         "1=${c.red}"
         "2=${c.green}"
         "3=${c.yellow}"

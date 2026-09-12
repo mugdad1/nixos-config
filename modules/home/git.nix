@@ -2,7 +2,51 @@
   pkgs,
   username,
   ...
-}: {
+}: let
+  gitAliases = {
+    gs = "git status";
+    gcl = "git clone";
+    gd = "git diff";
+
+    ga = "git add";
+    gaa = "git add --all";
+
+    gc = "git commit";
+    gcm = "git commit -m";
+
+    gpl = "git pull";
+    gplo = "git pull origin";
+    gfa = "git fetch --all --prune --tags";
+
+    gps = "git push";
+    gpso = "git push origin";
+    gpst = "git push --tags";
+    gtag = "git tag -ma";
+
+    gm = "git merge";
+    gb = "git branch";
+    gch = "git checkout";
+    gchb = "git checkout -b";
+    gsw = "git switch";
+    gswc = "git switch -c";
+
+    grb = "git rebase";
+    gcp = "git cherry-pick";
+
+    gst = "git stash";
+    gss = "git stash pop";
+    gwt = "git worktree";
+    gwth = "git worktree add";
+    gwtl = "git worktree list";
+    gwtr = "git worktree remove";
+
+    glg = "git log --oneline --decorate";
+    glog = "git log --oneline --decorate --graph";
+    glol = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset'";
+    glola = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --all";
+    glols = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --stat";
+  };
+in {
   programs.git = {
     enable = true;
 
@@ -49,47 +93,7 @@
     .direnv
   '';
 
-  programs.zsh.shellAliases = {
-    gs = "git status";
-    gcl = "git clone";
-    gd = "git diff";
-
-    ga = "git add";
-    gaa = "git add --all";
-
-    gc = "git commit";
-    gcm = "git commit -m";
-
-    gpl = "git pull";
-    gplo = "git pull origin";
-    gfa = "git fetch --all --prune --tags";
-
-    gps = "git push";
-    gpso = "git push origin";
-    gpst = "git push --tags";
-    gtag = "git tag -ma";
-
-    gm = "git merge";
-    gb = "git branch";
-    gch = "git checkout";
-    gchb = "git checkout -b";
-    gsw = "git switch";
-    gswc = "git switch -c";
-
-    grb = "git rebase";
-    gcp = "git cherry-pick";
-
-    gst = "git stash";
-    gss = "git stash pop";
-    gwt = "git worktree";
-    gwth = "git worktree add";
-    gwtl = "git worktree list";
-    gwtr = "git worktree remove";
-
-    glg = "git log --oneline --decorate";
-    glog = "git log --oneline --decorate --graph";
-    glol = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset'";
-    glola = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --all";
-    glols = "git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --stat";
-  };
+  # Same aliases in both shells — zsh stays fully working, fish is additive
+  programs.zsh.shellAliases = gitAliases;
+  programs.fish.shellAliases = gitAliases;
 }

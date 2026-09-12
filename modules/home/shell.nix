@@ -15,6 +15,7 @@ in {
 
   programs.direnv = {
     enable = true;
+    enableFishIntegration = true;
     nix-direnv.enable = true;
   };
 
@@ -239,11 +240,13 @@ in {
   programs.zoxide = {
     enable = true;
     enableZshIntegration = true;
+    enableFishIntegration = true;
   };
 
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
+    enableFishIntegration = true;
     flags = ["--disable-up-arrow" "--disable-ctrl-r"];
     settings = {
       auto_sync = true;
@@ -258,6 +261,7 @@ in {
 
   programs.fzf = {
     enable = true;
+    enableFishIntegration = true;
 
     defaultCommand = "fd --hidden --strip-cwd-prefix --exclude .git";
     fileWidget = {
