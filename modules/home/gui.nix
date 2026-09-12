@@ -29,6 +29,7 @@ in {
       onlyoffice-desktopeditors
       filen-desktop
       libreoffice-stable
+      clickup
       ## System / Utility
       qbittorrent
       gnome-disk-utility
