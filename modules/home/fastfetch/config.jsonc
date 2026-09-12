@@ -4,10 +4,14 @@
     "separator": " 󰑃  "
   },
   "logo": {
-    "source": "nixos",
-    "type": "builtin",
+    "source": "@LOGO@",
+    "type": "file",
+    "color": {
+      "1": "@C1@",
+      "2": "@C2@"
+    },
     "padding": {
-      "top": 6,
+      "top": 0,
       "left": 2
     }
   },
