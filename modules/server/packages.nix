@@ -15,5 +15,6 @@
     pciutils
     lm_sensors
     smartmontools
+    opencode
   ];
 }
