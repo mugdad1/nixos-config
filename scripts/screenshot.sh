@@ -10,7 +10,7 @@ copy() {
 }
 
 save() {
-    grimblast --notify --freeze save area "$file"
+    grimblast --notify --freeze save screen "$file"
 }
 
 swappy_() {

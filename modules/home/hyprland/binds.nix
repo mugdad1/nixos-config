@@ -41,8 +41,8 @@ in ''
   hl.bind(mod .. " + SHIFT + Escape",  hl.dsp.exec_cmd("power-menu"))
 
   -- Screenshots
-  hl.bind("Print",                    hl.dsp.exec_cmd("screenshot --copy"))
-  hl.bind(mod .. " + Print",          hl.dsp.exec_cmd("screenshot --save"))
+  hl.bind("Print",                    hl.dsp.exec_cmd("screenshot --save"))
+  hl.bind(mod .. " + Print",          hl.dsp.exec_cmd("screenshot --copy"))
   hl.bind(mod .. " + SHIFT + Print",  hl.dsp.exec_cmd("screenshot --swappy"))
 
   -- Focus
