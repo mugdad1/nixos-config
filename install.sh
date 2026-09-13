@@ -8,11 +8,9 @@ RESET=$(tput sgr0)
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
-MAGENTA=$(tput setaf 5)
 
 OK="[${GREEN}OK${RESET}]\t"
 INFO="[${BLUE}INFO${RESET}]\t"
-WARN="[${MAGENTA}WARN${RESET}]\t"
 ERROR="[${RED}ERROR${RESET}]\t"
 
 #--- Root check ---#
