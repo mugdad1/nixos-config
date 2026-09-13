@@ -7,11 +7,8 @@ CURRENT_USERNAME=$(whoami)
 RESET=$(tput sgr0)
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
-YELLOW=$(tput setaf 3)
 BLUE=$(tput setaf 4)
 MAGENTA=$(tput setaf 5)
-CYAN=$(tput setaf 6)
-BRIGHT=$(tput bold)
 
 OK="[${GREEN}OK${RESET}]\t"
 INFO="[${BLUE}INFO${RESET}]\t"
@@ -39,6 +36,9 @@ fi
 
 if grep -qi 't480s\|thinkpad\|20L8' /sys/class/dmi/id/product_name 2> /dev/null; then
     HOST="t480s"
+    GPU="intel"
+elif grep -qi 'x509\|vivobook' /sys/class/dmi/id/product_name 2> /dev/null; then
+    HOST="asus"
     GPU="intel"
 fi
 
