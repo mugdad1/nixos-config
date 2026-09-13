@@ -18,7 +18,7 @@
       "editor.fontSize" = 14;
       "editor.formatOnSave" = true;
       "files.autoSave" = "afterDelay";
-      "terminal.integrated.defaultProfile.linux" = "zsh";
+      "terminal.integrated.defaultProfile.linux" = "fish";
     }
   );
 in {

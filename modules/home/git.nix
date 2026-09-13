@@ -94,7 +94,6 @@ in {
     .direnv
   '';
 
-  # Same aliases in both shells — zsh stays fully working, fish is additive
-  programs.zsh.shellAliases = gitAliases;
+  # Same aliases in fish
   programs.fish.shellAliases = gitAliases;
 }

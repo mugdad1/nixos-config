@@ -50,8 +50,23 @@
           inherit (variables) username;
         };
       };
+
+    # Bootable installer ISO for the X509F:
+    # nix build .#installer → flash to USB with dd/ventoy.
+    mkInstaller = config_:
+      (nixpkgs.lib.nixosSystem {
+        modules = [
+          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+          config_
+        ];
+      }).config.system.build.isoImage;
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+
+    packages.${system} = {
+      asus-installer = mkInstaller ./hosts/installer.nix;
+      installer = self.packages.${system}.asus-installer;
+    };
 
     devShells.${system} = {
       default = nixpkgs.legacyPackages.${system}.mkShell {

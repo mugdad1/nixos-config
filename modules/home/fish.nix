@@ -67,10 +67,10 @@ in {
     interactiveShellInit = ''
       set -g fish_greeting ""
 
-      # Ctrl-E edits the command line in $EDITOR (nvim), like zsh
+      # Ctrl-E edits the command line in $EDITOR (nvim)
       bind \ce edit_command_buffer
 
-      # fzf.fish previews mirror the zsh _fzf_comprun setup
+      # fzf.fish previews
       set -g fzf_preview_file_cmd 'bat -n --color=always --line-range :500'
       set -g fzf_preview_dir_cmd 'eza --tree --color=always | head -200'
       set -g fzf_fd_opts --hidden --strip-cwd-prefix --exclude .git
@@ -151,7 +151,7 @@ in {
       format = ''
         [](color_orange)$os$username[](bg:color_yellow fg:color_orange)$directory[](fg:color_yellow bg:color_aqua)$git_branch$git_status[](fg:color_aqua bg:color_blue)$c$cpp$rust$golang$nodejs$bun$php$java$kotlin$haskell$python[](fg:color_blue bg:color_bg3)$docker_context$conda$pixi[](fg:color_bg3 bg:color_bg1)$time[ ](fg:color_bg1)$line_break$character'';
 
-      # Kept from your p10k taste on top of the preset: status/duration/jobs right
+      # Kept from your p10k taste: status/duration/jobs right
       right_format = "$status$cmd_duration$jobs";
 
       os = {

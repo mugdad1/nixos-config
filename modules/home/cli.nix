@@ -11,7 +11,6 @@
     nix-index = {
       enable = true;
       symlinkToCacheHome = true;
-      enableZshIntegration = true;
       enableFishIntegration = true;
     };
 

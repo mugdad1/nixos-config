@@ -1,5 +1,5 @@
-# Wired-first server networking. Tailscale bypasses the firewall, so only
-# SSH stays open for LAN bootstrap (before `tailscale up` on fresh installs).
+# Wi-Fi-first server networking (AX210 card). Tailscale bypasses the firewall,
+# so only SSH stays open for LAN bootstrap (before `tailscale up` on fresh installs).
 {
   pkgs,
   lib,
@@ -16,6 +16,9 @@
       allowedTCPPorts = [22];
     };
   };
+
+  # AX210 (Wi-Fi 6E) needs the redistributable iwlwifi firmware
+  hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   services.resolved = {
     enable = true;

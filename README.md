@@ -38,7 +38,7 @@ nixos-config/
 │   │   ├── services.nix      # Desktop services
 │   │   ├── flatpak.nix       # Flatpak
 │   └── home/                 # Home-manager modules
-│       ├── shell.nix         # Zsh + p10k + aliases
+│       ├── shell.nix         # bat, direnv, fzf, zoxide, atuin
 │       ├── git.nix           # Git config
 │       ├── browser.nix       # Zen Browser
 │       ├── cli.nix           # CLI packages
@@ -55,7 +55,6 @@ nixos-config/
 │       ├── swaync/           # Notification center
 │       ├── fastfetch/        # Shell fetch
 │       ├── ghostty/          # Terminal emulator
-│       ├── p10k/             # powerlevel10k config
 │       └── lazyvim-config/   # Neovim source (synced on rebuild)
 ├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
