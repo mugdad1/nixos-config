@@ -1,5 +1,5 @@
-# Immich + managed postgres/redis. ML stays CPU-only with ONE worker:
-# 8GB RAM is the squeeze point, and there are 0 photos yet anyway.
+# Immich + managed postgres/redis. ML stays CPU-only with 2 workers:
+# 12GB RAM + 4 threads (i3-8145U) is the ceiling here.
 # Reachable over Tailscale only: http://asus:2283
 {
   services.immich = {
@@ -21,7 +21,7 @@
     machine-learning = {
       enable = true;
       environment = {
-        MACHINE_LEARNING_WORKERS = "1";
+        MACHINE_LEARNING_WORKERS = "2";
         MACHINE_LEARNING_WORKER_TIMEOUT = "120";
         # silence the matplotlib cache warning (upstream issue #3821)
         MPLCONFIGDIR = "/var/cache/immich/matplotlib";
