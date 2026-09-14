@@ -21,6 +21,8 @@
     };
     rtkit.enable = true;
 
+    pam.services.swaylock = {};
+
     apparmor = {
       enable = true;
       enableCache = true;

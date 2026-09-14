@@ -252,7 +252,6 @@ in {
     wl-clip-persist
     cliphist
     wofi
-    swaylock
     grim
     glib
     wayland

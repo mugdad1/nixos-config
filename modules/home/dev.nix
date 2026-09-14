@@ -21,12 +21,12 @@
     ## Python
     (python3.withPackages (
       ps:
-      with ps; [
-        pip
-        fpdf2
-        ipython
-        python-docx # .docx generation (document/python-docx)
-      ]
+        with ps; [
+          pip
+          fpdf2
+          ipython
+          python-docx # .docx generation (document/python-docx)
+        ]
     ))
 
     ## Web dev (PHP / SQL)

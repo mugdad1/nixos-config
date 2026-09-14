@@ -1,9 +1,6 @@
 # Slim server home: fish + starship + git, zero GUI apps or prompt niceties.
 # Reuses the shared git module (git + delta + gh + 34 aliases).
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ../../home/git.nix
   ];
