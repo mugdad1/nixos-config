@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+LAT=24.7136
+LON=46.6753
 TEMPS=(4000 3000)
 
 if [[ $# -eq 0 ]]; then
@@ -9,19 +11,19 @@ if [[ $# -eq 0 ]]; then
 fi
 
 if [[ $1 == "toggle" ]]; then
-    if ! pgrep -x hyprsunset > /dev/null; then
-        hyprsunset -t "${TEMPS[0]}" > /dev/null 2>&1 &
+    if ! pgrep -x wlsunset > /dev/null; then
+        wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[0]}" > /dev/null 2>&1 &
     else
-        OLD=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+' || true)
-        pkill -x hyprsunset
+        OLD=$(ps -o args= -C wlsunset | grep -oP '(?<=-t )\d+' || true)
+        pkill -x wlsunset
         sleep 0.5
         if [[ "$OLD" == "${TEMPS[0]}" ]]; then
-            hyprsunset -t "${TEMPS[1]}" > /dev/null 2>&1 &
+            wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[1]}" > /dev/null 2>&1 &
         fi
     fi
 elif [[ $1 == "status" ]]; then
-    if pgrep -x hyprsunset > /dev/null; then
-        TEMP=$(ps -o args= -C hyprsunset | grep -oP '(?<=-t )\d+' || true)
+    if pgrep -x wlsunset > /dev/null; then
+        TEMP=$(ps -o args= -C wlsunset | grep -oP '(?<=-t )\d+' || true)
         if [[ "$TEMP" == "3000" ]]; then
             printf '{"text": "󰛨", "class": "warmer", "alt": "3000K"}\n'
         else

@@ -1,5 +1,4 @@
 {
-  variables,
   lib,
   ...
 }: let
@@ -13,11 +12,7 @@ in {
       ./swaync/swaync.nix
       ./fastfetch/fastfetch.nix
       ./ghostty/ghostty.nix
+      ./river
       ../../scripts/default.nix
-    ]
-    ++ (
-      if variables.compositor == "river"
-      then [./river]
-      else [./hyprland]
-    );
+    ];
 }

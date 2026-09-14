@@ -36,7 +36,7 @@ in {
       localsend
       zenity
       kdePackages.polkit-kde-agent-1
-      hyprsunset
+      wlsunset
       safeeyes-wrapped
 
       ## GNOME apps (PDF viewer, archive manager)

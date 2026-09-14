@@ -45,10 +45,10 @@ run_cmd() {
         elif [[ $1 == '--reboot' ]]; then
             systemctl reboot
         elif [[ $1 == '--suspend' ]]; then
-            hyprlock &
+            swaylock &
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
-            hyprctl dispatch exit
+            pkill -x river
         fi
     else
         exit 0
@@ -64,7 +64,7 @@ case ${chosen} in
         run_cmd --reboot
         ;;
     $lock)
-        hyprlock
+        swaylock
         ;;
     $suspend)
         sleep 0.1

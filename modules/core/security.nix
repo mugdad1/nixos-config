@@ -21,8 +21,6 @@
     };
     rtkit.enable = true;
 
-    pam.services.hyprlock = {};
-
     apparmor = {
       enable = true;
       enableCache = true;

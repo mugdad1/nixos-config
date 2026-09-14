@@ -35,7 +35,7 @@
       },") (builtins.attrNames action));
     in "{${rendered}}";
 
-  # Keybindings translated from Hyprland (modules/home/hyprland/binds.nix).
+  # Keybindings mapped to riztile actions.
   # riztile has no directional focus/move/resize; use prev/next window + tag actions.
   binds = builtins.concatLists [
     # app launchers
@@ -69,10 +69,6 @@
         value = {spawn = "swaync-client -t -sw";};
       }
       {
-        key = "${mod} C";
-        value = {spawn = "hyprpicker -a";};
-      }
-      {
         key = "${mod} S";
         value = {spawn = "web-search";};
       }
@@ -104,11 +100,11 @@
     [
       {
         key = "${mod} Escape";
-        value = {spawn = "hyprlock";};
+        value = {spawn = "swaylock";};
       }
       {
         key = "Alt Escape";
-        value = {spawn = "hyprlock & systemctl suspend";};
+        value = {spawn = "swaylock & systemctl suspend";};
       }
       {
         key = "${mod} Shift Escape";
@@ -190,7 +186,7 @@
         };
       }
     ]
-    # workspaces: Super + 1-9,0 (=10) like Hyprland
+    # workspaces: Super + 1-9,0 (=10)
     (map (n: let
         tag = n - (n / 10) * 10;
       in {
@@ -252,12 +248,11 @@ in {
     river
     awww
     grimblast
-    hyprpicker
-    nwg-displays
+    wlr-randr
     wl-clip-persist
     cliphist
     wofi
-    hyprlock
+    swaylock
     grim
     glib
     wayland

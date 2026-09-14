@@ -8,7 +8,7 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 | Host  | Role                        | Platform     |
 | ----- | --------------------------- | ------------ |
-| t480s | Desktop (Hyprland + GUI)    | ThinkPad T480s |
+| t480s | Desktop (River + riztile GUI) | ThinkPad T480s |
 | asus  | Headless home server (tailnet-only) | ASUS i3-8th gen |
 
 ## Structure
@@ -23,7 +23,7 @@ nixos-config/
 │   ├── default.nix           # scanPaths helper
 │   └── gruvbox.nix           # Color palette
 ├── hosts/
-│   ├── t480s/                # Desktop host (Hyprland, home-manager)
+│   ├── t480s/                # Desktop host (River, home-manager)
 │   │   ├── default.nix       # Host config
 │   │   ├── hardware-configuration.nix
 │   │   └── variables.nix
@@ -41,7 +41,7 @@ nixos-config/
 │   │   ├── nh.nix            # nix helper + GC
 │   │   └── default.nix
 │   ├── desktop/              # Desktop environment
-│   │   ├── wayland.nix       # Hyprland + xdg portals
+│   │   ├── wayland.nix       # XDG portal config
 │   │   ├── pipewire.nix, fonts.nix, services.nix, flatpak.nix
 │   ├── server/               # Server services (asus only)
 │   │   ├── gitea.nix         # Gitea on :3000 + shared postgres
@@ -52,11 +52,12 @@ nixos-config/
 │       ├── shell.nix, fish.nix, git.nix, browser.nix (Zen)
 │       ├── cli.nix, dev.nix, gui.nix, theme.nix, xdg.nix, osd.nix
 │       ├── vscodium.nix, lazyvim.nix
-│       ├── waybar/, hyprland/ (with hypridle.nix), rofi/
+│       ├── waybar/, river/, rofi/
 │       ├── swaync/, fastfetch/, ghostty/, lazyvim-config/
 │       └── default.nix
 ├── packages/
-│   └── gitea-mirror.nix      # Self-built gitea-mirror app (no upstream flake)
+│   ├── gitea-mirror.nix      # Self-built gitea-mirror app (no upstream flake)
+│   └── riztile.nix           # River 0.4 tiling WM (TOML config, live reload)
 ├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
 └── wallpapers/               # Wallpaper files
@@ -66,7 +67,7 @@ nixos-config/
 
 - **NixOS flake-based** configuration, two hosts
 - **Home Manager** for user packages and dotfiles (t480s)
-- **Hyprland** with Lua config (0.55+)
+- **River** compositor with riztile (river + window manager pair)
 - **Gruvbox** theme throughout
 - **Security hardening** (kernel sysctl, network, apparmor)
 - **Auto-import** via `scanPaths` helper
