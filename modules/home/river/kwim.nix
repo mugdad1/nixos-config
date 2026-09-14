@@ -4,10 +4,7 @@
 # ~/.config/kwim/config.zon and applies libinput + keyboard rules.
 # Layout is set here explicitly (not via XKB_DEFAULT_* env) so it does not
 # depend on env propagation through the greetd session.
-{
-  variables,
-  ...
-}: {
+{variables, ...}: {
   xdg.configFile."kwim/config.zon".text = ''
     // mugdad's kwim configuration (input rules for the river session)
     // generated from modules/home/river/kwim.nix
