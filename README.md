@@ -46,7 +46,6 @@ nixos-config/
 │   ├── server/               # Server services (asus only)
 │   │   ├── gitea.nix         # Gitea on :3000 + shared postgres
 │   │   ├── gitea-mirror.nix  # GitHub→Gitea mirror on :4321
-│   │   ├── immich.nix        # Immich photo library on :2283
 │   │   ├── network.nix, openssh.nix, packages.nix, memory.nix, user.nix
 │   │   └── default.nix       # scanPaths import
 │   └── home/                 # Home-manager modules (t480s)
@@ -71,7 +70,7 @@ nixos-config/
 - **Gruvbox** theme throughout
 - **Security hardening** (kernel sysctl, network, apparmor)
 - **Auto-import** via `scanPaths` helper
-- **Server stack** on asus: Gitea, GitHub→Gitea mirror, Immich — tailscale-only, no open firewall
+- **Server stack** on asus: Gitea + GitHub→Gitea mirror — tailscale-only, no open firewall
 
 ## Server services (asus)
 
@@ -81,14 +80,12 @@ Reachable over tailnet via MagicDNS. Firewall stays closed; tailscale routes byp
 | ---------------- | ---------- | ---------------------------------------------- |
 | Gitea            | `http://asus:3000` | Git host, postgres backend              |
 | gitea-mirror     | `http://asus:4321` | Mirrors GitHub repos to Gitea (self-built) |
-| Immich           | `http://asus:2283` | Photo library + ML (CPU-only)           |
 
 First-run setup:
 
 - **gitea-mirror** needs `/var/lib/gitea-mirror/env` (root:600) before the first
   start, e.g. `BETTER_AUTH_URL=http://asus:4321` (see
   `modules/server/gitea-mirror.nix`). Secrets are auto-generated on first boot.
-- **Immich**: create the admin account at `/auth/register`, then add a library.
 
 ## Quick Start
 
