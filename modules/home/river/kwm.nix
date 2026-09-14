@@ -320,6 +320,7 @@
     ["wl-paste" "--watch" "cliphist" "store"]
     [variables.bar]
     ["swaync"]
+    ["kanshi"]
     ["udiskie" "--automount" "--notify" "--smart-tray"]
     ["init-wallpaper"]
     ["swayosd-server"]

@@ -8,7 +8,7 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 | Host  | Role                        | Platform     |
 | ----- | --------------------------- | ------------ |
-| t480s | Desktop (River + riztile GUI) | ThinkPad T480s |
+| t480s | Desktop (River + kwm GUI) | ThinkPad T480s |
 | asus  | Headless home server (tailnet-only) | ASUS i3-8th gen |
 
 ## Structure
@@ -57,7 +57,8 @@ nixos-config/
 │       └── default.nix
 ├── packages/
 │   ├── gitea-mirror.nix      # Self-built gitea-mirror app (no upstream flake)
-│   └── riztile.nix           # River 0.4 tiling WM (TOML config, live reload)
+│   ├── kwm.nix               # River tiling WM (Zig, tags bar, float rules)
+│   └── kwim.nix              # kwm input manager (touchpad/keyboard rules)
 ├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
 └── wallpapers/               # Wallpaper files
@@ -67,7 +68,7 @@ nixos-config/
 
 - **NixOS flake-based** configuration, two hosts
 - **Home Manager** for user packages and dotfiles (t480s)
-- **River** compositor with riztile (river + window manager pair)
+- **River** compositor with kwm (river + window manager pair)
 - **Gruvbox** theme throughout
 - **Security hardening** (kernel sysctl, network, apparmor)
 - **Auto-import** via `scanPaths` helper

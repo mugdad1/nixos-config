@@ -9,7 +9,7 @@
     XDG_SESSION_DESKTOP = "River";
     GRIMBLAST_HIDE_CURSOR = 0;
 
-    # riztile has no keyboard layout config — river/xkbcommon read these
+    # kwm/kwim have no keyboard layout config — river/xkbcommon read these
     XKB_DEFAULT_LAYOUT = variables.keyboardLayout;
     XKB_DEFAULT_OPTIONS = variables.keyboardOptions;
 

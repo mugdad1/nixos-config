@@ -12,6 +12,8 @@ in {
     awww
     grimblast
     wlr-randr
+    wdisplays
+    kanshi
     wl-clip-persist
     cliphist
     grim
