@@ -245,24 +245,28 @@
       })
       (keyBind {
         keysym = "XF86MonBrightnessUp";
-        action = spawn ["swayosd-client" "--brightness" "raise"];
+        action = spawn ["swayosd-client" "--brightness" "+5"];
+        repeat = true;
       })
       (keyBind {
         keysym = "XF86MonBrightnessDown";
-        action = spawn ["swayosd-client" "--brightness" "lower"];
+        action = spawn ["swayosd-client" "--brightness" "-5"];
+        repeat = true;
       })
       (keyBind {
         keysym = "XF86AudioRaiseVolume";
-        action = spawn ["swayosd-client" "--output-volume" "+2"];
+        action = spawn ["swayosd-client" "--output-volume" "+5"];
+        repeat = true;
       })
       (keyBind {
         keysym = "XF86AudioLowerVolume";
-        action = spawn ["swayosd-client" "--output-volume" "-2"];
+        action = spawn ["swayosd-client" "--output-volume" "-5"];
+        repeat = true;
       })
       (keyBind {
         keysym = "v";
         mods.${mod} = true;
-        action = spawnShell "toggle-rofi \"cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\"";
+        action = spawnShell "toggle-rofi \\\"cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\\\"";
       })
     ]
     # workspaces: Super + 1-9,0 (=10)
@@ -307,7 +311,7 @@
 
   # startup programs (argv arrays; kwm execs directly, no shell)
   startup = [
-    ["dbus-update-activation-environment" "--all" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"]
+    ["dbus-update-activation-environment" "--systemd" "--all"]
     ["systemctl" "--user" "import-environment" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"]
     ["systemctl" "--user" "start" "nixos-fake-graphical-session.target"]
     ["nm-applet"]
