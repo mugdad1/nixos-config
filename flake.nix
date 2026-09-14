@@ -30,6 +30,11 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    gitea-mirror = {
+      url = "github:RayLabsHQ/gitea-mirror";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -50,8 +55,7 @@
           inherit (variables) username;
         };
       };
-
-    in {
+  in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
     devShells.${system} = {

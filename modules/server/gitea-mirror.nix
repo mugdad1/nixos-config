@@ -1,54 +1,32 @@
-# Pull-mirror RayLabsHQ/gitea-mirror into the local Gitea.
+# Real gitea-mirror app (GitHub → Gitea mirroring service with a dashboard),
+# NOT a raw-API oneshot. The flake module ships a systemd service, auto-generated
+# secrets, SQLite, and a healthcheck timer.
 #
-# One-time setup: create an admin token (Gitea UI -> Settings -> Applications)
-# and write it to /var/lib/gitea-mirror/token on the server:
-#   install -d -o root -g root -m 700 /var/lib/gitea-mirror
-#   echo '<token>' > /var/lib/gitea-mirror/token && chmod 600 /var/lib/gitea-mirror/token
-# The unit creates the mirror if missing and exits cleanly otherwise.
+# Tailnet-only access, matching Gitea/Immich: firewall stays closed
+# (openFirewall = false). The public base URL is kept OUT of this public repo —
+# set it in /var/lib/gitea-mirror/env on the server (untracked by git), e.g.:
+#
+#   BETTER_AUTH_URL=http://<tailnet-ip>:4321
+#   BETTER_AUTH_TRUSTED_ORIGINS=http://<tailnet-ip>:4321
+#   PUBLIC_BETTER_AUTH_URL=http://<tailnet-ip>:4321
+#
+# EnvironmentFile values win over the module's Environment= (verified live).
+# First signup in the web UI becomes admin; then set up GitHub + Gitea there.
 {
   pkgs,
-  variables,
+  inputs,
   ...
 }: {
-  systemd.services.gitea-mirror-raylabs = {
-    description = "Mirror RayLabsHQ/gitea-mirror into local Gitea";
-    after = ["gitea.service"];
-    wantedBy = ["multi-user.target"];
-    path = [pkgs.curl];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "root";
-    };
-    script = ''
-      set -eu
-      TOKEN_FILE=/var/lib/gitea-mirror/token
-      if [ ! -f "$TOKEN_FILE" ]; then
-        echo "gitea-mirror: $TOKEN_FILE missing, skipping (see modules/server/gitea-mirror.nix)"
-        exit 0
-      fi
-      TOKEN=$(cat "$TOKEN_FILE")
-      API=http://127.0.0.1:3000/api/v1
+  imports = [
+    inputs.gitea-mirror.nixosModules.default
+  ];
 
-      # wait for gitea (max ~60s)
-      for _ in $(seq 1 30); do
-        curl -fsS -o /dev/null "$API/version" && break
-        sleep 2
-      done
-
-      # already mirrored?
-      if curl -fsS -o /dev/null \
-        -H "Authorization: token $TOKEN" \
-        "$API/repos/${variables.username}/gitea-mirror"; then
-        echo "gitea-mirror: already present, nothing to do"
-        exit 0
-      fi
-
-      curl -fsS \
-        -H "Authorization: token $TOKEN" \
-        -H "Content-Type: application/json" \
-        -d '{"clone_addr":"https://github.com/RayLabsHQ/gitea-mirror","repo_name":"gitea-mirror","repo_owner":"${variables.username}","mirror":true,"private":false,"description":"Mirror of RayLabsHQ/gitea-mirror"}' \
-        "$API/repos/migrate"
-      echo "gitea-mirror: mirror created"
-    '';
+  services.gitea-mirror = {
+    enable = true;
+    port = 4321;
+    betterAuthUrl = "http://127.0.0.1:4321";
+    betterAuthTrustedOrigins = "http://127.0.0.1:4321";
+    environmentFile = "/var/lib/gitea-mirror/env";
+    openFirewall = false;
   };
 }
