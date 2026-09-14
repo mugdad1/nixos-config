@@ -1,6 +1,6 @@
 {
   pkgs,
-  username,
+  variables,
   ...
 }: let
   gitAliases = {
@@ -52,8 +52,8 @@ in {
 
     settings = {
       user = {
-        name = username;
-        email = "mugdad02@tutamail.com";
+        name = variables.username;
+        email = variables.gitEmail;
       };
 
       init.defaultBranch = "main";
@@ -64,9 +64,9 @@ in {
       url = {
         # SSH only for your own repos; everything else (e.g. lazy.nvim
         # cloning plugins) stays HTTPS so it works without SSH keys/port 22.
-        "git@github.com:mugdad1/".insteadOf = [
-          "gh:mugdad1/"
-          "https://github.com/mugdad1/"
+        "git@github.com:${variables.gitUser}/".insteadOf = [
+          "gh:${variables.gitUser}/"
+          "https://github.com/${variables.gitUser}/"
         ];
       };
 

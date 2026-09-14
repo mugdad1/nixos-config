@@ -5,7 +5,11 @@
 #   install -d -o root -g root -m 700 /var/lib/gitea-mirror
 #   echo '<token>' > /var/lib/gitea-mirror/token && chmod 600 /var/lib/gitea-mirror/token
 # The unit creates the mirror if missing and exits cleanly otherwise.
-{pkgs, ...}: {
+{
+  pkgs,
+  variables,
+  ...
+}: {
   systemd.services.gitea-mirror-raylabs = {
     description = "Mirror RayLabsHQ/gitea-mirror into local Gitea";
     after = ["gitea.service"];
@@ -34,7 +38,7 @@
       # already mirrored?
       if curl -fsS -o /dev/null \
         -H "Authorization: token $TOKEN" \
-        "$API/repos/mugdad/gitea-mirror"; then
+        "$API/repos/${variables.username}/gitea-mirror"; then
         echo "gitea-mirror: already present, nothing to do"
         exit 0
       fi
@@ -42,7 +46,7 @@
       curl -fsS \
         -H "Authorization: token $TOKEN" \
         -H "Content-Type: application/json" \
-        -d '{"clone_addr":"https://github.com/RayLabsHQ/gitea-mirror","repo_name":"gitea-mirror","repo_owner":"mugdad","mirror":true,"private":false,"description":"Mirror of RayLabsHQ/gitea-mirror"}' \
+        -d '{"clone_addr":"https://github.com/RayLabsHQ/gitea-mirror","repo_name":"gitea-mirror","repo_owner":"${variables.username}","mirror":true,"private":false,"description":"Mirror of RayLabsHQ/gitea-mirror"}' \
         "$API/repos/migrate"
       echo "gitea-mirror: mirror created"
     '';

@@ -3,9 +3,11 @@ _: {
     enable = true;
     openFirewall = true;
     # Don't use Tailscale's DNS (MagicDNS) — Blocky owns 127.0.0.1:53
+    # --ssh: enable Tailscale SSH (identity from tailnet ACLs, no server keys)
     extraUpFlags = [
       "--accept-routes"
       "--accept-dns=false"
+      "--ssh"
     ];
   };
 
