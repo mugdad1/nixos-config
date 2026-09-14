@@ -1,4 +1,4 @@
-{...}: let
+{config, ...}: let
   g = import ../../lib/gruvbox.nix;
   raw = g.raw;
 in {
@@ -6,7 +6,7 @@ in {
     enable = true;
     settings = {
       color = raw.bg0_h;
-      image = "~/Pictures/wallpapers/wallpaper";
+      image = "${config.home.homeDirectory}/Pictures/wallpapers/wallpaper";
       scaling = "fill";
       font = "JetBrainsMono Nerd Font";
       font-size = 32;
