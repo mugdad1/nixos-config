@@ -21,7 +21,7 @@
     machine-learning = {
       enable = true;
       environment = {
-        MACHINE_LEARNING_WORKERS = "2";
+        MACHINE_LEARNING_WORKERS = "1";
         MACHINE_LEARNING_WORKER_TIMEOUT = "120";
         # silence the matplotlib cache warning (upstream issue #3821)
         MPLCONFIGDIR = "/var/cache/immich/matplotlib";

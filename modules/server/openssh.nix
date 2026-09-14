@@ -1,11 +1,11 @@
-# SSH: key-only. Bootstrap note — on a FRESH install with no key deployed
-# yet, temporarily set PasswordAuthentication = true for the first deploy,
-# push your key, then flip it back. Never leave passwords on.
+# SSH: key-only by default. PasswordAuthentication is currently ON so new
+# machines can be bootstrapped over LAN. Flip it back to false once keys are
+# deployed.
 {
   services.openssh = {
     enable = true;
     settings = {
-      PasswordAuthentication = false;
+      PasswordAuthentication = true;
       PermitRootLogin = "no";
     };
   };
