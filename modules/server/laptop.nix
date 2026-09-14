@@ -11,11 +11,22 @@
     IdleAction = "ignore";
   };
 
-  # Console display: on when someone is at the box, auto-blank when idle.
-  # Blanking the VT powers down the i915 eDP pipeline (killing the backlight
-  # too), and any keypress unblanks immediately — no separate backlight
-  # service, so the screen is usable whenever a human is present.
+  # Headless: the internal panel has nothing to show, blank the console VT after
+  # 60s idle (i915 suspends the eDP pipeline on blank so the backlight dies too).
   boot.kernelParams = lib.mkAfter ["consoleblank=60"];
+
+  # Belt-and-braces: yank the backlight straight off at boot via sysfs.
+  systemd.services.backlight-off = {
+    description = "Turn off internal display backlight (headless server)";
+    after = ["multi-user.target"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for d in /sys/class/backlight/*; do
+        [ -f "$d/bl_power" ] && echo 4 > "$d/bl_power"
+      done
+    '';
+  };
 
   systemd.targets = {
     sleep.enable = false;
