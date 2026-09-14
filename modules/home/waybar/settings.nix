@@ -36,7 +36,7 @@ in {
       format-alt = "{:%d/%m}";
     };
     # workspace/tags module removed — river 0.4+ dropped the status/control
-    # protocols waybar's river/tags requires (tags now live inside riztile)
+    # protocols waybar's river/tags requires (tags now live in kwm's top bar)
     cpu = {
       format = "<span foreground='${green}'> </span> {usage}%";
       format-alt = "<span foreground='${green}'> </span> {avg_frequency} GHz";

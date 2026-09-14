@@ -4,12 +4,23 @@
   ...
 }: let
   g = (import ../../lib/gruvbox.nix).raw;
-  riztile = pkgs.callPackage ../../packages/riztile.nix {};
+  kwmPkg = pkgs.callPackage ../../packages/kwm.nix {};
+  kwimPkg = pkgs.callPackage ../../packages/kwim.nix {};
+  # kwm spawns `kwim` by name on startup/input-hotplug — guarantee it is
+  # on PATH regardless of what the greetd session inherits.
+  kwm = pkgs.symlinkJoin {
+    name = "kwm-wrapped";
+    paths = [kwmPkg];
+    buildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      wrapProgram $out/bin/kwm --prefix PATH : ${kwimPkg}/bin
+    '';
+  };
 
   # greeter theme
   greeterTheme = "container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}";
   # single-token session command (tuigreet -c would clobber --cmd)
-  sessionCommand = pkgs.writeShellScript "river-session" "${pkgs.river}/bin/river -c ${riztile}/bin/riztile";
+  sessionCommand = pkgs.writeShellScript "river-session" "${pkgs.river}/bin/river -c ${kwm}/bin/kwm";
 in {
   services = {
     gvfs.enable = true;
