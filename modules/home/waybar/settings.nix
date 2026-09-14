@@ -1,5 +1,16 @@
 {variables, ...}: let
   custom = import ./theme.nix;
+  compositor = variables.compositor or "hyprland";
+  # Hyprland exposes workspaces, river exposes tags
+  workspaceModule =
+    if compositor == "river"
+    then "river/tags"
+    else "hyprland/workspaces";
+  # hyprctl can place the terminal floating+centered; river cannot
+  btop =
+    if compositor == "river"
+    then "${variables.terminal} -e btop"
+    else "hyprctl dispatch exec '[float; center; size 950 650] ${variables.terminal} -e btop'";
 in {
   programs.waybar.settings.mainBar = with custom; {
     position = "bottom";
@@ -11,7 +22,7 @@ in {
     margin-right = 0;
     modules-left = [
       "custom/launcher"
-      "hyprland/workspaces"
+      workspaceModule
       "tray"
     ];
     modules-center = ["clock"];
@@ -35,43 +46,51 @@ in {
       tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
       format-alt = "{:%d/%m}";
     };
-    "hyprland/workspaces" = {
-      active-only = false;
-      disable-scroll = true;
-      format = "{icon}";
-      on-click = "activate";
-      sort-by-number = true;
-      format-icons = {
-        "1" = "I";
-        "2" = "II";
-        "3" = "III";
-        "4" = "IV";
-        "5" = "V";
-        "6" = "VI";
-        "7" = "VII";
-        "8" = "VIII";
-        "9" = "IX";
-        "10" = "X";
+    # workspace/tags module differs per compositor
+    ${workspaceModule} =
+      if compositor == "river"
+      then {
+        num-tags = 10;
+        format = "{icon}";
+        format-icons = ["I" "II" "III" "IV" "V" "VI" "VII" "VIII" "IX" "X"];
+      }
+      else {
+        active-only = false;
+        disable-scroll = true;
+        format = "{icon}";
+        on-click = "activate";
+        sort-by-number = true;
+        format-icons = {
+          "1" = "I";
+          "2" = "II";
+          "3" = "III";
+          "4" = "IV";
+          "5" = "V";
+          "6" = "VI";
+          "7" = "VII";
+          "8" = "VIII";
+          "9" = "IX";
+          "10" = "X";
+        };
+        persistent-workspaces = {
+          "1" = [];
+          "2" = [];
+          "3" = [];
+          "4" = [];
+          "5" = [];
+        };
       };
-      persistent-workspaces = {
-        "1" = [];
-        "2" = [];
-        "3" = [];
-        "4" = [];
-        "5" = [];
-      };
-    };
     cpu = {
       format = "<span foreground='${green}'> </span> {usage}%";
       format-alt = "<span foreground='${green}'> </span> {avg_frequency} GHz";
       interval = 2;
-      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ${variables.terminal} -e btop'";
+      on-click-right = btop;
     };
     memory = {
       format = "<span foreground='${cyan}'>󰟜 </span>{}%";
       format-alt = "<span foreground='${cyan}'>󰟜 </span>{used} GiB";
       interval = 2;
-      on-click-right = "hyprctl dispatch exec '[float; center; size 950 650] ${variables.terminal} -e btop'";
+      on-click-right = btop;
     };
     tray = {
       icon-size = 20;

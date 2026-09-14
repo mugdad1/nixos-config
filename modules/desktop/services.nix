@@ -1,9 +1,19 @@
 {
   pkgs,
   lib,
+  variables,
   ...
 }: let
   g = (import ../../lib/gruvbox.nix).raw;
+  compositor = variables.compositor or "hyprland";
+  riztile = pkgs.callPackage ../../packages/riztile.nix {};
+
+  # greeter theme + session command, per compositor
+  greeterTheme = "container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}";
+  sessionCommand =
+    if compositor == "river"
+    then "${pkgs.river}/bin/river -c ${riztile}/bin/riztile"
+    else "start-hyprland";
 in {
   services = {
     gvfs.enable = true;
@@ -34,7 +44,7 @@ in {
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --theme 'container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}' --cmd start-hyprland";
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --theme '${greeterTheme}' --cmd ${sessionCommand}";
           user = "greeter";
         };
       };

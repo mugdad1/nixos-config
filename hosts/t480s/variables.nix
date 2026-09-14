@@ -11,6 +11,9 @@
   launcher = "rofi";
   bar = "waybar";
 
+  # Compositor: "hyprland" or "river"
+  compositor = "river";
+
   keyboardLayout = "us,ara";
   keyboardOptions = "grp:alt_shift_toggle";
 }
