@@ -15,7 +15,6 @@
         START_SSH_SERVER = false;
         LANDING_PAGE = "explore";
       };
-      service.DISABLE_REGISTRATION = true;
     };
   };
 }
