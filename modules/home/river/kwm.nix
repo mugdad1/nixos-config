@@ -255,12 +255,12 @@
       })
       (keyBind {
         keysym = "XF86AudioRaiseVolume";
-        action = spawn ["swayosd-client" "--output-volume" "+5"];
+        action = spawn ["swayosd-client" "--output-volume" "+2"];
         repeat = true;
       })
       (keyBind {
         keysym = "XF86AudioLowerVolume";
-        action = spawn ["swayosd-client" "--output-volume" "-5"];
+        action = spawn ["swayosd-client" "--output-volume" "-2"];
         repeat = true;
       })
       (keyBind {
