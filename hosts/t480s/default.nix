@@ -37,7 +37,7 @@
     wantedBy = ["multi-user.target"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'for bat in /sys/class/power_supply/BAT*; do [ -f \"$bat/charge_control_end_threshold\" ] && echo 80 > \"$bat/charge_control_end_threshold\"; done'";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'for bat in /sys/class/power_supply/BAT*; do [ -f \"$bat/charge_control_end_threshold\" ] && echo 85 > \"$bat/charge_control_end_threshold\"; done'";
       ProtectSystem = "strict";
       PrivateTmp = true;
       NoNewPrivileges = true;
