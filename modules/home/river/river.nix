@@ -250,6 +250,17 @@ in {
   home.packages = with pkgs; [
     riztile
     river
+    awww
+    grimblast
+    hyprpicker
+    nwg-displays
+    wl-clip-persist
+    cliphist
+    wofi
+    hyprlock
+    grim
+    glib
+    wayland
   ];
 
   xdg.configFile."riztile/config.toml".text = ''

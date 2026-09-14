@@ -10,10 +10,11 @@
 
   # greeter theme + session command, per compositor
   greeterTheme = "container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}";
+  # single-token session command (tuigreet -c would clobber --cmd)
   sessionCommand =
     if compositor == "river"
-    then "${pkgs.river}/bin/river -c ${riztile}/bin/riztile"
-    else "start-hyprland";
+    then pkgs.writeShellScript "river-session" "${pkgs.river}/bin/river -c ${riztile}/bin/riztile"
+    else pkgs.writeShellScript "hyprland-session" "start-hyprland";
 in {
   services = {
     gvfs.enable = true;
