@@ -377,7 +377,7 @@ in {
         .bar = .{
             .show_default = true,
             .position = .top,
-            .font = "monospace:size=10",
+            .font = "monospace:size=12",
             .scheme = .{
                 .normal = .{
                     .fg = 0x${raw.fg}ff,
