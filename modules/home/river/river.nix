@@ -10,7 +10,7 @@ in {
     kwim
     river
     awww
-    grimblast
+    slurp
     wlr-randr
     wdisplays
     kanshi

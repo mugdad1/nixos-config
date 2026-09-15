@@ -7,7 +7,6 @@
     XDG_CURRENT_DESKTOP = "River";
     XDG_SESSION_TYPE = "wayland";
     XDG_SESSION_DESKTOP = "River";
-    GRIMBLAST_HIDE_CURSOR = 0;
 
     # kwm/kwim have no keyboard layout config — river/xkbcommon read these
     XKB_DEFAULT_LAYOUT = variables.keyboardLayout;
