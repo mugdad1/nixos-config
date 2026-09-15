@@ -20,6 +20,10 @@
   # No audio stack on a headless server
   security.rtkit.enable = lib.mkForce false;
 
+  # Headless server: no bluetooth, no ROG armoury driver (non-ROG board).
+  # Kills their dmesg probe noise and saves a little power.
+  boot.blacklistedKernelModules = ["btusb" "bluetooth" "asus_armoury"];
+
   # Trim idle services: no modem on ethernet, no need to block boot on
   # network-online, and snapper timers are pointless with configs = {} below.
   systemd.services.ModemManager.enable = lib.mkForce false;
