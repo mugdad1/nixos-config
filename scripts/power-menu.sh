@@ -57,23 +57,23 @@ run_cmd() {
 
 chosen="$(run_rofi)"
 case ${chosen} in
-    $shutdown)
+    "$shutdown")
         run_cmd --shutdown
         ;;
-    $reboot)
+    "$reboot")
         run_cmd --reboot
         ;;
-    $lock)
+    "$lock")
         swaylock
         ;;
-    $suspend)
+    "$suspend")
         sleep 0.1
         run_cmd --suspend
         ;;
-    $logout)
+    "$logout")
         run_cmd --logout
         ;;
-    $quit)
+    "$quit")
         exit 0
         ;;
 esac

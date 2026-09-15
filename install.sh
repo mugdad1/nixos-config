@@ -40,7 +40,7 @@ elif grep -qi 'x509\|vivobook' /sys/class/dmi/id/product_name 2> /dev/null; then
     GPU="intel"
 fi
 
-if [[ -z $HOST ]]; then
+if [[ -z ${HOST:-} ]]; then
     echo -e "${ERROR}Could not detect host! Aborting."
     exit 1
 fi
