@@ -13,7 +13,9 @@
 
   # Headless: the internal panel has nothing to show, blank the console VT after
   # 60s idle (i915 suspends the eDP pipeline on blank so the backlight dies too).
-  boot.kernelParams = lib.mkAfter ["consoleblank=60"];
+  # i8042.nokbd kills the internal PS/2 keyboard (no one types on a headless
+  # box); USB keyboards still work for emergencies.
+  boot.kernelParams = lib.mkAfter ["consoleblank=60" "i8042.nokbd"];
 
   # Belt-and-braces: yank the backlight straight off at boot via sysfs.
   # No-op (exit 0) when no backlight device exists, e.g. screen removed.
