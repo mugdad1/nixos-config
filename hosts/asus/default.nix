@@ -20,6 +20,20 @@
   # No audio stack on a headless server
   security.rtkit.enable = lib.mkForce false;
 
+  # Longevity: bound SSD writes and store growth (always-on, rarely touched).
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  services.journald.extraConfig = ''
+    SystemMaxUse=200M
+    RuntimeMaxUse=100M
+  '';
+
+  # Idle power savings (less heat = longer life).
+  powerManagement.powertop.enable = true;
+
   # Real hardware-configuration.nix (from nixos-generate-config) sets this
   # itself; needed only while the placeholder above stands in.
   nixpkgs.hostPlatform = "x86_64-linux";
