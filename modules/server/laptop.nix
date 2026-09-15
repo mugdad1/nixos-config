@@ -16,6 +16,7 @@
   boot.kernelParams = lib.mkAfter ["consoleblank=60"];
 
   # Belt-and-braces: yank the backlight straight off at boot via sysfs.
+  # No-op (exit 0) when no backlight device exists, e.g. screen removed.
   systemd.services.backlight-off = {
     description = "Turn off internal display backlight (headless server)";
     after = ["multi-user.target"];
@@ -23,8 +24,10 @@
     serviceConfig.Type = "oneshot";
     script = ''
       for d in /sys/class/backlight/*; do
+        [ -e "$d" ] || continue
         [ -f "$d/bl_power" ] && echo 4 > "$d/bl_power"
       done
+      exit 0
     '';
   };
 
