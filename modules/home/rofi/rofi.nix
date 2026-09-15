@@ -3,7 +3,7 @@
   variables,
   ...
 }: let
-  c = (import ../../../lib/gruvbox.nix).css;
+  c = (import ../../../lib/theme.nix variables).css;
 in {
   home.packages = with pkgs; [rofi];
 

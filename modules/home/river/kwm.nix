@@ -9,7 +9,7 @@
   variables,
   ...
 }: let
-  g = import ../../../lib/gruvbox.nix;
+  g = import ../../../lib/theme.nix variables;
   raw = g.raw;
   concatLines = builtins.concatStringsSep "\n";
 

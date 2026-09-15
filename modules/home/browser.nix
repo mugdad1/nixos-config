@@ -1,5 +1,9 @@
-{inputs, ...}: let
-  g = import ../../lib/gruvbox.nix;
+{
+  inputs,
+  variables,
+  ...
+}: let
+  g = import ../../lib/theme.nix variables;
   c = g.raw;
 in {
   imports = [inputs.zen-browser.homeModules.beta];

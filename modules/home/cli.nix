@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  variables,
   ...
 }: {
   imports = [
@@ -77,7 +78,7 @@
   };
 
   programs.lazygit = let
-    gl = (import ../../lib/gruvbox.nix).raw;
+    gl = (import ../../lib/theme.nix variables).raw;
     H = v: "#${v}";
   in {
     enable = true;

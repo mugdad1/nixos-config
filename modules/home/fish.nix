@@ -1,5 +1,9 @@
-{pkgs, ...}: let
-  c = (import ../../lib/gruvbox.nix).css;
+{
+  pkgs,
+  variables,
+  ...
+}: let
+  c = (import ../../lib/theme.nix variables).css;
 in {
   programs.fish = {
     enable = true;
@@ -134,7 +138,7 @@ in {
     settings = {
       palette = "gruvbox_dark";
 
-      # Official starship gruvbox-rainbow preset, palette sourced from lib/gruvbox.nix
+      # Official starship gruvbox-rainbow preset, palette sourced from lib/theme.nix
       palettes.gruvbox_dark = {
         color_fg0 = c.fg0;
         color_bg1 = c.bg1;
@@ -286,12 +290,12 @@ in {
       docker_context = {
         symbol = "";
         style = "bg:color_bg3";
-        format = "[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)";
+        format = "[[ $symbol( $context) ](fg:${c.bright_blue} bg:color_bg3)]($style)";
       };
 
       conda = {
         style = "bg:color_bg3";
-        format = "[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)";
+        format = "[[ $symbol( $environment) ](fg:${c.bright_blue} bg:color_bg3)]($style)";
       };
 
       pixi = {

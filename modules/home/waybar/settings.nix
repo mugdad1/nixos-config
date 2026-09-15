@@ -1,5 +1,5 @@
 {variables, ...}: let
-  custom = import ./theme.nix;
+  custom = import ./theme.nix variables;
   btop = "${variables.terminal} -e btop";
 in {
   programs.waybar.settings.mainBar = with custom; {
@@ -27,7 +27,7 @@ in {
     clock = {
       calendar = {
         format = {
-          today = "<span color='#98971A'><b>{}</b></span>";
+          today = "<span color='${green}'><b>{}</b></span>";
         };
       };
       format = "{:%H:%M}";

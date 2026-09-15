@@ -1,5 +1,5 @@
-rec {
-  css = import ../../../lib/gruvbox.nix;
+{variables, ...}: rec {
+  css = import ../../../lib/theme.nix variables;
   font = "Iosevka Nerd Font";
   font_size = "18px";
   font_weight = "bold";

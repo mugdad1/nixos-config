@@ -1,5 +1,9 @@
-{pkgs, ...}: let
-  c = (import ../../lib/gruvbox.nix).css;
+{
+  pkgs,
+  variables,
+  ...
+}: let
+  c = (import ../../lib/theme.nix variables).css;
 in {
   programs.bat = {
     enable = true;

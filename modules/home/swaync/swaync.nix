@@ -1,5 +1,9 @@
-{lib, ...}: let
-  c = (import ../../../lib/gruvbox.nix).css;
+{
+  lib,
+  variables,
+  ...
+}: let
+  c = (import ../../../lib/theme.nix variables).css;
 in {
   services.swaync = {
     enable = true;
