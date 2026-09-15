@@ -26,10 +26,10 @@
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
-  services.journald.extraConfig = ''
-    SystemMaxUse=200M
-    RuntimeMaxUse=100M
-  '';
+  services.journald.settings.Journal = {
+    SystemMaxUse = "200M";
+    RuntimeMaxUse = "100M";
+  };
 
   # Idle power savings (less heat = longer life).
   powerManagement.powertop.enable = true;
