@@ -20,6 +20,13 @@
   # No audio stack on a headless server
   security.rtkit.enable = lib.mkForce false;
 
+  # Trim idle services: no modem on ethernet, no need to block boot on
+  # network-online, and snapper timers are pointless with configs = {} below.
+  systemd.services.ModemManager.enable = lib.mkForce false;
+  systemd.services.NetworkManager-wait-online.enable = lib.mkForce false;
+  systemd.timers.snapper-timeline.enable = lib.mkForce false;
+  systemd.timers.snapper-cleanup.enable = lib.mkForce false;
+
   # /home is a plain directory on the root subvolume, not a subvolume itself,
   # so snapper's `home` config can never snapshot it (timeline exits 1 hourly).
   # Drop snapper configs on the server entirely.
