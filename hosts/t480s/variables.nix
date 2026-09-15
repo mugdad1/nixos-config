@@ -12,7 +12,7 @@
   bar = "waybar";
 
   # Theme palette: gruvbox | nord | catppuccin | tokyo-night | rose-pine
-  theme = "nord";
+  theme = "catppuccin";
 
   keyboardLayout = "us,ara";
   keyboardOptions = "grp:alt_shift_toggle";
