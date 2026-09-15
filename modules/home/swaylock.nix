@@ -20,8 +20,8 @@ in {
       ring-color = raw.gray;
       ring-ver-color = raw.bright_blue;
       ring-wrong-color = raw.bright_red;
-      ring-clear-color = raw.bright_green;
-      key-hl-color = raw.bright_green;
+      ring-clear-color = g.bright_accent;
+      key-hl-color = g.bright_accent;
       bs-hl-color = raw.bright_red;
       text-color = raw.fg4;
       text-ver-color = raw.fg4;

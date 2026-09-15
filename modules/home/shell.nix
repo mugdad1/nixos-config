@@ -63,7 +63,7 @@ in {
     ## Theme
     defaultOptions = [
       "--color=fg:-1,fg+:${c.fg0},bg:-1,bg+:${c.bg0}"
-      "--color=hl:${c.green},hl+:${c.bright_green},info:${c.light_gray},marker:${c.orange}"
+      "--color=hl:${c.accent},hl+:${c.bright_accent},info:${c.light_gray},marker:${c.orange}"
       "--color=prompt:${c.red},spinner:${c.aqua},pointer:${c.orange},header:${c.blue}"
       "--color=border:${c.bg3},label:${c.light_gray},query:${c.fg0}"
       "--border='double' --border-label='' --preview-window='border-sharp' --prompt='> '"

@@ -51,7 +51,7 @@ in {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: ${c.green};
+        background: ${c.accent};
     }
   '';
 }

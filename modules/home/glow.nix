@@ -27,7 +27,7 @@
     heading = {
       style_block = {
         style_primitive = {
-          color = c.bright_green;
+          color = c.bright_accent;
           background_color = c.bg0;
           bold = true;
         };
@@ -72,7 +72,7 @@
           prefix = " ";
           suffix = " ";
           color = c.bg0_h;
-          background_color = c.bright_green;
+          background_color = c.bright_accent;
           bold = true;
         };
       };

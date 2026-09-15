@@ -146,6 +146,7 @@ in {
         color_blue = c.blue;
         color_aqua = c.aqua;
         color_green = c.green;
+        color_accent = c.accent;
         color_orange = c.orange;
         color_purple = c.purple;
         color_red = c.red;
@@ -321,9 +322,9 @@ in {
 
       character = {
         disabled = false;
-        success_symbol = "[](bold fg:color_green)";
+        success_symbol = "[](bold fg:color_accent)";
         error_symbol = "[](bold fg:color_red)";
-        vimcmd_symbol = "[](bold fg:color_green)";
+        vimcmd_symbol = "[](bold fg:color_accent)";
         vimcmd_replace_one_symbol = "[](bold fg:color_purple)";
         vimcmd_replace_symbol = "[](bold fg:color_purple)";
         vimcmd_visual_symbol = "[](bold fg:color_yellow)";

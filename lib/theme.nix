@@ -9,11 +9,43 @@ variables: let
   name = variables.theme or "gruvbox";
   themes = import ./themes;
   theme = themes.${name} or (throw "Unknown theme '${name}'. Available: ${toString (builtins.attrNames themes)}");
+
+  # Semantic highlight color per theme (Omarchy-style: highlights follow
+  # `accent`, never the `green` slot, so switching palettes retints them).
+  accents = {
+    gruvbox = {
+      accent = "98971A";
+      bright_accent = "B8BB26";
+    };
+    nord = {
+      accent = "81A1C1";
+      bright_accent = "88C0D0";
+    };
+    catppuccin = {
+      accent = "CBA6F7";
+      bright_accent = "F5C2E7";
+    };
+    tokyo-night = {
+      accent = "7AA2F7";
+      bright_accent = "7DA6FF";
+    };
+    rose-pine = {
+      accent = "C4A7E7";
+      bright_accent = "EBBCBA";
+    };
+  };
+  accentTheme = accents.${name} or (throw "Unknown theme '${name}'. Available: ${toString (builtins.attrNames accents)}");
 in rec {
   inherit (theme) raw;
+  inherit (accentTheme) accent bright_accent;
 
   # CSS ready values (with leading #)
-  css = builtins.mapAttrs (_: v: "#${v}") raw;
+  css =
+    (builtins.mapAttrs (_: v: "#${v}") raw)
+    // {
+      accent = "#${accent}";
+      bright_accent = "#${bright_accent}";
+    };
 
   hexVals = {
     "0" = 0;

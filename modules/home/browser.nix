@@ -54,7 +54,7 @@ in {
       isDefault = true;
       settings = {
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-        "zen.theme.accent-color" = "#${c.green}";
+        "zen.theme.accent-color" = "#${g.accent}";
         "zen.welcome-screen.seen" = true;
 
         "datareporting.healthreport.uploadEnabled" = false;
@@ -108,7 +108,7 @@ in {
       userChrome = with g.css; ''
         :root {
           --zen-main-browser-background: ${bg0_h} !important;
-          --zen-colors-primary: ${green} !important;
+          --zen-colors-primary: ${accent} !important;
           --zen-colors-secondary: ${blue} !important;
           --zen-colors-tertiary: ${purple} !important;
           --zen-colors-border: ${light_gray} !important;
@@ -120,7 +120,7 @@ in {
           --toolbar-field-focus: ${bg0_h} !important;
           --tab-selected-bg: ${bg1} !important;
           --tab-hover-bg: ${bg0} !important;
-          --tab-loading-fill: ${green} !important;
+          --tab-loading-fill: ${accent} !important;
           --lwt-accent-color: ${bg0_h} !important;
           --lwt-text-color: ${fg0} !important;
           --lwt-selected-tab-background-color: ${bg1} !important;
@@ -136,19 +136,19 @@ in {
           --sidebar-text: ${fg} !important;
           --urlbar-background-color: ${bg0_h} !important;
           --urlbar-placeholder-color: ${light_gray} !important;
-          --urlbar-view-bottom-border-color: ${green} !important;
+          --urlbar-view-bottom-border-color: ${accent} !important;
           --chrome-content-separator-color: ${bg1} !important;
           --chrome-secondary-background-color: ${bg0} !important;
           --button-bgcolor: ${bg1} !important;
           --button-hover-bgcolor: ${bg2} !important;
           --button-active-bgcolor: ${bg3} !important;
           --button-color: ${fg} !important;
-          --button-primary-bgcolor: ${green} !important;
-          --button-primary-hover-bgcolor: ${bright_green} !important;
+          --button-primary-bgcolor: ${accent} !important;
+          --button-primary-hover-bgcolor: ${bright_accent} !important;
           --button-primary-color: ${bg0_h} !important;
-          --checkbox-checked-bgcolor: ${green} !important;
+          --checkbox-checked-bgcolor: ${accent} !important;
           --checkbox-unchecked-bgcolor: ${bg1} !important;
-          --focus-outline-color: ${green} !important;
+          --focus-outline-color: ${accent} !important;
           --input-bgcolor: ${bg0_h} !important;
           --input-color: ${fg} !important;
           --input-border-color: ${bg3} !important;
@@ -162,15 +162,15 @@ in {
           --newtab-search-background-color: ${bg0_h} !important;
           --newtab-search-border-color: ${bg3} !important;
           --newtab-search-icon-color: ${light_gray} !important;
-          --download-progress-fill-color: ${green} !important;
+          --download-progress-fill-color: ${accent} !important;
           --download-progress-pause-color: ${yellow} !important;
           --download-progress-cancel-color: ${red} !important;
           --toolbarbutton-icon-fill: ${fg} !important;
-          --toolbarbutton-icon-fill-attention: ${green} !important;
+          --toolbarbutton-icon-fill-attention: ${accent} !important;
           --toolbarbutton-hover-background: ${bg1} !important;
           --toolbarbutton-active-background: ${bg2} !important;
-          --tab-line-color: ${green} !important;
-          --tab-attention-icon-color: ${green} !important;
+          --tab-line-color: ${accent} !important;
+          --tab-attention-icon-color: ${accent} !important;
           --tab-background-separator: ${bg1} !important;
           --tabs-border-color: ${bg1} !important;
           --panel-shortcut-color: ${fg2} !important;
@@ -187,7 +187,7 @@ in {
           --category-background-color-hover: ${bg1} !important;
           --category-text-color: ${fg} !important;
           --category-text-color-hover: ${fg0} !important;
-          --category-text-color-active: ${green} !important;
+          --category-text-color-active: ${accent} !important;
           --card-background-color: ${bg0} !important;
           --card-color: ${fg} !important;
           --card-border-color: ${bg1} !important;
@@ -195,7 +195,7 @@ in {
           --warning-background-color: ${bg1} !important;
           --warning-color: ${yellow} !important;
           --warning-border-color: ${bg3} !important;
-          --success-text-color: ${bright_green} !important;
+          --success-text-color: ${bright_accent} !important;
           --info-text-color: ${bright_blue} !important;
           --in-content-page-background: ${bg0_h} !important;
           --in-content-page-color: ${fg} !important;
@@ -204,9 +204,9 @@ in {
           --in-content-button-background: ${bg1} !important;
           --in-content-button-background-hover: ${bg2} !important;
           --in-content-button-background-active: ${bg3} !important;
-          --in-content-primary-button-background: ${green} !important;
-          --in-content-primary-button-background-hover: ${bright_green} !important;
-          --in-content-primary-button-background-active: ${green} !important;
+          --in-content-primary-button-background: ${accent} !important;
+          --in-content-primary-button-background-hover: ${bright_accent} !important;
+          --in-content-primary-button-background-active: ${accent} !important;
           --in-content-primary-button-text-color: ${bg0_h} !important;
           --in-content-link-color: ${blue} !important;
           --in-content-link-color-visited: ${purple} !important;
@@ -214,7 +214,7 @@ in {
           --in-content-link-color-active: ${bright_purple} !important;
           --in-content-table-background: ${bg0_h} !important;
           --in-content-table-border-color: ${bg1} !important;
-          --in-content-table-header-background: ${green} !important;
+          --in-content-table-header-background: ${accent} !important;
           --in-content-table-header-color: ${bg0_h} !important;
           --in-content-box-background: ${bg0_h} !important;
           --in-content-box-background-hover: ${bg0} !important;
@@ -225,7 +225,7 @@ in {
           --in-content-warning-background: ${bg1} !important;
           --in-content-warning-color: ${yellow} !important;
           --in-content-warning-border-color: ${bg3} !important;
-          --in-content-success-color: ${bright_green} !important;
+          --in-content-success-color: ${bright_accent} !important;
         }
       '';
     };

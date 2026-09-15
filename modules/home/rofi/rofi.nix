@@ -13,7 +13,7 @@ in {
         bg-col-light: ${c.bg0};
         border-col: ${c.gray};
         selected-col: ${c.bg1};
-        green: ${c.green};
+        green: ${c.accent};
         fg-col: ${c.fg0};
         fg-col2: ${c.fg};
         grey: ${c.light_gray};

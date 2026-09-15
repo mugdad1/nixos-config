@@ -356,9 +356,9 @@ in {
         .border = .{
             .width = 2,
             .color = .{
-                .focus = 0x${raw.bright_green}ff,
+                .focus = 0x${g.bright_accent}ff,
                 .unfocus = 0x${raw.gray}ff,
-                .swallowing = 0x${raw.bright_green}ff,
+                .swallowing = 0x${g.bright_accent}ff,
             },
         },
 
@@ -386,7 +386,7 @@ in {
                 },
                 .select = .{
                     .fg = 0x${raw.bg0}ff,
-                    .bg = 0x${raw.bright_green}ff,
+                    .bg = 0x${g.bright_accent}ff,
                 },
             },
             .tags = .{
