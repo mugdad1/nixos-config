@@ -31,7 +31,8 @@
     export QT_QPA_PLATFORM=wayland
     export NIXOS_OZONE_WL=1
     export ELECTRON_OZONE_PLATFORM_HINT=wayland
-    exec ${pkgs.river}/bin/river -c ${kwm}/bin/kwm
+    mkdir -p "$HOME/.local/share"
+    exec ${pkgs.river}/bin/river -c ${kwm}/bin/kwm >>"$HOME/.local/share/river-session.log" 2>&1
   '';
 in {
   services = {
