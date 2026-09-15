@@ -70,6 +70,12 @@ in {
       };
     };
 
+    # tuigreet's --remember cache; lives here (not shared boot.nix) because
+    # the `greeter` user only exists where greetd runs.
+    systemd.tmpfiles.rules = [
+      "d /var/cache/tuigreet 0755 greeter greeter"
+    ];
+
     irqbalance.enable = true;
     bpftune.enable = true;
   };
