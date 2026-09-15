@@ -1,5 +1,5 @@
 {variables, ...}: let
-  custom = import ./theme.nix variables;
+  custom = import ./theme.nix;
   btop = "${variables.terminal} -e btop";
 in {
   programs.waybar.settings.mainBar = with custom; {
@@ -27,7 +27,7 @@ in {
     clock = {
       calendar = {
         format = {
-          today = "<span color='${accent}'><b>{}</b></span>";
+          today = "<span color='#98971A'><b>{}</b></span>";
         };
       };
       format = "{:%H:%M}";
@@ -38,8 +38,8 @@ in {
     # workspace/tags module removed — river 0.4+ dropped the status/control
     # protocols waybar's river/tags requires (tags now live in kwm's top bar)
     cpu = {
-      format = "<span foreground='${accent}'> </span> {usage}%";
-      format-alt = "<span foreground='${accent}'> </span> {avg_frequency} GHz";
+      format = "<span foreground='${green}'> </span> {usage}%";
+      format-alt = "<span foreground='${green}'> </span> {avg_frequency} GHz";
       interval = 2;
       on-click-right = btop;
     };

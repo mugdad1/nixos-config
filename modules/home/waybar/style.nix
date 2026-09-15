@@ -1,5 +1,5 @@
-{variables, ...}: let
-  custom = import ./theme.nix variables;
+_: let
+  custom = import ./theme.nix;
 in {
   programs.waybar.style = with custom; ''
     * {

@@ -1,9 +1,5 @@
-{
-  pkgs,
-  variables,
-  ...
-}: let
-  c = (import ../../lib/theme.nix variables).css;
+{pkgs, ...}: let
+  c = (import ../../lib/gruvbox.nix).css;
   glamourTheme = {
     document = {
       style_block = {
@@ -27,7 +23,7 @@
     heading = {
       style_block = {
         style_primitive = {
-          color = c.bright_accent;
+          color = c.bright_green;
           background_color = c.bg0;
           bold = true;
         };
@@ -72,7 +68,7 @@
           prefix = " ";
           suffix = " ";
           color = c.bg0_h;
-          background_color = c.bright_accent;
+          background_color = c.bright_green;
           bold = true;
         };
       };
@@ -257,9 +253,9 @@
       };
     };
   };
-  glamourJson = pkgs.writeText "glamour.json" (builtins.toJSON glamourTheme);
+  glamourJson = pkgs.writeText "gruvbox-glamour.json" (builtins.toJSON glamourTheme);
 in {
-  # glow renders markdown in the terminal; point it at a theme-aware glamour style
+  # glow renders markdown in the terminal; point it at a gruvbox glamour style
   xdg.configFile."glow/glow.yml".text = ''
     style: "${glamourJson}"
     mouse: true
@@ -268,5 +264,5 @@ in {
   '';
 
   # Same file also dropped in ~/.config for easy tweaking
-  xdg.configFile."glow/glamour.json".source = glamourJson;
+  xdg.configFile."glow/gruvbox-glamour.json".source = glamourJson;
 }

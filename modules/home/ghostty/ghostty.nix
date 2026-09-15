@@ -1,6 +1,5 @@
-{variables, ...}: let
-  themeName = variables.theme or "gruvbox";
-  c = (import ../../../lib/theme.nix variables).raw;
+_: let
+  c = (import ../../../lib/gruvbox.nix).raw;
 in {
   programs.ghostty = {
     enable = true;
@@ -19,7 +18,7 @@ in {
       ];
 
       ##### Theme #####
-      theme = themeName;
+      theme = "gruvbox";
       background-opacity = 0.5;
       adjust-cursor-thickness = 1;
 
@@ -53,7 +52,7 @@ in {
       clipboard-paste-protection = true;
     };
 
-    themes.${themeName} = {
+    themes.gruvbox = {
       background = c.bg0_h;
       foreground = c.fg0;
 
@@ -85,7 +84,7 @@ in {
   };
 
   xdg.configFile."ghostty/styles/tabs.css".text = let
-    c = (import ../../../lib/theme.nix variables).css;
+    c = (import ../../../lib/gruvbox.nix).css;
   in ''
     headerbar {
         min-height: 30px;

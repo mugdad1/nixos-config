@@ -1,10 +1,9 @@
 {
   pkgs,
   lib,
-  variables,
   ...
 }: let
-  g = (import ../../lib/theme.nix variables).raw;
+  g = (import ../../lib/gruvbox.nix).raw;
   kwmPkg = pkgs.callPackage ../../packages/kwm.nix {};
   kwimPkg = pkgs.callPackage ../../packages/kwim.nix {};
   # kwm spawns `kwim` by name on startup/input-hotplug — guarantee it is

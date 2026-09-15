@@ -1,9 +1,5 @@
-{
-  pkgs,
-  variables,
-  ...
-}: let
-  c = (import ../../lib/theme.nix variables).css;
+{pkgs, ...}: let
+  c = (import ../../lib/gruvbox.nix).css;
 in {
   programs.fish = {
     enable = true;
@@ -138,7 +134,7 @@ in {
     settings = {
       palette = "gruvbox_dark";
 
-      # Official starship gruvbox-rainbow preset, palette sourced from lib/theme.nix
+      # Official starship gruvbox-rainbow preset, palette sourced from lib/gruvbox.nix
       palettes.gruvbox_dark = {
         color_fg0 = c.fg0;
         color_bg1 = c.bg1;
@@ -146,7 +142,6 @@ in {
         color_blue = c.blue;
         color_aqua = c.aqua;
         color_green = c.green;
-        color_accent = c.accent;
         color_orange = c.orange;
         color_purple = c.purple;
         color_red = c.red;
@@ -291,12 +286,12 @@ in {
       docker_context = {
         symbol = "";
         style = "bg:color_bg3";
-        format = "[[ $symbol( $context) ](fg:${c.bright_blue} bg:color_bg3)]($style)";
+        format = "[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)";
       };
 
       conda = {
         style = "bg:color_bg3";
-        format = "[[ $symbol( $environment) ](fg:${c.bright_blue} bg:color_bg3)]($style)";
+        format = "[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)";
       };
 
       pixi = {
@@ -322,9 +317,9 @@ in {
 
       character = {
         disabled = false;
-        success_symbol = "[](bold fg:color_accent)";
+        success_symbol = "[](bold fg:color_green)";
         error_symbol = "[](bold fg:color_red)";
-        vimcmd_symbol = "[](bold fg:color_accent)";
+        vimcmd_symbol = "[](bold fg:color_green)";
         vimcmd_replace_one_symbol = "[](bold fg:color_purple)";
         vimcmd_replace_symbol = "[](bold fg:color_purple)";
         vimcmd_visual_symbol = "[](bold fg:color_yellow)";

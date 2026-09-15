@@ -3,7 +3,7 @@
   variables,
   ...
 }: let
-  c = (import ../../../lib/theme.nix variables).css;
+  c = (import ../../../lib/gruvbox.nix).css;
 in {
   home.packages = with pkgs; [rofi];
 
@@ -13,7 +13,7 @@ in {
         bg-col-light: ${c.bg0};
         border-col: ${c.gray};
         selected-col: ${c.bg1};
-        green: ${c.accent};
+        green: ${c.green};
         fg-col: ${c.fg0};
         fg-col2: ${c.fg};
         grey: ${c.light_gray};

@@ -1,12 +1,6 @@
-{
-  pkgs,
-  variables,
-  ...
-}: let
-  theme = variables.theme or "gruvbox";
-
-  # --- GTK ---
-  colloidGtk = pkgs.colloid-gtk-theme.override {
+{pkgs, ...}: let
+  gtk-theme-name = "Colloid-Green-Dark-Gruvbox";
+  gtk-theme = pkgs.colloid-gtk-theme.override {
     colorVariants = ["dark"];
     themeVariants = ["green"];
     tweaks = [
@@ -15,78 +9,9 @@
       "float"
     ];
   };
-  colloidNord = pkgs.colloid-gtk-theme.override {
-    colorVariants = ["dark"];
-    themeVariants = ["green"];
-    tweaks = [
-      "nord"
-      "rimless"
-      "float"
-    ];
-  };
-  catppuccinGtk = pkgs.catppuccin-gtk.override {
-    variant = "mocha";
-    accents = ["mauve"];
-  };
-
-  gtkTheme =
-    if theme == "gruvbox"
-    then {
-      name = "Colloid-Green-Dark-Gruvbox";
-      package = colloidGtk;
-    }
-    else if theme == "nord"
-    then {
-      name = "Nordic";
-      package = pkgs.nordic;
-    }
-    else if theme == "catppuccin"
-    then {
-      name = "catppuccin-mocha-mauve-standard";
-      package = catppuccinGtk;
-    }
-    else if theme == "rose-pine"
-    then {
-      name = "rose-pine";
-      package = pkgs.rose-pine-gtk-theme;
-    }
-    else {
-      # tokyo-night: no dedicated port in nixpkgs, cool-toned colloid stands in
-      name = "Colloid-Green-Dark-Nord";
-      package = colloidNord;
-    };
-
-  # --- Qt / Kvantum ---
-  gruvboxKvantum = pkgs.gruvbox-kvantum.override {variant = "Gruvbox-Dark-Green";};
-  catppuccinKvantum = pkgs.catppuccin-kvantum.override {
-    variant = "mocha";
-    accent = "mauve";
-  };
-
-  kvantumTheme =
-    if theme == "gruvbox"
-    then {
-      name = "Gruvbox-Dark-Green";
-      package = gruvboxKvantum;
-    }
-    else if theme == "catppuccin"
-    then {
-      name = "catppuccin-mocha-mauve";
-      package = catppuccinKvantum;
-    }
-    else if theme == "rose-pine"
-    then {
-      name = "rose-pine-pine";
-      package = pkgs.rose-pine-kvantum;
-    }
-    else {
-      # nord / tokyo-night have no dedicated kvantum port; neutral mocha stands in
-      name = "catppuccin-mocha-mauve";
-      package = catppuccinKvantum;
-    };
-
   icon-theme-name = "Papirus-Dark";
   cursor-name = "Bibata-Modern-Amber";
+  gruvbox-kvantum-theme = pkgs.gruvbox-kvantum.override {variant = "Gruvbox-Dark-Green";};
 in {
   # GTK
   gtk = {
@@ -96,13 +21,13 @@ in {
       size = 14;
     };
     theme = {
-      name = gtkTheme.name;
-      package = gtkTheme.package;
+      name = gtk-theme-name;
+      package = gtk-theme;
     };
     # HM 26.05+: gtk4 theme no longer mirrors gtk.theme, set explicitly
     gtk4.theme = {
-      name = gtkTheme.name;
-      package = gtkTheme.package;
+      name = gtk-theme-name;
+      package = gtk-theme;
     };
     iconTheme = {
       name = icon-theme-name;
@@ -112,7 +37,7 @@ in {
 
   dconf.settings = {
     "org/gnome/desktop/interface" = {
-      gtk-theme = gtkTheme.name;
+      gtk-theme = gtk-theme-name;
       icon-theme = icon-theme-name;
       color-scheme = "prefer-dark";
     };
@@ -132,8 +57,8 @@ in {
     style.name = "kvantum";
     kvantum = {
       enable = true;
-      settings.General.theme = kvantumTheme.name;
-      themes = [kvantumTheme.package];
+      settings.General.theme = "Gruvbox-Dark-Green";
+      themes = [gruvbox-kvantum-theme];
     };
   };
 

@@ -9,7 +9,7 @@
   variables,
   ...
 }: let
-  g = import ../../../lib/theme.nix variables;
+  g = import ../../../lib/gruvbox.nix;
   raw = g.raw;
   concatLines = builtins.concatStringsSep "\n";
 
@@ -356,9 +356,9 @@ in {
         .border = .{
             .width = 2,
             .color = .{
-                .focus = 0x${g.bright_accent}ff,
+                .focus = 0x${raw.bright_green}ff,
                 .unfocus = 0x${raw.gray}ff,
-                .swallowing = 0x${g.bright_accent}ff,
+                .swallowing = 0x${raw.bright_green}ff,
             },
         },
 
@@ -386,7 +386,7 @@ in {
                 },
                 .select = .{
                     .fg = 0x${raw.bg0}ff,
-                    .bg = 0x${g.bright_accent}ff,
+                    .bg = 0x${raw.bright_green}ff,
                 },
             },
             .tags = .{

@@ -1,10 +1,9 @@
 {
   pkgs,
   lib,
-  variables,
   ...
 }: let
-  theme = (import ../../lib/theme.nix variables).raw;
+  gruvbox = (import ../../lib/gruvbox.nix).raw;
 in {
   boot = {
     loader = {
@@ -37,21 +36,21 @@ in {
   ];
 
   console.colors = [
-    theme.bg0 # 0  black
-    theme.red # 1  red
-    theme.green # 2  green
-    theme.yellow # 3  yellow
-    theme.blue # 4  blue
-    theme.purple # 5  magenta
-    theme.aqua # 6  cyan
-    theme.gray # 7  light gray
-    theme.dark_gray # 8  dark gray
-    theme.bright_red # 9  light red
-    theme.bright_green # 10 light green
-    theme.bright_yellow # 11 light yellow
-    theme.bright_blue # 12 light blue
-    theme.bright_purple # 13 light magenta
-    theme.bright_aqua # 14 light cyan
-    theme.fg # 15 white
+    gruvbox.bg0 # 0  black
+    gruvbox.red # 1  red
+    gruvbox.green # 2  green
+    gruvbox.yellow # 3  yellow
+    gruvbox.blue # 4  blue
+    gruvbox.purple # 5  magenta
+    gruvbox.aqua # 6  cyan
+    gruvbox.gray # 7  light gray
+    gruvbox.dark_gray # 8  dark gray
+    gruvbox.bright_red # 9  light red
+    gruvbox.bright_green # 10 light green
+    gruvbox.bright_yellow # 11 light yellow
+    gruvbox.bright_blue # 12 light blue
+    gruvbox.bright_purple # 13 light magenta
+    gruvbox.bright_aqua # 14 light cyan
+    gruvbox.fg # 15 white
   ];
 }

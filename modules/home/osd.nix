@@ -1,11 +1,6 @@
-{
-  pkgs,
-  variables,
-  ...
-}: let
-  t = import ../../lib/theme.nix variables;
-  c = t.css;
-  rgba = t.hexToRgba;
+{pkgs, ...}: let
+  c = (import ../../lib/gruvbox.nix).css;
+  rgba = (import ../../lib/gruvbox.nix).hexToRgba;
 in {
   home.packages = with pkgs; [swayosd];
 
@@ -19,7 +14,7 @@ in {
     window {
         padding: 0px 10px;
         border-radius: 25px;
-        background: ${rgba t.raw.bg0 "0.99"};
+        background: ${rgba "282828" "0.99"};
     }
 
     #container {
@@ -45,13 +40,13 @@ in {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: ${rgba t.raw.bg3 "0.5"};
+        background: ${rgba "665C54" "0.5"};
     }
     progress {
         min-height: inherit;
         border-radius: inherit;
         border: none;
-        background: ${c.accent};
+        background: ${c.green};
     }
   '';
 }

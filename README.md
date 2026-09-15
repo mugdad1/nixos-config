@@ -21,8 +21,7 @@ nixos-config/
 ├── install.sh
 ├── lib/
 │   ├── default.nix           # scanPaths helper
-│   ├── theme.nix             # Active palette (variables.theme selector)
-│   └── themes/               # gruvbox | nord | catppuccin | tokyo-night | rose-pine
+│   └── gruvbox.nix           # Color palette
 ├── hosts/
 │   ├── t480s/                # Desktop host (River, home-manager)
 │   │   ├── default.nix       # Host config

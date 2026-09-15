@@ -2,10 +2,9 @@
   lib,
   pkgs,
   config,
-  variables,
   ...
 }: let
-  c = (import ../../lib/theme.nix variables).css;
+  c = (import ../../lib/gruvbox.nix).css;
   defaultApps = {
     text = ["com.mitchellh.ghostty.desktop"];
     image = ["imv-dir.desktop"];
