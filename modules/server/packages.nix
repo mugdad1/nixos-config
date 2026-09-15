@@ -7,10 +7,7 @@
     eza
     fd
     ripgrep
-    tmux
     git
-    htop
-    vim
     usbutils
     pciutils
     lm_sensors

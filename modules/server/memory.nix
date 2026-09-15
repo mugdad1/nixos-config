@@ -1,4 +1,4 @@
-# 12GB RAM is thin for postgres + Immich ML, so compress swap in zram (faster
+# 12GB RAM is thin for postgres + Gitea workloads, so compress swap in zram (faster
 # and gentler on the SSD than the disk swap) and let oomd kill runaway workers
 # before the kernel OOM locks up the box.
 {lib, ...}: {

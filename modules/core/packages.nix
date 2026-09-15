@@ -55,6 +55,7 @@ in {
     onefetch
     supertuxkart
     whisper-cpp
+    btrfs-assistant
   ];
 
   environment.variables = {

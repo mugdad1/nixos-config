@@ -1,4 +1,4 @@
-# ASUS i3-8th-gen home server: Gitea + Immich, Tailscale-only, no GUI.
+# ASUS i3-8th-gen home server: Gitea, Tailscale-only, no GUI.
 #
 # Reused from core (all server-safe, zero desktop):
 #   system, boot, tailscale, nh, snapper, security (rtkit forced off below)
@@ -33,6 +33,9 @@
 
   # Idle power savings (less heat = longer life).
   powerManagement.powertop.enable = true;
+
+  # Server barely changes: daily snapshots instead of every 12h.
+  services.snapper.snapshotInterval = lib.mkForce "daily";
 
   # Real hardware-configuration.nix (from nixos-generate-config) sets this
   # itself; needed only while the placeholder above stands in.
