@@ -31,12 +31,6 @@
   services.power-profiles-daemon.enable = true;
   environment.systemPackages = [pkgs.powertop];
 
-  # Oracle VM VirtualBox: enable adds the hardened virtualbox + setuid wrappers
-  # automatically, so do NOT also add pkgs.virtualbox to systemPackages (that
-  # would shadow it with an unhardened build and break /dev/vboxdrv access).
-  virtualisation.virtualbox.host.enable = true;
-  users.users.mugdad.extraGroups = ["vboxusers"];
-
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold";
     after = ["multi-user.target"];
