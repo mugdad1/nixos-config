@@ -26,6 +26,9 @@
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
+  # nh's auto-clean (keep 1 gen / 1 day) conflicts with nix.gc and leaves no
+  # rollback room on a remote box — nix.gc above wins.
+  programs.nh.clean.enable = lib.mkForce false;
   services.journald.settings.Journal = {
     SystemMaxUse = "200M";
     RuntimeMaxUse = "100M";
