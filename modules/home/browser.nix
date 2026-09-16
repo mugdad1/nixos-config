@@ -229,6 +229,36 @@ in {
           --in-content-success-color: ${bright_green} !important;
         }
       '';
+
+      # Rule: every server URL gets a bookmark here (no force — user keeps
+      # control of their own bookmarks after first apply).
+      bookmarks.settings = [
+        {
+          name = "Server";
+          bookmarks = [
+            {
+              name = "Gitea";
+              url = "http://asus:3000/";
+            }
+            {
+              name = "Immich";
+              url = "http://asus:2283/";
+            }
+            {
+              name = "Jellyfin";
+              url = "http://asus:8096/";
+            }
+            {
+              name = "Vaultwarden";
+              url = "https://asus.tailbc99bb.ts.net/";
+            }
+            {
+              name = "Cockpit";
+              url = "https://asus:9090/";
+            }
+          ];
+        }
+      ];
     };
   };
 }
