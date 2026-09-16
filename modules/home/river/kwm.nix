@@ -266,7 +266,7 @@
       (keyBind {
         keysym = "v";
         mods.${mod} = true;
-        action = spawnShell "toggle-rofi \\\"cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\\\"";
+        action = spawnShell "toggle-rofi sh -c \\\"cliphist list | ${l} -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\\\"";
       })
     ]
     # workspaces: Super + 1-9,0 (=10)
