@@ -22,7 +22,7 @@ in {
           Locked = true;
         };
       };
-      NoDefaultBookmarks = true;
+      NoDefaultBookmarks = false; # false: bookmarks are declared below
       OfferToSaveLogins = false;
 
       EnableTrackingProtection = {
@@ -230,9 +230,12 @@ in {
         }
       '';
 
-      # Rule: every server URL gets a bookmark here (no force — user keeps
-      # control of their own bookmarks after first apply).
-      bookmarks.settings = [
+      # Rule: every server URL gets a bookmark here. force = true is
+      # mandatory (module assertion) — it rewrites bookmarks each rebuild,
+      # so declare personal bookmarks here too or they get wiped.
+      bookmarks = {
+        force = true;
+        settings = [
         {
           name = "Server";
           bookmarks = [
@@ -258,7 +261,8 @@ in {
             }
           ];
         }
-      ];
+        ];
+      };
     };
   };
 }
