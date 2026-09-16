@@ -235,33 +235,7 @@ in {
       # so declare personal bookmarks here too or they get wiped.
       bookmarks = {
         force = true;
-        settings = [
-        {
-          name = "Server";
-          bookmarks = [
-            {
-              name = "Gitea";
-              url = "http://asus:3000/";
-            }
-            {
-              name = "Immich";
-              url = "http://asus:2283/";
-            }
-            {
-              name = "Jellyfin";
-              url = "http://asus:8096/";
-            }
-            {
-              name = "Vaultwarden";
-              url = "https://asus.tailbc99bb.ts.net/";
-            }
-            {
-              name = "Cockpit";
-              url = "https://asus:9090/";
-            }
-          ];
-        }
-        ];
+        settings = [];
       };
     };
   };
