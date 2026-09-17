@@ -61,6 +61,11 @@
   # tag actions
   setOutTag = mask: ''.{ .set_output_tag = .{ .tag = .{ .tag = ${mask} } } }'';
   setWinTag = mask: ''.{ .set_window_tag = .{ .tag = .{ .tag = ${mask} } } }'';
+  toggleOutTag = mask: ''.{ .toggle_output_tag = .{ .mask = ${mask} } }'';
+
+  # scratchpad: dedicated hidden tag (bit 10 -> tag 11, not in the bar),
+  # overlays the current workspace view like Hyprland's special workspace
+  scratchTag = toString (pow2 10);
 
   binds = builtins.concatLists [
     # app launchers
@@ -178,6 +183,28 @@
         mods.${mod} = true;
         action = ".{ .modify_mfact = .{ .change = .{ .step = -0.01 } } }";
         repeat = true;
+      })
+    ]
+    # scratchpad (HyDE/Hyprland special-workspace emulation):
+    # tag 11 (bit 1024) is hidden from the bar; Super+s overlays it on the
+    # current workspace, Super+Shift+s / Super+Alt+s stash the focused window
+    [
+      (keyBind {
+        keysym = "s";
+        mods.${mod} = true;
+        action = toggleOutTag scratchTag;
+      })
+      (keyBind {
+        keysym = "s";
+        mods.${mod} = true;
+        mods.shift = true;
+        action = setWinTag scratchTag;
+      })
+      (keyBind {
+        keysym = "s";
+        mods.${mod} = true;
+        mods.${alt} = true;
+        action = setWinTag scratchTag;
       })
     ]
     # lock and power
