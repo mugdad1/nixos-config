@@ -15,6 +15,7 @@ in {
     wdisplays
     kanshi
     wl-clip-persist
+    wlopm
     cliphist
     grim
     glib

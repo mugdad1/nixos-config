@@ -101,7 +101,7 @@
         action = spawn ["swaync-client" "-t" "-sw"];
       })
       (keyBind {
-        keysym = "s";
+        keysym = "x";
         mods.${mod} = true;
         action = spawn ["web-search"];
       })
@@ -197,6 +197,10 @@
         mods.${mod} = true;
         mods.shift = true;
         action = spawn ["power-menu"];
+      })
+      (keyBind {
+        keysym = "F7";
+        action = spawn ["toggle-screen"];
       })
     ]
     # screenshots

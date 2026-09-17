@@ -12,6 +12,7 @@ in {
     (script "toggle-mic")
     (script "toggle-nightlight")
     (script "toggle-rofi")
+    (script "toggle-screen")
     (script "toggle-waybar")
     (script "wall-change")
     (script "wallpaper-picker")
