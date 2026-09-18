@@ -26,7 +26,10 @@
     "fbcon=nodefer"
   ];
 
-  services.throttled.enable = true;
+  # throttled (lenovo-throttling-fix) fights power-profiles-daemon over the
+  # CPU governor on Intel HWP; PPD + platform_profile is sufficient on this
+  # BIOS gen. tlp is likewise off — PPD is the single power daemon.
+  services.throttled.enable = false;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
   environment.systemPackages = [pkgs.powertop pkgs.tmux];
