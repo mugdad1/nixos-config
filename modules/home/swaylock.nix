@@ -8,7 +8,7 @@ in {
       color = raw.bg0_h;
       image = "${config.home.homeDirectory}/Pictures/wallpapers/wallpaper";
       scaling = "fill";
-      font = "JetBrainsMono Nerd Font";
+      font = "Iosevka Nerd Font";
       font-size = 32;
       indicator-radius = 100;
       indicator-thickness = 8;
