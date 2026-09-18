@@ -18,7 +18,6 @@ in {
     wlopm
     cliphist
     grim
-    wf-recorder
     glib
     wayland
   ];

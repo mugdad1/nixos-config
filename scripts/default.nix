@@ -7,7 +7,6 @@ in {
     (script "mcli")
     (script "power-menu")
     (script "random-wallpaper")
-    (script "record-screen")
     (script "runbg")
     (script "screenshot")
     (script "toggle-mic")

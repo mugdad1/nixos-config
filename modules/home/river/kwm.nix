@@ -220,12 +220,6 @@
         mods.shift = true;
         action = spawn ["screenshot" "--swappy"];
       })
-      (keyBind {
-        keysym = "p";
-        mods.${mod} = true;
-        mods.shift = true;
-        action = spawn ["record-screen"];
-      })
     ]
     # media + clipboard (no-modifier keys)
     [
