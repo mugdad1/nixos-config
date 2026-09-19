@@ -11,7 +11,6 @@
 
     ## C / C++
     gcc
-    clang
     gdb
     gef
     cmake
