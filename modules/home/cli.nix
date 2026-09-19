@@ -30,6 +30,9 @@
     file # show file type info
     ripdrag # drag-and-drop from terminal
     unzip
+    zip
+    p7zip
+    tree
     wget
     vivid # LS_COLORS generator (gruvbox-dark wired in shell init)
     tealdeer # tldr man pages

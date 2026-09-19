@@ -11,12 +11,23 @@
 
     ## C / C++
     gcc
+    clang
     gdb
     gef
     cmake
     gnumake
     valgrind
     llvmPackages_latest.clang-tools
+
+    ## Kernel / low-level build tooling
+    bc
+    bison
+    flex
+    dtc
+    elfutils
+    pahole
+    cpio
+    kmod
 
     ## Python
     (python3.withPackages (
