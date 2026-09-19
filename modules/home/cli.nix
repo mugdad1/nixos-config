@@ -60,7 +60,7 @@
     wl-clipboard # wayland clipboard
     xdg-utils
     opencode
-    payload-dumper-go # extract Android OTA payload.bin
+    payload_dumper # extract Android OTA payload.bin
     ## Misc
     just # command runner
     cliamp
