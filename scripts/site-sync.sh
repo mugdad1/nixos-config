@@ -23,19 +23,35 @@ if ! timeout 15 tailscale ssh "$REMOTE" "test -d $DEST" 2>/dev/null; then
   exit 0
 fi
 
-cd "$SRC"
-# Ship the served tree, no VCS history needed on the server.
-if tar -czf - --exclude='.git' --exclude='.gitignore' . \
-  | timeout 120 tailscale ssh "$REMOTE" "tar -xzf - -C $DEST"; then
-  echo "site synced to asus:$DEST"
-  command -v notify-send >/dev/null 2>&1 \
-    && notify-send -a study "Site synced to asus" "http://asus:8081" \
-    || true
-else
-  echo "site sync FAILED" >&2
-  command -v notify-send >/dev/null 2>&1 \
-    && notify-send -a study -u critical "Site sync FAILED" "check tailscale" \
-    || true
-  exit 1
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+# Ship the served tree (no VCS history).
+tar -czf "$TMP/site.tgz" --exclude='.git' --exclude='.gitignore' --transform 's|^\./||' -C "$SRC" .
+# Manifest = every shipped path (dirs + files).
+tar -tzf "$TMP/site.tgz" | sed '/\/$/d' | sed 's|^|/|' | sort > "$TMP/manifest.txt"
+
+# Step 1a: push the manifest (what SHOULD exist on the server).
+timeout 60 tailscale ssh "$REMOTE" 'cat > /tmp/site-manifest.txt' < "$TMP/manifest.txt"
+
+# Step 1b: extract the tarball (add/overwrite files).
+timeout 120 tailscale ssh "$REMOTE" 'tar -xzf - -C /srv/site' < "$TMP/site.tgz" \
+  || { echo "site sync FAILED (tar)" >&2; exit 1; }
+
+# Step 2: prune server files not in the manifest, so deleted local files
+# disappear from the site too (tar only ever adds/overwrites).
+timeout 60 tailscale ssh "$REMOTE" 'sh -c "
+cd /srv/site
+find . -type f -printf \"%P\n\" | sort > /tmp/site-found.txt
+comm -23 /tmp/site-found.txt <(sed \"s|^/||\" /tmp/site-manifest.txt | sort) > /tmp/site-extra.txt
+if [ -s /tmp/site-extra.txt ]; then
+  while IFS= read -r f; do rm -f \"/srv/site/\$f\"; done < /tmp/site-extra.txt
+  echo \"pruned: \$(wc -l < /tmp/site-extra.txt) files\"
 fi
-echo "tailnet-only URL: http://asus:8081"
+find /srv/site -type d -empty -delete 2>/dev/null || true
+"' 2>&1
+
+echo "site synced to asus:$DEST"
+command -v notify-send >/dev/null 2>&1 \
+  && notify-send -a study "Site synced to asus" "http://asus:8081" \
+  || true
