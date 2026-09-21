@@ -1,7 +1,8 @@
 # Headless laptop: lid closed, never sleep, power button does nothing
-# (use the Gitea/Immich UI or ssh `reboot` instead of the button).
-# Runs permanently on AC power with the battery removed, so we pin the
-# governor to "performance" and skip all battery-aware power savings.
+# (use the Gitea UI or ssh `reboot` instead of the button).
+# Runs permanently on AC power with the battery removed and NO chassis, so
+# cooling is compromised: pin the governor to "powersave", run thermald, and
+# skip all battery-aware power savings.
 {lib, ...}: {
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
@@ -40,7 +41,27 @@
     hybrid-sleep.enable = false;
   };
 
-  powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
+  # No chassis = weak cooling: powersave keeps clocks (and temps) down.
+  # 2026-09-21: package hit 98C (crit 100C) at load ~1.5 on performance.
+  # intel_pstate offers ONLY performance/powersave (verified live, no
+  # "balanced" governor exists), so "balanced" = powersave + EPP
+  # balance_performance (boosts on demand, rests at idle).
+  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
+
+  systemd.services.epp-balanced = {
+    description = "Set Intel EPP to balance_performance (the 'balanced' mode)";
+    after = ["multi-user.target"];
+    wantedBy = ["multi-user.target"];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for f in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do
+        [ -f "$f" ] && echo balance_performance > "$f"
+      done
+    '';
+  };
+
+  # Intel thermal daemon as a safety net (trips before the 100C crit).
+  services.thermald.enable = true;
 
   # Always on AC: nothing to tune, and a battery isn't present anyway.
   services.tlp.enable = lib.mkDefault false;
