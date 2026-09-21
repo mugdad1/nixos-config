@@ -12,13 +12,18 @@ fi
 
 if [[ $1 == "toggle" ]]; then
     if ! pgrep -x wlsunset > /dev/null; then
-        wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[0]}" > /dev/null 2>&1 &
+        nohup wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[0]}" > /dev/null 2>&1 &
     else
         OLD=$(ps -o args= -C wlsunset | grep -oP '(?<=-t )\d+' || true)
-        pkill -x wlsunset
-        sleep 0.5
+        pkill -x wlsunset || true
+        # wlroots fails a new client while an existing gamma control for the
+        # output remains, so wait for the old instance to actually release it.
+        for _ in $(seq 1 50); do
+            pgrep -x wlsunset > /dev/null || break
+            sleep 0.1
+        done
         if [[ "$OLD" == "${TEMPS[0]}" ]]; then
-            wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[1]}" > /dev/null 2>&1 &
+            nohup wlsunset -l "$LAT" -L "$LON" -t "${TEMPS[1]}" > /dev/null 2>&1 &
         fi
     fi
 elif [[ $1 == "status" ]]; then
