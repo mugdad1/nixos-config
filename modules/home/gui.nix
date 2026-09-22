@@ -2,16 +2,7 @@
   pkgs,
   lib,
   ...
-}: let
-  safeeyes-wrapped = pkgs.safeeyes.overridePythonAttrs (old: {
-    propagatedBuildInputs =
-      (old.propagatedBuildInputs or [])
-      ++ (with pkgs.python3Packages; [
-        pywayland
-        croniter
-      ]);
-  });
-in {
+}: {
   home.packages = (
     with pkgs; [
       ## Multimedia
@@ -37,7 +28,6 @@ in {
       zenity
       kdePackages.polkit-kde-agent-1
       wlsunset
-      safeeyes-wrapped
 
       ## GNOME apps (PDF viewer, archive manager)
       evince

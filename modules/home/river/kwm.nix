@@ -328,7 +328,6 @@
     ["udiskie" "--automount" "--notify" "--smart-tray"]
     ["init-wallpaper"]
     ["swayosd-server"]
-    ["safeeyes"]
     ["${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1"]
   ];
 
