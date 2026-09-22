@@ -3,7 +3,7 @@ set -euo pipefail
 
 LAT=24.7136
 LON=46.6753
-TEMPS=(4000 2000)
+TEMPS=(4000 2500)
 
 if [[ $# -eq 0 ]]; then
     echo "Usage: toggle-nightlight toggle | status" >&2
@@ -29,8 +29,8 @@ if [[ $1 == "toggle" ]]; then
 elif [[ $1 == "status" ]]; then
     if pgrep -x wlsunset > /dev/null; then
         TEMP=$(ps -o args= -C wlsunset | grep -oP '(?<=-t )\d+' || true)
-        if [[ "$TEMP" == "2000" ]]; then
-            printf '{"text": "󰛨", "class": "warmer", "alt": "2000K"}\n'
+        if [[ "$TEMP" == "2500" ]]; then
+            printf '{"text": "󰛨", "class": "warmer", "alt": "2500K"}\n'
         else
             printf '{"text": "󰛨", "class": "active", "alt": "4000K"}\n'
         fi
