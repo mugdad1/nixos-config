@@ -35,9 +35,6 @@ fi
 if grep -qi 't480s\|thinkpad\|20L8' /sys/class/dmi/id/product_name 2> /dev/null; then
     HOST="t480s"
     GPU="intel"
-elif grep -qi 'x509\|vivobook' /sys/class/dmi/id/product_name 2> /dev/null; then
-    HOST="asus"
-    GPU="intel"
 fi
 
 if [[ -z ${HOST:-} ]]; then

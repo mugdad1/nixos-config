@@ -85,7 +85,6 @@
 
     nixosConfigurations = {
       t480s = mkHost "t480s";
-      asus = mkHost "asus";
     };
   };
 }
