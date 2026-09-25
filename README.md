@@ -35,10 +35,8 @@ nixos-config/
 │   ├── core/                 # Shared system-level
 │   │   ├── boot.nix, system.nix, security.nix, network.nix
 │   │   ├── hardware.nix, packages.nix, rust.nix, user.nix
-│   │   ├── blocky.nix        # Encrypted local DNS resolver
-│   │   ├── tailscale.nix     # Tailnet + MagicDNS
-│   │   ├── snapper.nix       # Btrfs snapshots
-│   │   ├── nh.nix            # nix helper + GC
+  │   │   ├── blocky.nix        # Encrypted local DNS resolver
+  │   │   ├── nh.nix            # nix helper + GC
 │   │   └── default.nix
 │   ├── desktop/              # Desktop environment
 │   │   ├── wayland.nix       # XDG portal config
