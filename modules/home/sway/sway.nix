@@ -31,6 +31,7 @@
     "  bindsym ${alt}+Return exec ${t}"
     "  bindsym ${mod}+b exec ${b}"
     "  bindsym ${mod}+d exec toggle-rofi ${l} -show drun"
+    "  bindsym ${mod}+Shift+d exec nwg-displays"
     "  bindsym ${mod}+e exec nemo"
     "  bindsym ${mod}+w exec wallpaper-picker"
     "  bindsym ${mod}+n exec swaync-client -t -sw"
@@ -140,6 +141,7 @@ in {
   home.packages = with pkgs; [
     sway
     awww
+    nwg-displays
     slurp
     wlr-randr
     wl-clip-persist
@@ -151,15 +153,15 @@ in {
   ];
 
   xdg.configFile."sway/config".text = ''
-    // mugdad's sway configuration (replaces river + kwm/kwim)
-    // generated from modules/home/sway/sway.nix
-    // https://github.com/mugdad1/nixos-config
+    # mugdad's sway configuration (replaces river + kwm/kwim)
+    # generated from modules/home/sway/sway.nix
+    # https://github.com/mugdad1/nixos-config
     set $mod Mod4
     set $alt Mod1
 
     font pango:Iosevka Nerd Font 12
 
-    // outputs — sway owns them directly (kanshi/wdisplays dropped)
+    # outputs, sway owns them directly (kanshi/wdisplays dropped)
     output eDP-1 scale 1.2
 
     gaps inner 6
@@ -171,7 +173,7 @@ in {
     focus_wrapping yes
     floating_modifier $mod normal
 
-    // gruvbox borders (kwm carried over)
+    # gruvbox borders (kwm carried over)
     client.focused          ${hex g.bright_green} ${hex g.bright_green} ${hex g.bg0} ${hex g.bright_green} ${hex g.bright_green}
     client.focused_inactive ${hex g.gray} ${hex g.gray} ${hex g.bg0} ${hex g.gray} ${hex g.gray}
     client.unfocused        ${hex g.gray} ${hex g.gray} ${hex g.bg0} ${hex g.gray} ${hex g.gray}
@@ -189,13 +191,13 @@ in {
         natural_scroll enabled
     }
 
-    // bindings
+    # bindings
     ${concatLines binds}
 
-    // floating window rules (kwm carried over)
+    # floating window rules (kwm carried over)
     ${concatLines floatingRules}
 
-    // startup (kwm carried over; kanshi gone — outputs are static in sway)
+    # startup (kwm carried over; kanshi gone — outputs are static in sway)
     ${concatLines (map execLine startup)}
   '';
 }
