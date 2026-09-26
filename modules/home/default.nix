@@ -9,7 +9,7 @@ in {
       ./swaync/swaync.nix
       ./fastfetch/fastfetch.nix
       ./ghostty/ghostty.nix
-      ./river
+      ./sway
       ../../scripts/default.nix
     ];
 }

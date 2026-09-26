@@ -48,7 +48,7 @@ run_cmd() {
             swaylock &
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
-            pkill -x river
+            swaymsg exit
         fi
     else
         exit 0

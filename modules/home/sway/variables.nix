@@ -4,11 +4,12 @@
   ...
 }: {
   home.sessionVariables = {
-    XDG_CURRENT_DESKTOP = "River";
+    XDG_CURRENT_DESKTOP = "sway";
     XDG_SESSION_TYPE = "wayland";
-    XDG_SESSION_DESKTOP = "River";
+    XDG_SESSION_DESKTOP = "sway";
 
-    # kwm/kwim have no keyboard layout config — river/xkbcommon read these
+    # sway reads XKB_* env as fallback when the config has no match;
+    # the config sets the layout explicitly (modules/home/sway/sway.nix).
     XKB_DEFAULT_LAYOUT = variables.keyboardLayout;
     XKB_DEFAULT_OPTIONS = variables.keyboardOptions;
 

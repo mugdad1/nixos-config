@@ -12,6 +12,7 @@ in {
     margin-right = 0;
     modules-left = [
       "custom/launcher"
+      "sway/workspaces"
       "tray"
     ];
     modules-center = ["clock"];
@@ -24,6 +25,11 @@ in {
       "custom/nightlight"
       "custom/power-menu"
     ];
+    # sway exposes the IPC+status protocols waybar needs (river 0.4+ didn't).
+    "sway/workspaces" = {
+      disable-scroll = true;
+      format = "{name}";
+    };
     clock = {
       calendar = {
         format = {
@@ -35,8 +41,6 @@ in {
       tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
       format-alt = "{:%d/%m}";
     };
-    # workspace/tags module removed — river 0.4+ dropped the status/control
-    # protocols waybar's river/tags requires (tags now live in kwm's top bar)
     cpu = {
       format = "<span foreground='${green}'> </span> {usage}%";
       format-alt = "<span foreground='${green}'> </span> {avg_frequency} GHz";

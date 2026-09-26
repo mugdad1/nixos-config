@@ -4,18 +4,6 @@
   ...
 }: let
   g = (import ../../lib/gruvbox.nix).raw;
-  kwmPkg = pkgs.callPackage ../../packages/kwm.nix {};
-  kwimPkg = pkgs.callPackage ../../packages/kwim.nix {};
-  # kwm spawns `kwim` by name on startup/input-hotplug — guarantee it is
-  # on PATH regardless of what the greetd session inherits.
-  kwm = pkgs.symlinkJoin {
-    name = "kwm-wrapped";
-    paths = [kwmPkg];
-    buildInputs = [pkgs.makeWrapper];
-    postBuild = ''
-      wrapProgram $out/bin/kwm --prefix PATH : ${kwimPkg}/bin
-    '';
-  };
 
   # greeter theme
   greeterTheme = "container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}";
@@ -23,15 +11,15 @@
   # Wrapper exports the Wayland session vars: greetd/tuigreet launch on a
   # bare TTY (XDG_SESSION_TYPE=tty, no CurrentDesktop), which breaks
   # portals, Electron/Ozone and anything keying off the desktop id.
-  sessionCommand = pkgs.writeShellScript "river-session" ''
+  sessionCommand = pkgs.writeShellScript "sway-session" ''
     export XDG_SESSION_TYPE=wayland
-    export XDG_SESSION_DESKTOP=River
-    export XDG_CURRENT_DESKTOP=River
+    export XDG_SESSION_DESKTOP=sway
+    export XDG_CURRENT_DESKTOP=sway
     export GDK_BACKEND=wayland
     export QT_QPA_PLATFORM=wayland
     export NIXOS_OZONE_WL=1
     export ELECTRON_OZONE_PLATFORM_HINT=wayland
-    exec ${pkgs.river}/bin/river -c ${kwm}/bin/kwm
+    exec ${pkgs.sway}/bin/sway
   '';
 in {
   services = {

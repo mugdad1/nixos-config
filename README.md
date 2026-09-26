@@ -50,13 +50,11 @@ nixos-config/
 │       ├── shell.nix, fish.nix, git.nix, browser.nix (Zen)
 │       ├── cli.nix, dev.nix, gui.nix, theme.nix, xdg.nix, osd.nix
 │       ├── vscodium.nix, lazyvim.nix
-│       ├── waybar/, river/, rofi/
+│       ├── waybar/, sway/, rofi/
 │       ├── swaync/, fastfetch/, ghostty/, lazyvim-config/
 │       └── default.nix
 ├── packages/
-│   ├── gitea-mirror.nix      # Self-built gitea-mirror app (no upstream flake)
-│   ├── kwm.nix               # River tiling WM (Zig, tags bar, float rules)
-│   └── kwim.nix              # kwm input manager (touchpad/keyboard rules)
+│   └── gitea-mirror.nix      # Self-built gitea-mirror app (no upstream flake)
 ├── scripts/                  # Shell scripts (auto-wrapped on PATH)
 ├── fonts/                    # Font files
 └── wallpapers/               # Wallpaper files
@@ -66,7 +64,7 @@ nixos-config/
 
 - **NixOS flake-based** configuration, two hosts
 - **Home Manager** for user packages and dotfiles (t480s)
-- **River** compositor with kwm (river + window manager pair)
+- **Sway** compositor (Wayland, gap-less tiling, gruvbox)
 - **Gruvbox** theme throughout
 - **Security hardening** (kernel sysctl, network, apparmor)
 - **Auto-import** via `scanPaths` helper
