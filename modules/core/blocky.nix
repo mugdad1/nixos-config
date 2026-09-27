@@ -1,5 +1,5 @@
 _: {
-  # Blocky owns 127.0.0.1:53 as local resolver. Upstreams are all encrypted
+  # Blocky owns 127.0.0.1:53 as local resolver. Upstreams are encrypted
   # transports of dns.adguard-dns.com raced in parallel_best - a stalled QUIC
   # connection can never take resolution down.
   services.blocky = {
@@ -11,8 +11,7 @@ _: {
         init.strategy = "fast"; # don't block startup on upstream probes
         groups.default = [
           "quic://2b44bd66.d.adguard-dns.com" # DoQ
-          "192.168.44.187"
-          "192.168.44.188"
+          "tls://dns.adguard-dns.com" # DoT
         ];
       };
 
@@ -30,7 +29,9 @@ _: {
         prefetching = true;
       };
 
-      # (tailnet MagicDNS forwarding removed 2026-09-22 — single host, no Tailscale).
+      # (tailnet MagicDNS forwarding removed 2026-09-22 — single host, no
+      # Tailscale. The two bare LAN upstreams that went with it, 192.168.44.187
+      # and .188, were removed 2026-09-27 after both stopped answering.)
     };
   };
 }

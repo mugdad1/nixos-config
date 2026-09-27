@@ -39,7 +39,8 @@ in {
       # don’t shutdown when power button is short-pressed
       HandlePowerKey = "ignore";
 
-      # ignore lid close (hosts can override via mkForce)
+      # ignore lid close (hosts override with a plain definition, which takes
+      # precedence over this mkDefault)
       HandleLidSwitch = lib.mkDefault "ignore";
       HandleLidSwitchExternalPower = lib.mkDefault "ignore";
       HandleLidSwitchDocked = lib.mkDefault "ignore";

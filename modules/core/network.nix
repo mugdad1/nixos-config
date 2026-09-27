@@ -21,17 +21,10 @@ in {
       # for wifi. With Blocky on, NetworkManager does not manage DNS itself.
       wifi.backend = "iwd";
     };
-    firewall = {
-      enable = true;
-      allowedTCPPorts = [
-        53317
-      ];
-      allowedUDPPorts = [
-        53317
-        2757
-        2759
-      ];
-    };
+    # No inbound ports are opened. Anything that needs one should open it in the
+    # module that configures the service, not centrally here, so that a port
+    # never outlives the service that needed it.
+    firewall.enable = true;
   };
 
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style

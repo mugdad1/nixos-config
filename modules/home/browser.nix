@@ -22,7 +22,10 @@ in {
           Locked = true;
         };
       };
-      NoDefaultBookmarks = false; # false: bookmarks are declared below
+      # false = let the user's own bookmarks show through. Do NOT declare a
+      # `bookmarks` block here: with force = true (a module assertion) an empty
+      # list silently wipes every bookmark on each rebuild.
+      NoDefaultBookmarks = false;
       OfferToSaveLogins = false;
 
       EnableTrackingProtection = {
@@ -229,14 +232,6 @@ in {
           --in-content-success-color: ${bright_green} !important;
         }
       '';
-
-      # Rule: every server URL gets a bookmark here. force = true is
-      # mandatory (module assertion) — it rewrites bookmarks each rebuild,
-      # so declare personal bookmarks here too or they get wiped.
-      bookmarks = {
-        force = true;
-        settings = [];
-      };
     };
   };
 }

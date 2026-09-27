@@ -57,10 +57,9 @@ echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
 # variables.nix is the single source of truth; no repo-wide sed needed.
 sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${HOST}/variables.nix"
 
-#--- Set GPU profile ---#
-
-echo -e "${INFO}Setting GPU profile to ${GREEN}$GPU${RESET}"
-sed -i "s/gpu = \"[a-z-]*\"/gpu = \"$GPU\"/" "hosts/${HOST}/variables.nix"
+# GPU is fixed, not templated: hardware.graphics in hosts/t480s/default.nix only
+# ever adds Intel media/compute packages, and there is no `gpu` key in
+# variables.nix. Detection is reported for confirmation only.
 
 #--- Prepare environment ---#
 
