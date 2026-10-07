@@ -8,7 +8,11 @@
   # Blocky owns 127.0.0.1:53, so when it is enabled systemd-resolved is
   # disabled and the system DNS is pointed at Blocky instead. With Blocky
   # off, fall back to systemd-resolved (DNSSEC + Quad9).
-  localDns = config.services.blocky.enable;
+  # blocky.nix stopped being imported 2026-10-07 (his word — build errors
+  # "related to blocky"): guard the read so it's false when the module is
+  # absent — && short-circuits before touching the missing option. With
+  # blocky gone, services.resolved below takes over (DNSSEC + Quad9 fallback).
+  localDns = (config.services ? blocky) && config.services.blocky.enable;
 in {
   networking = {
     hostName = host;
