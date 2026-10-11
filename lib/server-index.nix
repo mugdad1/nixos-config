@@ -1,0 +1,70 @@
+# The ThinkCentre's service list, declared ONCE and rendered to an HTML index.
+#
+# Why this lives here and not on the server: Mugdad's rule, 2026-10-11 —
+# *"i dont want thing that goes after i re install nix ok? this is the main
+# idea of nixos the same system comes back"*. The server is Void, so it cannot
+# own this declaratively; the flake is the source of truth and
+# `push-server-index` (modules/home/homepage.nix) ships the rendered page to
+# Caddy's docroot. **Add a service to `services` below, run
+# `push-server-index`, and the index matches reality again** — the old
+# hand-written `~/Projects/servers/caddy/index.html` had already drifted: it
+# was missing `study` (added today) and still advertised the whatsapp-bridge
+# line that was deleted on 2026-10-08.
+{
+  g ? import ./gruvbox.nix,
+  host ? "http://100.97.91.119",
+}: let
+  inherit (builtins) concatStringsSep filter map;
+  optionalString = cond: str: if cond then str else "";
+  c = g.raw;
+
+  # name · port · what it is. `study` first on his word — *"its the most
+  # importnt url btw"*.
+  services = [
+    {name = "study"; port = "8091"; desc = "the study PWA — chapters, glossary, day entries"; first = true;}
+    {name = "immich"; port = "2283"; desc = "photos &amp; video backup";}
+    {name = "jellyfin"; port = "8096"; desc = "media server";}
+    {name = "vaultwarden"; port = "8082"; desc = "password manager";}
+    {name = "gitea"; port = "3000"; desc = "git, self-hosted"; note = "ssh :2222";}
+    {name = "uptime kuma"; port = "3001"; desc = "monitoring";}
+    {name = "stirling pdf"; port = "8090"; desc = "merge / split / OCR pdfs locally";}
+    {name = "paperless"; port = "8000"; desc = "document archive, arabic + english ocr search";}
+    {name = "syncthing"; port = "8384"; desc = "laptop / phone &harr; box file sync"; note = ":22000";}
+    {name = "ntfy"; port = "8085"; desc = "push alerts to your phone";}
+    {name = "glances"; port = "61208"; desc = "cpu / temp / mem / disk, live";}
+    {name = "searxng"; port = "8888"; desc = "private metasearch, json api enabled — zen's search engine";}
+    {name = "metube"; port = "8081"; desc = "yt-dlp web ui, downloads to the box";}
+    {name = "gitea mirror"; port = "4321"; desc = "github &rarr; local gitea backup";}
+    {name = "caddy"; port = "80"; desc = "reverse proxy — and the host of this page";}
+  ];
+
+  # `first = true` entries are hoisted to the top, the rest keep their order.
+  sorted =
+    (filter (s: s.first or false) services)
+    ++ (filter (s: !(s.first or false)) services);
+
+  row = s: ''<tr><td><a href="${host}:${s.port}">${s.name}</a></td><td>${s.desc}</td><td class="m">:${s.port}${optionalString (s ? note) " ${s.note}"}</td></tr>'';
+in
+  ''
+    <!doctype html>
+    <meta charset="utf-8">
+    <title>server</title>
+    <style>
+     body{background:#${c.bg0_h};color:#${c.fg};font:15px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;max-width:760px;margin:48px auto;padding:0 20px}
+     h1{color:#${c.bright_green};font-size:22px;font-weight:600}
+     a{color:#${c.bright_blue};text-decoration:none}
+     a:hover{text-decoration:underline}
+     td{padding:5px 18px 5px 0;vertical-align:top}
+     .m{color:#${c.gray}}
+     tr:first-child a{color:#${c.bright_yellow};font-weight:700}
+     hr{border:0;border-top:1px solid #${c.bg2};margin:26px 0}
+    </style>
+    <h1>mugdad &mdash; 100.97.91.119</h1>
+    <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand, run <b>push-server-index</b> instead.</p>
+    <table>
+    ${concatStringsSep "\n" (map row sorted)}
+    </table>
+    <p class="m">tailscaled runs as a system service (<b>/etc/sv/tailscaled</b>), no web ui.</p>
+    <hr>
+    <p class="m">blocky is dns on <b>127.0.0.1:53</b>, loopback only &mdash; never web-published.</p>
+  ''
