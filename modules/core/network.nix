@@ -1,8 +1,15 @@
 {
+  config,
+  lib,
   pkgs,
   host,
   ...
-}: {
+}: let
+  # Blocky owns 127.0.0.1:53, so when it is enabled systemd-resolved is
+  # disabled and the system DNS is pointed at Blocky instead. With Blocky off,
+  # fall back to systemd-resolved (DNSSEC + Quad9).
+  localDns = config.services.blocky.enable;
+in {
   networking = {
     hostName = host;
     enableIPv6 = false;
@@ -13,6 +20,9 @@
       # backend was switched to wpa_supplicant. iwd is also the NixOS default
       # for wifi.
       wifi.backend = "iwd";
+      # With Blocky on, NetworkManager must not write resolver state from DHCP —
+      # nothing but Blocky answers.
+      dns = lib.mkIf localDns "none";
     };
     # No inbound ports are opened. Anything that needs one should open it in the
     # module that configures the service, not centrally here, so that a port
@@ -26,25 +36,24 @@
   # module when wifi.backend = "iwd".
   networking.wireless.iwd.enable = true;
 
-  # systemd-resolved is the one and only resolver. DNS points at the AdGuard
-  # Home on the thinkcentre server over the tailnet (100.97.91.119), so this
-  # laptop gets AGH's filtering wherever it is. `Domains = ~.` routes every
-  # query there. Tailscale refuses MagicDNS (--accept-dns=false in
-  # tailscale.nix), so nothing else touches /etc/resolv.conf.
-  services.resolved = {
+  services.resolved = lib.mkIf (!localDns) {
     enable = true;
     settings.Resolve = {
-      DNS = ["100.97.91.119"];
       DNSSEC = "allow-downgrade";
       Domains = ["~."];
-      # If the tailnet or the server is down, fall back to Quad9 rather than
-      # losing resolution entirely.
       FallbackDNS = [
         "9.9.9.9"
         "149.112.112.112"
       ];
     };
   };
+
+  # When Blocky owns :53, let it be the system resolver end-to-end.
+  networking.resolvconf.enable = lib.mkIf localDns false;
+  environment.etc."resolv.conf".text = lib.mkIf localDns ''
+    nameserver 127.0.0.1
+    options edns0
+  '';
 
   environment.systemPackages = with pkgs; [
     networkmanagerapplet
