@@ -12,9 +12,12 @@ _: {
 
       upstreams = {
         init.strategy = "fast"; # don't block startup on upstream probes
+        # blocky (0.33, the same build the ThinkCentre runs) rejects the bare
+        # tls:// and quic:// forms — tls:// dies on the empty port. Native form
+        # only: tcp-tls:host:port / quic:host. Proven on the server 2026-10-11.
         groups.default = [
-          "tls://cbf8aa.dns.nextdns.io" # NextDNS, DoT
-          "quic://2b44bd66.d.adguard-dns.com" # AdGuard DNS, DoQ
+          "tcp-tls:cbf8aa.dns.nextdns.io:853" # NextDNS, DoT
+          "quic:2b44bd66.d.adguard-dns.com" # AdGuard DNS, DoQ
           "192.168.44.187" # work resolver — only reachable at work
           "192.168.44.188" # work resolver — only reachable at work
         ];
