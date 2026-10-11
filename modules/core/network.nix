@@ -26,15 +26,19 @@
   # module when wifi.backend = "iwd".
   networking.wireless.iwd.enable = true;
 
-  # systemd-resolved is the one and only resolver (DNSSEC + Quad9). No local
-  # filtering resolver (Blocky was removed 2026-10), and Tailscale refuses
-  # MagicDNS via --accept-dns=false in tailscale.nix, so nothing else touches
-  # /etc/resolv.conf.
+  # systemd-resolved is the one and only resolver. DNS points at the AdGuard
+  # Home on the thinkcentre server over the tailnet (100.97.91.119), so this
+  # laptop gets AGH's filtering wherever it is. `Domains = ~.` routes every
+  # query there. Tailscale refuses MagicDNS (--accept-dns=false in
+  # tailscale.nix), so nothing else touches /etc/resolv.conf.
   services.resolved = {
     enable = true;
     settings.Resolve = {
+      DNS = ["100.97.91.119"];
       DNSSEC = "allow-downgrade";
       Domains = ["~."];
+      # If the tailnet or the server is down, fall back to Quad9 rather than
+      # losing resolution entirely.
       FallbackDNS = [
         "9.9.9.9"
         "149.112.112.112"
