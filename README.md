@@ -33,9 +33,10 @@ nixos-config/
 ├── modules/
 │   ├── core/                 # Shared system-level
 │   │   ├── default.nix       # scanPaths import
+│   │   ├── blocky.nix        # Local resolver at 127.0.0.1:53, 4 parallel upstreams
 │   │   ├── tailscale.nix     # Tailnet, MagicDNS refused (--accept-dns=false)
 │   │   ├── boot.nix, system.nix, security.nix, network.nix
-│   │   ├── hardware.nix, packages.nix, rust.nix, user.nix
+│   │   ├── hardware.nix, packages.nix, rust.nix, user.nix, opencode.nix
 │   │   └── nh.nix            # nix helper + GC
 │   ├── desktop/              # Desktop environment
 │   │   ├── default.nix       # scanPaths import
@@ -64,6 +65,12 @@ so a new `.nix` file is picked up automatically — no import list to maintain.
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
 - **Gruvbox** theme throughout
 - **Tailscale** tailnet, with MagicDNS explicitly refused (`--accept-dns=false`)
+- **Blocky** as the local DNS resolver — `127.0.0.1:53`, four upstreams raced in
+  parallel (NextDNS DoT, AdGuard DoQ, and the work resolvers, which lose the
+  race at home and win at uni). With Blocky on, systemd-resolved stays off,
+  NetworkManager hands DNS over (`dns = "none"`), and `/etc/resolv.conf` is a
+  static `nameserver 127.0.0.1`. Tailnet names still resolve via a Blocky
+  `conditional` to MagicDNS `100.100.100.100` — Tailscale owns no DNS.
 - **Security hardening** — kernel sysctl, AppArmor, coredumps disabled
 - **Auto-import** via the `scanPaths` helper
 
