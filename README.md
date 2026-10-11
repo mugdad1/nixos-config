@@ -33,7 +33,6 @@ nixos-config/
 ├── modules/
 │   ├── core/                 # Shared system-level
 │   │   ├── default.nix       # scanPaths import
-│   │   ├── adguardhome.nix   # Local filtering resolver (127.0.0.1:53)
 │   │   ├── tailscale.nix     # Tailnet, MagicDNS refused (--accept-dns=false)
 │   │   ├── boot.nix, system.nix, security.nix, network.nix
 │   │   ├── hardware.nix, packages.nix, rust.nix, user.nix
@@ -64,9 +63,6 @@ so a new `.nix` file is picked up automatically — no import list to maintain.
 - **Home Manager** for user packages and dotfiles
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
 - **Gruvbox** theme throughout
-- **AdGuard Home** as the local filtering resolver on `127.0.0.1:53` — upstreams
-  raced in `parallel` mode (NextDNS + AdGuard DNS + a subnet-only work resolver),
-  so the unreachable ones are ignored instead of stalling resolution
 - **Tailscale** tailnet, with MagicDNS explicitly refused (`--accept-dns=false`)
 - **Security hardening** — kernel sysctl, AppArmor, coredumps disabled
 - **Auto-import** via the `scanPaths` helper

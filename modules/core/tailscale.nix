@@ -4,9 +4,9 @@ _: {
     # Opens UDP 41641 in the module that needs it (see README's firewall rule).
     openFirewall = true;
 
-    # Tailscale must never own DNS: the local resolver (AdGuard Home, once it
-    # owns 127.0.0.1:53) is the only one on the box, and MagicDNS would overwrite
-    # /etc/resolv.conf with 100.100.100.100 plus a search domain.
+    # Tailscale must never own DNS: systemd-resolved in network.nix is the only
+    # resolver on the box, and MagicDNS would overwrite /etc/resolv.conf with
+    # 100.100.100.100 plus a search domain.
     #
     # Both lists, because they cover different moments:
     #   extraUpFlags    - passed to `tailscale up`, so a fresh login is born with
