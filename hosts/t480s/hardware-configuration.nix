@@ -14,30 +14,30 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/02ebfda3-2f10-4658-8126-cf436a5529f2";
+    { device = "/dev/disk/by-uuid/bbb553cd-1fee-40e5-a80f-7f2a57f572b7";
       fsType = "btrfs";
     };
 
   fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/02ebfda3-2f10-4658-8126-cf436a5529f2";
+    { device = "/dev/disk/by-uuid/bbb553cd-1fee-40e5-a80f-7f2a57f572b7";
       fsType = "btrfs";
       options = [ "subvol=home" ];
     };
 
   fileSystems."/nix" =
-    { device = "/dev/disk/by-uuid/02ebfda3-2f10-4658-8126-cf436a5529f2";
+    { device = "/dev/disk/by-uuid/bbb553cd-1fee-40e5-a80f-7f2a57f572b7";
       fsType = "btrfs";
       options = [ "subvol=nix" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/8480-D1C9";
+    { device = "/dev/disk/by-uuid/AD68-323A";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/3e63813d-6be0-4a52-932e-39accd4426b0"; }
+    [ { device = "/dev/disk/by-uuid/d041e0ab-0e1a-4e5e-82c3-c005a1a5eb0f"; }
     ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

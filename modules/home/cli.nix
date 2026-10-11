@@ -59,7 +59,7 @@
     udiskie # auto-mounter
     wl-clipboard # wayland clipboard
     xdg-utils
-    opencode
+    opencode # v2 via sst/opencode overlay (nixpkgs one is stale)
     payload_dumper
     ## Misc
     just # command runner
