@@ -35,6 +35,17 @@ in {
         Fingerprinting = true;
       };
 
+      # SearXNG on the ThinkCentre over the tailnet, not DuckDuckGo — his call
+      # 2026-10-11. Unlocked on purpose: he may repoint it at any time.
+      # Plain http on purpose too: the container is http-only, so HTTPS-Only
+      # mode will show its warning page once per origin until he clicks
+      # "Continue with http" — the exception sticks in permissions.sqlite.
+      Homepage = {
+        URL = "http://100.97.91.119:8888/";
+        StartPage = "homepage";
+        Locked = false;
+      };
+
       ExtensionSettings = {
         "uBlock0@raymondhill.net" = {
           install_url = "https://addons.mozilla.org/en-US/firefox/downloads/latest/ublock-origin/latest.xpi";
@@ -104,9 +115,26 @@ in {
         "media.autoplay.default" = 5;
         "media.autoplay.blocking_policy" = 2;
       };
+      # The search box and the homepage both point at SearXNG on the
+      # ThinkCentre (`http://100.97.91.119:8888`, stack entry 13) over the
+      # tailnet. Declared as a real engine here rather than through
+      # `policies.SearchEngines`, so the two policy blocks can't fight over
+      # which one owns the default.
       search = {
-        default = "ddg";
+        default = "SearXNG";
         force = true;
+        engines = {
+          "SearXNG" = {
+            urls = [
+              {
+                template = "http://100.97.91.119:8888/search";
+                params = [{name = "q"; value = "{searchTerms}";}];
+              }
+            ];
+            icon = "http://100.97.91.119:8888/static/themes/simple/img/favicon.png";
+            definedAliases = ["@sx"];
+          };
+        };
       };
 
       userChrome = with g.css; ''
