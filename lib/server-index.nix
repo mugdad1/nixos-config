@@ -26,7 +26,9 @@
     {name = "jellyfin"; port = "8096"; desc = "media server";}
     {name = "vaultwarden"; port = "8082"; desc = "password manager";}
     {name = "gitea"; port = "3000"; desc = "git, self-hosted"; note = "ssh :2222";}
-    {name = "uptime kuma"; port = "3001"; desc = "monitoring";}
+    # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
+    # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
+    # dead, so it came off this list too or the index ships a dead link.
     {name = "stirling pdf"; port = "8090"; desc = "merge / split / OCR pdfs locally";}
     {name = "paperless"; port = "8000"; desc = "document archive, arabic + english ocr search";}
     {name = "syncthing"; port = "8384"; desc = "laptop / phone &harr; box file sync"; note = ":22000";}
