@@ -1,7 +1,9 @@
 {pkgs, ...}: {
   # AndroidMic — use the phone as this machine's microphone.
-  #   PC app:  https://github.com/teamclouday/AndroidMic (cloned at
-  #            ~/projects/AndroidMic; nixpkgs ships the same version)
+  #   PC app:  https://github.com/teamclouday/AndroidMic — taken from nixpkgs
+  #            as pkgs.android-mic; the upstream repo is NOT cloned here (it
+  #            was, and the clone was deleted 2026-10-12 — the nixpkgs package
+  #            is the same build, so nothing was lost).
   #   Android: APK from releases, or F-Droid io.github.teamclouday.AndroidMic
   #
   # The phone streams audio in; the PC has to present that stream as a
@@ -9,7 +11,7 @@
   # its monitor is what apps record *from*. Without it the app can send audio
   # all day and nothing sees a mic.
   environment.systemPackages = with pkgs; [
-    android-mic # 2.2.10, same build as the cloned repo
+    android-mic # 2.2.10, from nixpkgs
     pulseaudio # pactl, used by the service below to create the sink
   ];
 
