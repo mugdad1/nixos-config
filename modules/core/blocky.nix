@@ -1,10 +1,16 @@
 _: {
-  # Blocky owns 127.0.0.1:53 as local resolver — the same 4 upstreams as the
-  # AGH on thinkcentre, raced in parallel (blocky races all upstreams of a
-  # group and takes the first answer):
+  # Blocky owns 127.0.0.1:53 as local resolver, raced in parallel (blocky races
+  # all upstreams of a group and takes the first answer):
   #   at home the NextDNS/AdGuard encrypted upstreams answer, the unreachable
   #   work resolvers simply lose the race; at work 192.168.44.187/.188 answer
   #   and the blocked encrypted upstreams are ignored. No per-network switching.
+  #
+  # NOTE the two machines deliberately differ as of 2026-10-12. The ThinkCentre
+  # (AGH removed 2026-10-11, so both run blocky) uses strategy: strict —
+  # NextDNS -> AdGuard -> 9.9.9.9, a true fallback. That is NOT safe here: a
+  # queue would stall on the unreachable work resolvers instead of letting them
+  # lose a race, which is the whole reason this host keeps parallel_best. Quad9
+  # here is therefore a peer in the race, not a last resort.
   services.blocky = {
     enable = true;
     settings = {
@@ -18,6 +24,7 @@ _: {
         groups.default = [
           "tcp-tls:cbf8aa.dns.nextdns.io:853" # NextDNS, DoT
           "quic:2b44bd66.d.adguard-dns.com" # AdGuard DNS, DoQ
+          "9.9.9.9" # Quad9 — spare in the race, answers when the encrypted pair are down
           "192.168.44.187" # work resolver — only reachable at work
           "192.168.44.188" # work resolver — only reachable at work
         ];
