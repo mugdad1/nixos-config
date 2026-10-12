@@ -59,13 +59,14 @@
     udiskie # auto-mounter
     wl-clipboard # wayland clipboard
     xdg-utils
+    opencode # v2 via sst/opencode overlay (nixpkgs one is stale)
     payload_dumper
     ## Misc
     just # command runner
     cliamp
     poweralertd
     rsync # sync/copy
-    htop
+
     ## Nix
     nvd # Nix/NixOS package version diff tool
     nix-output-monitor # Processes output of Nix commands to show helpful and pretty information

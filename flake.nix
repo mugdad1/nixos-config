@@ -30,6 +30,12 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Official opencode flake — nixpkgs' opencode is stale (v1); this is v2
+    opencode = {
+      url = "github:sst/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
