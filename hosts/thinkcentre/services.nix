@@ -84,6 +84,10 @@ in {
   };
 
   # ─── Telegram bot ──────────────────────────────────────────────────────────
+  # DISABLED 2026-10-12 on his word. Commented out, not deleted, so the port
+  # work below survives and can be re-enabled by removing the block comment.
+  # `waitOpencode` above is now unused — harmless, kept for the re-enable.
+  /*
   # Wants=/After= on opencode-serve — deliberately NOT Requires=. Requires
   # propagates STOP, so every opencode restart would take the bot down with it;
   # the donor kept the bot up and re-attaching, and that is the behaviour worth
@@ -116,12 +120,15 @@ in {
       RestartSec = "10s";
     };
   };
+  */
 
   # ─── study PWA ─────────────────────────────────────────────────────────────
-  # Runs IN PLACE, and must: serve.py computes
+  # DISABLED 2026-10-12 on his word. Commented out, not deleted. The reason it
+  # ran in place still holds for a re-enable: serve.py computes
   # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would
   # make it serve an empty store directory. Also a behaviour change worth
   # knowing: under runit this ran as ROOT (the run script had no chpst -u).
+  /*
   systemd.services.study = {
     description = "Study PWA no-cache static server";
     wantedBy = ["multi-user.target"];
@@ -136,6 +143,7 @@ in {
       RestartSec = "5s";
     };
   };
+  */
 
   # ─── sv-watch — the health sweep ───────────────────────────────────────────
   # The donor looped `sv-watch.sh; sleep 60` inside its run script so the

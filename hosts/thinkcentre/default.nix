@@ -110,6 +110,29 @@
     # sv-watch's DNS sweep shells out to dig; not in NixOS's default path.
     # (pkgs.dnsutils provides dig — there is no pkgs.dig.)
     dnsutils
+
+    # ── added 2026-10-12 on his word ─────────────────────────────────────────
+    gh # gh api / gh repo view, same as on the laptop
+    neovim # `nvim`; vim above stays as the bare-metal fallback
+    # v2, not nixpkgs' stale v1 — modules/core/opencode.nix installs the
+    # sst/opencode overlay, and thinkcentre imports core, so pkgs.opencode
+    # here is already v2. Same reason hosts/thinkcentre/services.nix can
+    # reference it as ocPath.
+    opencode
+    inxi # `mcli diag` shells out to it; without this that section prints
+    # "inxi not installed" on a fresh box
+
+    # mcli is repo-owned, not a nixpkgs package. It lives in scripts/mcli.sh
+    # and is normally installed through home.packages (scripts/default.nix),
+    # but thinkcentre is headless and deliberately does not import
+    # modules/home — so it is wired in here directly instead, same
+    # writeShellScriptBin shape that module uses.
+    #
+    # Already host-aware, so nothing needed changing for the server:
+    # `mcli rebuild` runs `nh os switch ~/nixos-config`, and nh derives the
+    # host from `hostname`, so it resolves to #thinkcentre here and #t480s on
+    # the laptop with no branch in the script.
+    (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
   ];
 
   # hostname comes from core/network.nix: networking.hostName = host = "thinkcentre".
