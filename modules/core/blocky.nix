@@ -5,14 +5,15 @@ _: {
   #   work resolvers simply lose the race; at work 192.168.44.187/.188 answer
   #   and the blocked encrypted upstreams are ignored. No per-network switching.
   #
-  # NOTE the two machines deliberately differ as of 2026-10-12. The ThinkCentre
-  # (AGH removed 2026-10-11, so both run blocky) uses strategy: strict —
-  # NextDNS -> AdGuard -> 9.9.9.9, a true fallback. That is NOT safe here: a
-  # queue would stall on the unreachable work resolvers instead of letting them
-  # lose a race, which is the whole reason this host keeps parallel_best. Nor
-  # is Quad9 carried here at all — this host races only the encrypted pair plus
-  # the two work resolvers. Reverted on his word 2026-10-12, the same day it
-  # was added (1b415e8); the ThinkCentre's strict chain still has it.
+  # Both machines run parallel_best as of 2026-10-12 (AGH removed 2026-10-11,
+  # so both run blocky). The ThinkCentre races the encrypted pair alone; this
+  # host adds 192.168.44.187/.188 so it also resolves on the work LAN, still
+  # with no per-network switching.
+  #
+  # Quad9 and strategy: strict were both added on 2026-10-12 and both taken back
+  # out the same day: a strict queue would stall behind the unreachable work
+  # resolvers here, and Quad9 went from both machines on his word — this host in
+  # 64827ce (reverting 1b415e8), the ThinkCentre in /etc/blocky/config.yml.
   services.blocky = {
     enable = true;
     settings = {
