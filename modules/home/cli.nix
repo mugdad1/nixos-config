@@ -66,7 +66,7 @@
     cliamp
     poweralertd
     rsync # sync/copy
-
+    htop
     ## Nix
     nvd # Nix/NixOS package version diff tool
     nix-output-monitor # Processes output of Nix commands to show helpful and pretty information
