@@ -139,6 +139,8 @@ done
 if command -v docker >/dev/null 2>&1; then
     if ids=$(docker ps -aq 2>/dev/null); then
         if [ -n "$ids" ]; then
+            # shellcheck disable=SC2086  # $ids is newline-separated ON PURPOSE:
+            # quoting it would hand docker inspect every ID as ONE argument.
             if insp=$(docker inspect -f '{{.Name}} {{.State.Running}} {{.HostConfig.RestartPolicy.Name}}' $ids 2>/dev/null); then
                 while read -r name running policy; do
                     [ -n "$name" ] || continue
@@ -211,9 +213,15 @@ case "$dnsst" in
             *) : ;;                                           # first strike -> hold
         esac ;;
 esac
+# shellcheck disable=SC2086  # $new_pending is space-separated; split it so the
+# pending file gets one token per line, matching how prev_pending is re-read.
 printf '%s\n' $new_pending > "$PENDING" 2>/dev/null || true
 
 # normalise: one sorted line of space-separated tokens
+# shellcheck disable=SC2086  # $down MUST word-split for sort -u to dedupe.
+# Quoting it makes printf emit a single line, so sort -u becomes a no-op and
+# duplicate tokens survive into the state file. Same idiom as the original
+# Void script (byte-identical line, 2026-10-12).
 down=$(printf '%s\n' $down | sort -u | tr '\n' ' ' | sed 's/ *$//')
 [ -n "$skipped" ] && printf '%s intentionally down (not reported):%s\n' "$(now)" "$skipped"
 

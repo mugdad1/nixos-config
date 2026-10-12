@@ -20,6 +20,19 @@
     ../../modules/core
     # Deliberately NOT ../../modules/desktop — headless. Since 2026-10-12 core
     # no longer drags the desktop in, so this omission is all it takes.
+
+    # MUST BE LISTED EXPLICITLY. mkHost passes `./hosts/${host}` as its module,
+    # and a NixOS module that is a *directory* resolves to that directory's
+    # default.nix ONLY — it does not sweep up sibling .nix files. So creating
+    # backup.nix / services.nix in here changes nothing until they are named.
+    # This cost a full build cycle: the closure compiled clean, `nixos-rebuild`
+    # would have reported success, and the box would have come up with no
+    # 03:17 backup, no sv-watch, no Telegram bot and no study site. Verified by
+    # probing `config.systemd.services.<name>` for each unit, which is the only
+    # way to catch it — a green build proves nothing about files that were
+    # never imported.
+    ./backup.nix
+    ./services.nix
   ];
 
   # The ESP is mounted at /boot/efi on this disk (donor's layout), not NixOS's
