@@ -31,9 +31,19 @@ fi
 #--- Confirm ---#
 
 #--- Detect host + GPU ---#
+# product_name alone is NOT enough on the ThinkCentre: it reports 10LYS02F00
+# there — a bare machine-type string with no product name in it — so the old
+# three-way match below could never fire and install.sh aborted with
+# "Could not detect host!". product_family carries the real name
+# ("ThinkCentre M900x"); fall back to the 10LY machine type if family is blank.
+DMI_NAME="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
+DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 
-if grep -qi 't480s\|thinkpad\|20L8' /sys/class/dmi/id/product_name 2> /dev/null; then
+if grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
     HOST="t480s"
+    GPU="intel"
+elif grep -qi 'thinkcentre' <<<"$DMI_FAMILY" || grep -qi '^10LY' <<<"$DMI_NAME"; then
+    HOST="thinkcentre"
     GPU="intel"
 fi
 
