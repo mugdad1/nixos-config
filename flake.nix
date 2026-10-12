@@ -30,67 +30,65 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Official opencode flake — nixpkgs' opencode is stale (v1); this is v2
-    opencode = {
-      url = "github:sst/opencode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = {
     nixpkgs,
     self,
     ...
-  } @ inputs: let
-    system = "x86_64-linux";
-    mkHost = host: let
-      variables = import ./hosts/${host}/variables.nix;
+  } @ inputs:
+    let
+      system = "x86_64-linux";
+
+      mkHost = host:
+        let
+          variables = import ./hosts/${host}/variables.nix;
+        in
+        nixpkgs.lib.nixosSystem {
+          modules = [
+            ./hosts/${host}
+          ];
+          specialArgs = {
+            inherit host inputs variables;
+            inherit (variables) username;
+          };
+        };
     in
-      nixpkgs.lib.nixosSystem {
-        modules = [
-          ./hosts/${host}
-        ];
-        specialArgs = {
-          inherit host inputs variables;
-          inherit (variables) username;
+    {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
+
+      devShells.${system} = {
+        default = nixpkgs.legacyPackages.${system}.mkShell {
+          packages = with nixpkgs.legacyPackages.${system}; [
+            alejandra
+            statix
+            deadnix
+            shellcheck
+            shfmt
+            treefmt
+            stylua
+            taplo
+            nixd
+          ];
+        };
+
+        kernel = nixpkgs.legacyPackages.${system}.mkShell {
+          packages = with nixpkgs.legacyPackages.${system}; [
+            gnumake
+            gcc
+            linuxPackages_latest.kernel.dev
+          ];
+          shellHook = ''
+            export KDIR="${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev}/lib/modules/${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev.version}/build"
+            echo "Kernel dev shell ready"
+            echo "Kernel: $(uname -r)"
+            echo "KDIR: $KDIR"
+          '';
         };
       };
-  in {
-    formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-    devShells.${system} = {
-      default = nixpkgs.legacyPackages.${system}.mkShell {
-        packages = with nixpkgs.legacyPackages.${system}; [
-          alejandra
-          statix
-          deadnix
-          shellcheck
-          shfmt
-          treefmt
-          stylua
-          taplo
-          nixd
-        ];
-      };
-
-      kernel = nixpkgs.legacyPackages.${system}.mkShell {
-        packages = with nixpkgs.legacyPackages.${system}; [
-          gnumake
-          gcc
-          linuxPackages_latest.kernel.dev
-        ];
-        shellHook = ''
-          export KDIR="${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev}/lib/modules/${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev.version}/build"
-          echo "Kernel dev shell ready"
-          echo "Kernel: $(uname -r)"
-          echo "KDIR: $KDIR"
-        '';
+      nixosConfigurations = {
+        t480s = mkHost "t480s";
       };
     };
-
-    nixosConfigurations = {
-      t480s = mkHost "t480s";
-    };
-  };
 }
