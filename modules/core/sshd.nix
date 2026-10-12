@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  username,
-  ...
-}: {
+{username, ...}: {
   # sshd, reachable over Tailscale only.
   #
   # The laptop is not a server — nothing on the LAN should be able to knock on
@@ -38,8 +33,12 @@
   # precondition — the firewall rule simply matches once it does.
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [22];
 
-  # The ssh agent belongs to the desktop session, not to a lingering systemd
-  # process, so `ssh` to the server (and git-over-ssh) can use the key without
-  # typing a passphrase on every single call.
-  programs.ssh.startAgent = true;
+  # No `programs.ssh.startAgent` here, deliberately. It cannot be enabled
+  # alongside `services.gnome.gcr-ssh-agent`, which is already on because
+  # desktop/services.nix sets `services.gnome.gnome-keyring.enable` — NixOS
+  # asserts that only one ssh agent may exist. The keyring's gcr-ssh-agent is
+  # also the better of the two on a desktop: it unlocks with the login session
+  # and holds the passphrase for you, so ssh to the ThinkCentre and
+  # git-over-ssh both run without prompting. Adding a second agent here would
+  # have taken that away, not improved it.
 }
