@@ -38,7 +38,7 @@
   # The ESP is mounted at /boot/efi on this disk (donor's layout), not NixOS's
   # default /boot. Wrong here and systemd-boot writes to a directory that is
   # not the ESP — the machine then boots the old Void GRUB and "nothing happened".
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  boot.loader.efi.efiSysMountPoint = "/boot";
 
   # Headless: no games, no Wine, hence no 32-bit Mesa. modules/core/hardware.nix
   # sets this plainly for the laptop, so it needs mkForce to undo.
