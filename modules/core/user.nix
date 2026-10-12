@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   inputs,
   username,
   host,
@@ -12,7 +13,13 @@
     useGlobalPkgs = true;
     extraSpecialArgs = {inherit inputs username host variables;};
     users.${username} = {
-      imports = [../home];
+      # ../home is the DESKTOP's home stack (sway, waybar, rofi, browser …) and
+      # it hard-reads variables.browser/terminal/launcher — evaluate it on a
+      # headless host and you get "attribute 'browser' missing". Gating on the
+      # variables themselves rather than a hostname means a host gets the
+      # desktop home stack exactly when its variables declare a desktop, with
+      # no host list to maintain. The ThinkCentre declares none.
+      imports = lib.optionals (variables ? browser) [../home];
       home.username = username;
       home.homeDirectory = "/home/${username}";
       home.stateVersion = "26.05";

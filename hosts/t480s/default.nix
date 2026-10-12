@@ -7,6 +7,9 @@
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480s
     ./hardware-configuration.nix
     ../../modules/core
+    # Desktop is opt-in per host, no longer dragged in by core (2026-10-12).
+    # This laptop wants one; the ThinkCentre does not import it.
+    ../../modules/desktop
   ];
 
   hardware.graphics = {
