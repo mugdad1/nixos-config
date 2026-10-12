@@ -32,7 +32,12 @@
     {name = "stirling pdf"; port = "8090"; desc = "merge / split / OCR pdfs locally";}
     {name = "paperless"; port = "8000"; desc = "document archive, arabic + english ocr search";}
     {name = "syncthing"; port = "8384"; desc = "laptop / phone &harr; box file sync"; note = ":22000";}
-    {name = "ntfy"; port = "8085"; desc = "push alerts to your phone";}
+    # ntfy dropped 2026-10-12 — wiki row 75, container removed together with ALL
+    # alert delivery (its own stats showed subscribers=0 for its whole life).
+    # :8085 answered 000 and the live index was still advertising it, i.e. the
+    # exact drift this file exists to prevent, recurring a day after the
+    # uptime-kuma entry was fixed in f1ebc12. Verified: every other port in
+    # this list answers.
     {name = "glances"; port = "61208"; desc = "cpu / temp / mem / disk, live";}
     {name = "searxng"; port = "8888"; desc = "private metasearch, json api enabled — zen's search engine";}
     {name = "metube"; port = "8081"; desc = "yt-dlp web ui, downloads to the box";}
