@@ -13,6 +13,25 @@
     pulseaudio # pactl, used by the service below to create the sink
   ];
 
+  # udev rule so the app can reach the phone over raw USB (its "USB" mode
+  # talks to the device through libusb, not through adb).
+  #
+  # Without this the app reports "no usb device connected" even with the
+  # cable firmly in — libusb gets EACCES on the device node. The kernel
+  # attaches no driver here, so 70-uaccess.rules never tags it and the
+  # logged-in user has no business opening it. TAG+="uaccess" hands the node
+  # to whoever is logged in on the seat, via logind's ACLs — no group to join,
+  # no MODE="0666" widening it for everyone.
+  #
+  # 22d9 is the OnePlus/OPPO vendor id as enumerated on this box (OnePlus 7T
+  # Pro, HD1911, product 2765). Matched on vendor only: the id changes when
+  # the phone flips into accessory mode, and the rule has to hold across that
+  # transition or the connect drops halfway.
+  services.udev.extraRules = ''
+    # AndroidMic — allow the logged-in seat user raw USB access to the phone
+    SUBSYSTEM=="usb", ATTR{idVendor}=="22d9", TAG+="uaccess"
+  '';
+
   # NOTE why this is a service and not `services.pipewire.extraConfig`.
   # The obvious declarative route is a `context.objects` drop-in in
   # /etc/pipewire/pipewire.conf.d, and it does not work. PipeWire loads a
