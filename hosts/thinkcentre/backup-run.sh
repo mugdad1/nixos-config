@@ -54,9 +54,9 @@ chmod 700 "$ROOT" || die "chmod 700 $ROOT failed"
 # Each entry is one rsync source, mirrored into the snapshot at
 # $SLOT/<absolute path with the leading slash stripped>.
 SOURCES="
-/home/void/Projects
-/home/void/.local/state/opencode
-/home/void/.local/bin
+/home/mugdad/Projects
+/home/mugdad/.local/state/opencode
+/home/mugdad/.local/bin
 /etc/fstab
 /etc/docker
 /var/lib/nixos
@@ -64,10 +64,19 @@ SOURCES="
 "
 
 # Read-back files: proof that real content landed on the backup disk.
+#
+# The middle one was `wa-send-log.md`, which stopped existing around 2026-10-09
+# (the file was renamed to telegram-send-log.md). The snapshots from Oct 9–10
+# contain their full content — the rotation and rsync both completed — but the
+# unit still exited 1 at this verify step, so the health signal was red while
+# the backup was actually fine. Pinned to prompt-history.jsonl instead: it is
+# written by every opencode session and has been present in every snapshot
+# inspected. Prefer a file that cannot be renamed away over one that matches
+# today's log name.
 READBACK="
-/home/void/Projects/wiki/AGENTS.md
-/home/void/.local/state/opencode/wa-send-log.md
-/home/void/Projects/servers/README.md
+/home/mugdad/Projects/wiki/AGENTS.md
+/home/mugdad/.local/state/opencode/prompt-history.jsonl
+/home/mugdad/Projects/servers/README.md
 "
 
 # NOTE: patterns use **/ so they match at ANY depth. A bare */foo only matches

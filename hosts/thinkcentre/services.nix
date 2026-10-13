@@ -92,10 +92,12 @@ in {
   };
 
   # ─── Telegram bot ──────────────────────────────────────────────────────────
-  # DISABLED 2026-10-12 on his word. Commented out, not deleted, so the port
-  # work below survives and can be re-enabled by removing the block comment.
-  # `waitOpencode` above is now unused — harmless, kept for the re-enable.
-  /*
+  # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word ("also run study
+  # and telegram"). What blocked the re-enable before was not this file: the
+  # wrapper ~/.local/bin/opencode-telegram-start and the opencode state under
+  # ~/.local/state/opencode lived on the Void install that was replaced, so both
+  # were simply absent. They came back off the backup disk today (snapshots/
+  # daily-1, the last Void snapshot).
   # Wants=/After= on opencode-serve — deliberately NOT Requires=. Requires
   # propagates STOP, so every opencode restart would take the bot down with it;
   # the donor kept the bot up and re-attaching, and that is the behaviour worth
@@ -108,7 +110,6 @@ in {
     serviceConfig = {
       Type = "simple";
       User = username;
-      Group = username;
       Environment = [
         "HOME=/home/${username}"
         "USER=${username}"
@@ -128,15 +129,17 @@ in {
       RestartSec = "10s";
     };
   };
-  */
 
   # ─── study PWA ─────────────────────────────────────────────────────────────
-  # DISABLED 2026-10-12 on his word. Commented out, not deleted. The reason it
-  # ran in place still holds for a re-enable: serve.py computes
+  # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word. Blocked on the same
+  # thing as the bot: ~/Projects/study was on the Void install and did not
+  # exist on this box until it was restored from snapshots/daily-1 today.
+  # serve.py is present at that path now.
+  #
+  # The reason it runs in place still holds: serve.py computes
   # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would
   # make it serve an empty store directory. Also a behaviour change worth
   # knowing: under runit this ran as ROOT (the run script had no chpst -u).
-  /*
   systemd.services.study = {
     description = "Study PWA no-cache static server";
     wantedBy = ["multi-user.target"];
@@ -144,14 +147,12 @@ in {
     serviceConfig = {
       Type = "simple";
       User = username;
-      Group = username;
       WorkingDirectory = "/home/${username}/Projects/study";
       ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/Projects/study/scripts/serve.py 8091 0.0.0.0";
       Restart = "always";
       RestartSec = "5s";
     };
   };
-  */
 
   # ─── sv-watch — the health sweep ───────────────────────────────────────────
   # The donor looped `sv-watch.sh; sleep 60` inside its run script so the
