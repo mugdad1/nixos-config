@@ -96,6 +96,49 @@
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
 
+  # Wired-only box: NM pulls in iwd and ModemManager, neither of which belongs
+  # here, and a wifi-less headless machine has no use for the whole stack. DHCP
+  # on eno1 is now systemd-networkd's job instead: NixOS's intended shape for a
+  # server with one ethernet uplink. The NM/iwd gate lives in modules/core/
+  # network.nix (host != "thinkcentre") so the ThinkPad keeps NM + iwd untouched.
+  #
+  # ModemManager is what sv-watch kept flagging as idle — with NM gone it does
+  # not get enabled at all, so it drops off the sweep as well.
+  # No modem hardware. ModemManager is enabled only as a side effect of the
+  # networkmanager module, so removing NM above is what removes it; force the
+  # systemd unit off as well, so it cannot survive from the running system.
+  systemd.services.ModemManager.enable = lib.mkForce false;
+  networking.networkmanager.enable = lib.mkForce false;
+  networking.wireless.iwd.enable = lib.mkForce false;
+  networking.useDHCP = false;
+  networking.useNetworkd = true;
+  # Blocky owns /etc/resolv.conf on this box (forced to nameserver 127.0.0.1
+  # in modules/core/network.nix). Without this, enabling networkd pulls in
+  # systemd-resolved, which tries to own the same file and fails evaluation.
+  services.resolved.enable = lib.mkForce false;
+
+  # mandb (man-page index) is enabled on NixOS by default and is a
+  # Type=simple unit that runs to completion and then goes inactive, so
+  # sv-watch reports it as "down" every sweep — the only remaining false
+  # positive after ModemManager. The box is headless and has no interactive
+  # man usage that needs an up-to-date index at runtime, so the unit is
+  # disabled rather than left as idle noise. The index can be regenerated
+  # by hand with `mandb` if it is ever wanted.
+  systemd.services.mandb.enable = lib.mkForce false;
+  # eno1 is the only non-loopback, non-tailscale, non-docker interface on this
+  # box (`ip -br link` agreed). DHCP keeps the .225 address the router assigns;
+  # blocky still owns /etc/resolv.conf, so no DNS option is requested — the
+  # NixOS core forced the file to nameserver 127.0.0.1 on this host.
+  systemd.network.enable = true;
+  systemd.network.networks."10-eno1" = {
+    matchConfig.Name = "eno1";
+    networkConfig = {
+      DHCP = "ipv4";
+      DNSDefaultRoute = false;
+    };
+    linkConfig.RequiredForOnline = "yes";
+  };
+
   # /srv/backup — the ADATA SP550, **ext4**, labelled "backup".
   #
   # MOVED HERE from hardware-configuration.nix on 2026-10-13. It used to live in

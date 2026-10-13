@@ -13,11 +13,19 @@ in {
   networking = {
     hostName = host;
     enableIPv6 = false;
-    networkmanager = {
+    # NetworkManager + iwd exist for the ThinkPad (wife? no — workstation) only.
+    # The ThinkCentre is wired-only (eno1 into the room switch), so NM is
+    # unwanted bloat here — it is what pulls iwd and ModemManager along with it,
+    # even though this box has no modem and no 802.11 interface. Wifi and the
+    # NM/iwd stack stay on the laptop, which imports this same module, so the
+    # gate is keyed on host rather than on an option the shared module cannot
+    # see. The laptop's `wifi.backend = "iwd"` is left untouched (it lives on
+    # the t480s, never on this box).
+    networkmanager = lib.mkIf (host != "thinkcentre") {
       enable = true;
-      # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant on
-      # Intel: the t480s was flapping between two BSSIDs of one SSID after the
-      # backend was switched to wpa_supplicant. iwd is also the NixOS default
+      # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
+      # on Intel: the t480s was flapping between two BSSIDs of one SSID after
+      # the backend was switched to wpa_supplicant. iwd is also the NixOS default
       # for wifi.
       wifi.backend = "iwd";
       # With Blocky on, NetworkManager must not write resolver state from DHCP —
@@ -33,8 +41,8 @@ in {
 
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
-  # module when wifi.backend = "iwd".
-  networking.wireless.iwd.enable = true;
+  # module when wifi.backend = "iwd". Off on thinkcentre — no wifi here.
+  networking.wireless.iwd.enable = lib.mkIf (host != "thinkcentre") true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;
