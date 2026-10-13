@@ -73,17 +73,16 @@
   # the t480s root IS btrfs and needs it. Commenting it out in core would have
   # silently disabled scrubbing on the laptop.
   #
-  # OPEN (2026-10-13): /srv/backup IS btrfs — a backup disk that silently rots
-  # is exactly where scrubbing matters most. To scrub it weekly instead of not
-  # at all, replace the next line with:
-  #   services.btrfs.autoScrub = {
-  #     enable = true;
-  #     fileSystems = ["/srv/backup"];
-  #     interval = "weekly";
-  #   };
-  # Left alone deliberately: autoScrub.fileSystems evaluates to ["/"] on the
-  # t480s but [] here, and nothing in this repo sets it — so flipping enable
-  # without also naming the mount would be a guess about what gets scrubbed.
+  # OPEN ITEM CLOSED 2026-10-13: it asked whether /srv/backup should be scrubbed,
+  # since a backup disk that silently rots is exactly where scrubbing matters.
+  # Moot now — the disk is ext4, so btrfs scrub cannot touch it.
+  #
+  # Left in place because the t480s IS btrfs and needs the force-off here: the
+  # shared module sets autoScrub.enable, and without this line it would try to
+  # scrub a root that has no btrfs on this host. autoScrub.fileSystems evaluates
+  # to ["/"] on the t480s but [] here, and nothing in this repo sets it — so
+  # flipping enable without also naming the mount is a guess about what gets
+  # scrubbed.
   services.btrfs.autoScrub.enable = lib.mkForce false;
 
   # Docker engine only. The 12 compose projects live in ~/Projects/servers and
@@ -92,7 +91,7 @@
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
 
-  # /srv/backup — the ADATA SP550, btrfs, labelled "backup".
+  # /srv/backup — the ADATA SP550, **ext4**, labelled "backup".
   #
   # MOVED HERE from hardware-configuration.nix on 2026-10-13. It used to live in
   # that file, but nixos-generate-config only reports filesystems that are in the
@@ -101,12 +100,24 @@
   # failing every night with "/srv/backup is not mounted", and sda sat unmounted.
   # Declaring it on the host means it survives every future regeneration.
   #
+  # REFORMATTED btrfs -> ext4 on 2026-10-13 on his order ("rm the backup
+  # completely so we start clean"), wiping the 11 Void-era snapshots. They held
+  # the only surviving copy of that history and were checked for content first:
+  # every home/void was ~600M of .local + Projects, all of which had already
+  # been restored to ~/Projects by hand. Nothing unrecoverable was lost.
+  # backup-run.sh is plain rsync with --link-dest, which needs hardlinks and
+  # nothing else, so the change of filesystem costs the script nothing — no
+  # btrfs-specific call exists in it.
+  #
   # nofail: a missing disk skips the mount instead of hanging boot — same as the
   # donor's fstab. Do NOT also port a backup-mount service: two mounters racing
   # the same UUID is how the donor double-mounted it.
+  #
+  # If the disk is ever reformatted again, mkfs regenerates the UUID, so this
+  # line has to follow it — `blkid /dev/sda1` then update the value below.
   fileSystems."/srv/backup" = {
-    device = "/dev/disk/by-uuid/67dc44db-b497-44e0-b45c-a70050558dd3";
-    fsType = "btrfs";
+    device = "/dev/disk/by-uuid/2ad7d4fc-9c1d-4baa-a3fd-b05bc0248f28";
+    fsType = "ext4";
     options = ["defaults" "nofail"];
   };
 

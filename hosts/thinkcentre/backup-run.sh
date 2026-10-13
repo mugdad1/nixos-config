@@ -1,7 +1,11 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 # backup-run.sh - snapshot selected sources from the OS disk onto the
-# backup disk (ADATA SP550, btrfs label "backup", /srv/backup).
+# backup disk (ADATA SP550, ext4 label "backup", /srv/backup).
+#
+# REFORMATTED btrfs -> ext4 2026-10-13: this script is plain rsync with
+# --link-dest, which needs hardlinks and nothing else, so the filesystem
+# change costs it nothing. It never called `btrfs subvolume snapshot`.
 #
 # NIXOS PORT (2026-10-07): verbatim copy of the donor Void script
 # /usr/local/bin/backup-run.sh, minus the two runit-specific bits —
