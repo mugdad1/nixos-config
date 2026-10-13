@@ -129,8 +129,28 @@ flush   # anything undeliverable from a previous sweep goes out first
 # meant to run on their own, so they are skipped by exactly the same rule.
 # `list-unit-files --state=enabled` is therefore the direct successor of the
 # `for d in "$SVDIR"/*` loop, not an approximation of it.
+#
+# TWO MORE SKIPS, added 2026-10-13 once the sweep could actually see units
+# (it reported "checked 0 units" for weeks because gawk was missing from
+# runtimeInputs). runit had no oneshot concept, so this is not part of the
+# mapping above — it is where the mapping stops:
+#
+#   * Type=oneshot units are RUN TO COMPLETION and then go inactive. They are
+#     enabled and healthy while reporting `is-active` = inactive, so flagging
+#     them produced 22 false "down" units on the first real sweep —
+#     sshd-keygen, systemd-machine-id-commit, tailscaled-set (which logs
+#     status=0/SUCCESS), and so on. That is worse than the silence it
+#     replaced: a list that is 22/22 noise makes a real down unit invisible.
+#   * Template units (getty@tty1.service) are instantiations of a template
+#     that is enabled but whose instances are started on demand.
 for unit in $(systemctl list-unit-files --type=service --state=enabled \
               --no-legend --no-pager 2>/dev/null | awk '{print $1}'); do
+    case "$unit" in
+        *@*.service) continue ;;    # template, not an instance
+    esac
+    if [ "$(systemctl show -p Type --value "$unit" 2>/dev/null)" = "oneshot" ]; then
+        continue
+    fi
     name=${unit%.service}
     units=$((units + 1))
     st=$(systemctl is-active "$unit" 2>/dev/null) || st="unknown"
