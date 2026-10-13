@@ -44,6 +44,26 @@
   # sets this plainly for the laptop, so it needs mkForce to undo.
   hardware.graphics.enable32Bit = lib.mkForce false;
 
+  # No btrfs here — this box runs ext4, so the weekly scrub that
+  # modules/core/system.nix enables (for the laptop, which IS btrfs) has no
+  # filesystem to act on. Same mkForce pattern as enable32Bit above: the core
+  # module enables it unconditionally, so the host has to force it off.
+  #
+  # Deliberately scoped to THIS host only. services.btrfs.autoScrub lives in
+  # the shared modules/core, and commenting it out there would have silently
+  # disabled scrubbing on the t480s, whose root is btrfs and needs it. An
+  # override here leaves the laptop untouched.
+  #
+  # NOTE (2026-10-13): hardware-configuration.nix still declares the root and
+  # /srv/backup as fsType = "btrfs" with the donor's UUIDs (839da341… /
+  # 67dc44db…), which was hand-verified against the Void install on 2026-10-12.
+  # That file is now stale relative to an ext4 layout, and it is NOT edited
+  # here on purpose: the real UUIDs only exist on the box itself. Regenerate it
+  # with nixos-generate-config at install time and diff. Hand-writing ext4
+  # entries from the ThinkPad would ship a config with wrong UUIDs, and the
+  # machine would boot to a kernel panic.
+  services.btrfs.autoScrub.enable = lib.mkForce false;
+
   # Docker engine only. The 12 compose projects live in ~/Projects/servers and
   # are deliberately OS-agnostic — they are restored by hand, not re-declared
   # here. Nothing in this flake starts a container on its own.
