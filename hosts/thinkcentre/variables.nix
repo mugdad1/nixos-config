@@ -2,7 +2,7 @@
   # Username stays "void" so /home/void does not move across the migration —
   # every compose bind mount, the tailscale state, the opencode session DB and
   # the backup sources are all keyed on that path.
-  username = "void";
+  username = "mugdad";
   timezone = "Asia/Riyadh";
   # Must be a locale NixOS actually generates (i18n.defaultLocale).
   locale = "en_US.UTF-8";
