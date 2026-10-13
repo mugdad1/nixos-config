@@ -20,13 +20,19 @@
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
   # The donor's 90 s readiness wait, verbatim in behaviour. It exists because
-  # After= only guarantees opencode was SPAWNED, not that :49374 answers — and
+  # After= only guarantees opencode was SPAWNED, not that its API port answers — and
   # on 2026-10-04 the bot came up ~1 min early, logged "reason=startup", and
   # then never retried, staying up but permanently blind while every service
   # showed green. Bounded at 90 s: a bot that starts blind is better than none.
   waitOpencode = pkgs.writeShellScript "wait-opencode-api" ''
     i=0
-    while ! ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:49374 '; do
+    # PORT MOVED. This grepped for :49374, which is opencode v1's port. This
+    # box runs v2 (modules/core/opencode.nix), and v2's own log says
+    # "server listening on http://127.0.0.1:13420" — verified 2026-10-13 with
+    # `curl 127.0.0.1:13420 -> HTTP 200` while :49374 gave HTTP 000. So the wait
+    # could never succeed: it spun the full 90 s on every start and then began
+    # anyway. Bounded either way — a wrong port costs 90 s, not a hang.
+    while ! ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:13420 '; do
       i=$((i + 1))
       if [ "$i" -ge 18 ]; then
         echo "$(date '+%F %T') opencode-telegram: gave up waiting for opencode after 90s, starting anyway"
@@ -54,7 +60,8 @@
 in {
   # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
-  # already holds 127.0.0.1:49374. Under runit the holder was usually a
+  # already held the opencode API port (127.0.0.1:13420 since opencode v2; it
+  # was :49374 under v1). Under runit the holder was usually a
   # hand-started instance, and the unit waited in an ss loop (134 logged waits).
   # There is no unit edge to model that — Requires=/BindsTo= relate units, and
   # the conflicting process is manual. systemd's restart loop IS the retry
