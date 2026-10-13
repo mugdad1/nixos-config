@@ -13,7 +13,14 @@
       freetube
 
       ## Browsers (vanilla, un-nixified profiles: editable directly)
-      firefox
+      # chromium REPLACED firefox here 2026-10-13 on his word ("add chromium to
+      # this device and rm firefox / keep zen"). Firefox was the plain package
+      # with an un-nixified profile — it had no programs.firefox block anywhere
+      # in the flake, so removing it drops no declarative state. Zen is the one
+      # with the managed profile (modules/home/browser.nix) and stays exactly as
+      # it was; this line was never what provided it.
+      chromium
+      # firefox
       tor-browser
 
       ## Office / Productivity
