@@ -1,30 +1,36 @@
 #!/bin/sh
-# sv-watch.sh - the only thing on this box that notices a dead runit unit or a
-# dead container.
+# sv-watch.sh - the only thing on this box that notices a dead systemd unit or
+# a dead container.
 #
 # WHY IT EXISTS (2026-10-08): the telegram duty channel was down for ~2 h (its
 # launcher was deleted at 09:17) and nothing noticed. Uptime Kuma cannot see it
-# - it has 0 monitors and only ever watches HTTP ports - and runit was throwing
-# the failures at a discarded pipe. `sv status` every 60 s plus ONE push on a
-# state CHANGE is the cheapest thing that can catch this. Alerts go to ntfy
-# (stack entry 11, 127.0.0.1:8085 -> container :80), topic thinkcentre-alerts.
+# - it has 0 monitors and only ever watches HTTP ports - and at the time runit
+# was throwing the failures at a discarded pipe. `systemctl` every 60 s plus
+# ONE push on a state CHANGE is the cheapest thing that can catch this.
 #
-# SCOPE (2026-10-09): runit units, docker containers, and the published HTTP
+# **ALERT DELIVERY IS OFF SINCE 2026-10-12** (his "just rm notify"): the ntfy
+# container left the stack that day, so this sweep only LOGS to the journal.
+# Nothing is pushed anywhere. `NTFY` below is retained but unused, and the
+# queue/flush machinery behind it is unreachable because push() is now an
+# unconditional printf. If alerting is ever wanted again, point it at
+# telegram rather than resurrecting ntfy.
+#
+# SCOPE (2026-10-09): systemd units, docker containers, and the published HTTP
 # endpoints. Containers were added because a stopped container was invisible
 # here - a stopped or crashed container would have been just as silent as the
 # bot was. (The container that motivated this, immich_machine_learning, was
-# removed from the stack entirely on 2026-10-09 - 19 containers now.) The HTTP sweep was added because the
-# one thing Uptime Kuma could theoretically do that this could not - notice a
-# port that answers but an app behind it that does not - and it does it without
-# a 200 MB container, a login, or 0 monitors.
+# removed from the stack entirely on 2026-10-09.) The HTTP sweep was added
+# because the one thing Uptime Kuma could theoretically do that this could not
+# - notice a port that answers but an app behind it that does not - and it does
+# it without a 200 MB container, a login, or 0 monitors.
 #
 # Deliberate choices:
-#   * a runit `down` file means the operator meant it, so that unit is skipped;
-#   * a container with restart policy `no` means the same thing -> same skip
-#     (generic: nothing exercises it right now, the ML container is gone);
+#   * a systemd unit left disabled/stopped means the operator meant it, so it
+#     is skipped rather than paged;
+#   * a container with restart policy `no` means the same thing -> same skip;
 #   * the state file holds only the current down-list, so a reboot (state lives
 #     in /run) reports a still-down thing once and stays quiet afterwards;
-#   * one script per run, looped by the runit service, so `sv-watch.sh` alone is
+#   * one script per run, driven by sv-watch.timer, so `sv-watch.sh` alone is
 #     a testable single shot.
 set -u
 
@@ -32,7 +38,9 @@ set -u
 STATE="${STATE:-/run/sv-watch.state}"
 PENDING="${PENDING:-/run/sv-watch.http-pending}"
 ENDPOINTS="${ENDPOINTS:-/etc/sv-watch/http-endpoints}"
-NTFY="${NTFY:-http://127.0.0.1:8085/thinkcentre-alerts}"
+# UNUSED since 2026-10-12 (ntfy removed from the stack) - kept commented so
+# nobody re-reads the line above as a promise that alerts go somewhere.
+# NTFY="${NTFY:-http://127.0.0.1:8085/thinkcentre-alerts}"
 # Persistent outbox: an alert that cannot be delivered is WRITTEN HERE instead
 # of being lost. Deliberately not under /run - it has to survive the very
 # reboot whose alert it is holding (2026-10-09 08:52:39, docker DOWN, ntfy a
@@ -203,8 +211,17 @@ fi
 # DNSRESOLVER exists so this can be tested against a dead port, and exists
 # only for that.
 dnsname="$(date +%s%N).$$.example.com"
+# The `|| :` is load-bearing. writeShellApplication prepends `set -o errexit`
+# and `set -o pipefail` on top of this script's own `set -u`, and when the
+# resolver is actually down `dig` exits non-zero (no reply -> 9). With pipefail
+# that fails the whole pipeline, and a failing command substitution trips
+# errexit — so the script died here, the state file was never written, and no
+# down or recovery was reported. It aborted in precisely the one situation the
+# sweep exists to catch, and marked the unit failed while doing it. The `*)`
+# branch below turns the empty result into the "resolver is dead" signal, which
+# is what this line is for.
 dnsst=$(dig +time=3 +tries=1 @"${DNSRESOLVER:-127.0.0.1}" "$dnsname" A 2>/dev/null \
-        | sed -n 's/.*status: \([A-Z0-9]*\),.*/\1/p' | head -1)
+        | sed -n 's/.*status: \([A-Z0-9]*\),.*/\1/p' | head -1 || :)
 case "$dnsst" in
     NOERROR|NXDOMAIN) : ;;                      # upstream answered -> resolution works
     *)  new_pending="$new_pending dns:resolver"

@@ -2,10 +2,15 @@
 #
 # Why this lives here and not on the server: Mugdad's rule, 2026-10-11 —
 # *"i dont want thing that goes after i re install nix ok? this is the main
-# idea of nixos the same system comes back"*. The server is Void, so it cannot
-# own this declaratively; the flake is the source of truth and
-# `push-server-index` (modules/home/homepage.nix) ships the rendered page to
-# Caddy's docroot. **Add a service to `services` below, run
+# idea of nixos the same system comes back"*. CORRECTED 2026-10-13: the
+# premise under that quote was "the server is Void, so it cannot own this
+# declaratively" — the server has been NixOS since that day's migration
+# (decisions.md row 78), so that half of the argument is gone. The page stays
+# here anyway, for the other half: the count is meant to follow the nix list,
+# and a page generated from the same `services` value below cannot drift from
+# it the way hand-written HTML does. `push-server-index` (modules/home/
+# homepage.nix) ships the rendered page to Caddy's docroot. **Add a service to
+# `services` below, run
 # `push-server-index`, and the index matches reality again** — the old
 # hand-written `~/Projects/servers/caddy/index.html` had already drifted: it
 # was missing `study` (added today) and still advertised the whatsapp-bridge
@@ -71,7 +76,7 @@ in
     <table>
     ${concatStringsSep "\n" (map row sorted)}
     </table>
-    <p class="m">tailscaled runs as a system service (<b>/etc/sv/tailscaled</b>), no web ui.</p>
+    <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
     <hr>
     <p class="m">blocky is dns on <b>127.0.0.1:53</b>, loopback only &mdash; never web-published.</p>
   ''

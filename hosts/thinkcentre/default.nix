@@ -130,20 +130,31 @@
   # no equivalent for. Exactly one of the two may be enabled.
   services.timesyncd.enable = true;
 
-  # sshd posture — OPEN ON THE LAN FOR NOW, and deliberately so.
-  # modules/core/sshd.nix restricts ssh to tailscale0 only. That is right for
-  # the laptop, but on a headless box it is a lockout risk during migration:
-  # there is NO tailscale auth key on this node (verified 2026-10-12), so if
-  # /var/lib/tailscale is lost or restored after tailscaled first starts, the
-  # node re-registers with a NEW IP and tailnet-only ssh leaves no path in at
-  # all. Keep the LAN path until tailscale has survived two cold boots, then
-  # tighten it here.
+  # sshd posture — OPEN ON THE LAN, and deliberately so.
+  #
+  # CORRECTED 2026-10-13: this comment used to say "modules/core/sshd.nix
+  # restricts ssh to tailscale0 only", which stopped being true when core grew
+  # `openFirewall = true` (commits 80af767 / dea0dbd). Core now opens :22 on
+  # EVERY interface for BOTH hosts, so the services.openssh.enable below is
+  # redundant — core already turns sshd on. The LAN path is being kept on
+  # purpose, not tightened away, and the reason still holds: there is no
+  # tailscale auth key on this node, so if /var/lib/tailscale is ever lost or
+  # restored after tailscaled first starts, the node re-registers under a NEW
+  # IP and a tailnet-only policy would leave no path in at all. It has now
+  # survived cold boots, so if this is ever revisited the knob is
+  # openFirewall in modules/core/sshd.nix, not anything here.
   services.openssh.enable = true;
 
-  # The whole Void house runs on `sudo -n` with a passwordless void — the
-  # backup script, every sv op. NixOS defaults wheel to prompt, which on a
-  # passwordless account means sudo is simply impossible (caught in the first
-  # guest rehearsal: poweroff denied). core/security.nix sets true for t480s.
+  # Passwordless sudo for wheel, so `sudo -n` works everywhere: the backup
+  # script, every sv op, and every agent session on a box with nobody at a
+  # keyboard.
+  #
+  # CORRECTED 2026-10-13: the comment here claimed "core/security.nix sets true
+  # for t480s". It does not — modules/core/security.nix sets
+  # wheelNeedsPassword = false for every host, with no mkDefault, so this line
+  # is belt-and-braces rather than an override. Kept because it states the
+  # intent for a headless box where a password prompt is a lockout, and because
+  # dropping it would silently depend on core never changing its mind.
   security.sudo.wheelNeedsPassword = lib.mkForce false;
 
   # Replaces Void's zramen runit unit (4 GiB, lz4, prio 100). zramSwap is

@@ -52,6 +52,13 @@
       coreutils
       gnused
       gnugrep
+      gawk # REQUIRED, not optional. sv-watch.sh pipes `systemctl
+      # list-unit-files` into awk. writeShellApplication puts these on PATH and
+      # nothing else does: the unit sets no `path =`, so the script otherwise
+      # inherits systemd's manager PATH, which has no gawk on it. Without this
+      # entry the command fails with "awk: not found", the loop body never runs
+      # and the whole unit sweep reports "checked 0 units" every 60 s — a
+      # monitor that silently checks nothing, which is worse than no monitor.
       inetutils # hostname — NOT in NixOS's default path
       systemd # systemctl
     ];
