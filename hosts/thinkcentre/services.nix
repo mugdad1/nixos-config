@@ -121,7 +121,12 @@ in {
         "HOME=/home/${username}"
         "USER=${username}"
         "LOGNAME=${username}"
-        "PATH=${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
+        # bash FIRST: npm runs install scripts with `spawn sh`, and sh was in
+        # none of these directories — the bot died every start with
+        # "npm error enoent spawn sh ENOENT" (exit 254). pkgs.bash/bin carries
+        # both bash and sh. Without it npx resolves fine (nodejs/bin) but the
+        # package it fetches cannot run its own lifecycle script.
+        "PATH=${pkgs.bash}/bin:${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
       ];
       ExecStartPre = waitOpencode;
       # Kept as an imperative path on purpose: the wrapper does
