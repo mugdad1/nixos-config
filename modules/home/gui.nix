@@ -20,7 +20,7 @@
       onlyoffice-desktopeditors
       filen-desktop
       libreoffice-stable
-      clickup
+      # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
       ## System / Utility
       qbittorrent
       gnome-disk-utility

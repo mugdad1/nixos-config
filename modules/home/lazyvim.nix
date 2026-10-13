@@ -24,7 +24,10 @@
     unzip
     curl
     wget
-    cargo
+    # cargo  # DISABLED 2026-10-13 on his word: no Rust. This was here so
+    # LazyVim's rust tooling (rustacevim etc.) had cargo on PATH; with the
+    # toolchain in core/rust.nix off it had nothing to drive, so it goes too.
+    # Commented out, not deleted — uncomment to re-enable.
   ];
 
   # ~/.config/nvim is a writable copy of the repo source
