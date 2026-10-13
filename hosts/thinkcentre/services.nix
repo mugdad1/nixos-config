@@ -111,6 +111,18 @@ in {
   # preserving. After= only orders; the ExecStartPre covers readiness.
   systemd.services.opencode-telegram = {
     description = "opencode-telegram bot (waits for the OpenCode API)";
+    # Until ~/.config/opencode-telegram-bot/.env exists the bot cannot run: with
+    # no config it launches an interactive wizard and dies with
+    #   "CLI error: Interactive wizard requires a TTY terminal"
+    # (exit 1), and Restart=always turns that into a crash loop every 10 s that
+    # also leaves the unit in `systemctl --failed`.
+    #
+    # The token is NOT recoverable from the backup — backup-run.sh's SOURCES
+    # never included .config, so no snapshot holds it. It has to be re-issued
+    # from @BotFather and written to that path. ConditionPathExists skips the
+    # unit cleanly until then: status reads "condition failed", it stays out of
+    # --failed, and it starts by itself the moment the file lands — no rebuild.
+    unitConfig.ConditionPathExists = "/home/${username}/.config/opencode-telegram-bot/.env";
     wantedBy = ["multi-user.target"];
     wants = ["opencode-serve.service"];
     after = ["opencode-serve.service"];
