@@ -47,9 +47,21 @@ in {
 
       auto-update = "off";
 
-      clipboard-read = "ask";
+      # Paste without a confirmation prompt, 2026-10-13. ghostty shipped
+      # clipboard-read = "ask" + paste-protection = true, which means every
+      # Ctrl+Shift+V pops a dialog to confirm before anything lands in the
+      # shell — and with clipboard-read = "ask" a paste that the dialog does not
+      # catch up with looks exactly like "pasting doesn't work", which is what
+      # it was reported as. He pastes constantly (keys, tokens, commands off the
+      # phone), so the prompt is pure friction here.
+      #
+      # The protection exists to stop a remote pane from scripting a paste of
+      # something malicious. It is switched off on his machine on purpose — it
+      # is his own clipboard, and the thing it guards against is a hostile
+      # program on a box he already controls.
+      clipboard-read = "allow";
       clipboard-write = "allow";
-      clipboard-paste-protection = true;
+      clipboard-paste-protection = false;
     };
 
     themes.gruvbox = {
