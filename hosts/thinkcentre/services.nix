@@ -68,9 +68,17 @@ in {
     serviceConfig = {
       Type = "simple";
       User = username;
-      Group = username;
-      # HOME matters: opencode resolves its state under it, and running as root
-      # would look in /root instead (the donor used chpst -u void for this).
+      # NO `Group =` here, on purpose. It used to be `Group = username`, which
+      # crashed the unit at every start: NixOS gives a normal user the primary
+      # group `users` and does NOT create a group matching the username, so
+      # `Group = "mugdad"` resolved to nothing — journal showed
+      # "Failed to determine credentials for group 'mugdad': Unknown group",
+      # exit 216/GROUP, and because a unit was failing, switch-to-configuration
+      # exited 4 and the whole `nixos-rebuild switch` reported failure.
+      # With Group= omitted, systemd uses the user's primary group (`users`),
+      # which always exists. HOME matters: opencode resolves its state under it,
+      # and running as root would look in /root instead (the donor used chpst -u
+      # void for this).
       Environment = [
         "HOME=/home/${username}"
         "USER=${username}"
