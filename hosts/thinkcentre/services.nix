@@ -14,7 +14,7 @@
 # systemd's default IS the journal, so the correct port is to DELETE the
 # redirect: `journalctl -u <name> -f -b`. Set journald persistent below so it
 # survives reboot the way those .log files did.
-{pkgs, username, ...}: let
+{config, pkgs, username, ...}: let
   # opencode v2 via the sst/opencode overlay (modules/core/opencode.nix).
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
@@ -63,6 +63,21 @@
       systemd # systemctl
     ];
     text = builtins.readFile ./sv-watch.sh;
+  };
+
+  # ─── docker-stack — the compose launcher ────────────────────────────────────
+  # The one thing `nixos-rebuild` could not bring back after the migration: 13
+  # compose projects / 18 containers live as FILES under ~/Projects/servers, so
+  # a reinstall restored them and started none of them. See the long header in
+  # ./docker-stack.sh for why they were kept as compose rather than nixified.
+  dockerStack = pkgs.writeShellApplication {
+    name = "docker-stack";
+    runtimeInputs = with pkgs; [
+      docker
+      coreutils
+      gnugrep # `grep -qx` for the DISABLED list
+    ];
+    text = builtins.readFile ./docker-stack.sh;
   };
 in {
   # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
@@ -118,24 +133,45 @@ in {
   # preserving. After= only orders; the ExecStartPre covers readiness.
   systemd.services.opencode-telegram = {
     description = "opencode-telegram bot (waits for the OpenCode API)";
-    # Until ~/.config/opencode-telegram-bot/.env exists the bot cannot run: with
-    # no config it launches an interactive wizard and dies with
+    # Until sops-nix has rendered the config the bot cannot run: with no config
+    # it launches an interactive wizard and dies with
     #   "CLI error: Interactive wizard requires a TTY terminal"
     # (exit 1), and Restart=always turns that into a crash loop every 10 s that
     # also leaves the unit in `systemctl --failed`.
     #
-    # The token is NOT recoverable from the backup — backup-run.sh's SOURCES
-    # never included .config, so no snapshot holds it. It has to be re-issued
-    # from @BotFather and written to that path. ConditionPathExists skips the
-    # unit cleanly until then: status reads "condition failed", it stays out of
-    # --failed, and it starts by itself the moment the file lands — no rebuild.
-    unitConfig.ConditionPathExists = "/home/${username}/.config/opencode-telegram-bot/.env";
+    # CHANGED 2026-10-13. This used to guard
+    # ~/.config/opencode-telegram-bot/.env, and that path was the blocker for
+    # days: the token existed but was in no snapshot, because backup-run.sh's
+    # SOURCES never included .config, so it had to be re-issued from @BotFather
+    # and written by hand. Two things made that the wrong home for it. It is
+    # outside the flake, so a reinstall would not restore it — the exact failure
+    # the whole migration is about. And the repo is public, so a hand-written
+    # .env sits one careless `git add -A` or `git add .` away from being
+    # published. The config is now a sops template (./secrets.nix), encrypted in
+    # the repo and rendered at activation; see that file for the full reasoning.
+    #
+    # The condition is retained, and still means the same thing: until the file
+    # exists the unit is skipped cleanly rather than failed — status reads
+    # "condition failed", it stays out of --failed, and it starts by itself the
+    # moment the file lands. Ordering on sops-install-secrets matters: that unit
+    # runs before sysinit.target, and without an explicit `after` there is no
+    # guarantee the render happened before this condition is evaluated.
+    unitConfig.ConditionPathExists =
+      config.sops.templates."opencode-telegram.env".path;
     wantedBy = ["multi-user.target"];
     wants = ["opencode-serve.service"];
-    after = ["opencode-serve.service"];
+    after = [
+      "opencode-serve.service"
+      "sops-install-secrets.service"
+    ];
     serviceConfig = {
       Type = "simple";
       User = username;
+      # The rendered config. EnvironmentFile, not Environment: the values are
+      # secrets, so they belong in a file owned by `username` at 0400 that
+      # systemd reads directly, rather than being expanded into the unit's
+      # Environment= list where `systemctl show` would print them back.
+      EnvironmentFile = [config.sops.templates."opencode-telegram.env".path];
       Environment = [
         "HOME=/home/${username}"
         "USER=${username}"
@@ -182,6 +218,43 @@ in {
       ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/Projects/study/scripts/serve.py 8091 0.0.0.0";
       Restart = "always";
       RestartSec = "5s";
+    };
+  };
+
+  # The unit half of the launcher defined above.
+  #
+  # Ordering: Requires/After docker.service (a launcher that runs before the
+  # daemon exists would fail every boot), but wantedBy multi-user.target so it
+  # is a plain part of "the machine is up". Type=oneshot + RemainAfterExit
+  # makes `systemctl status docker-stack` show the LAST run's exit code, which
+  # is what makes a failed project visible instead of scrolling past.
+  #
+  # Runs as `username`, not root: the user is in the docker group, and
+  # docker compose reads ~/Projects/servers/.env files whose owner is that
+  # user. Running as root would work too but would rewrite the bind-mounted
+  # files' ownership to root on the first `up`, which is a slow-motion
+  # permission bug waiting for a later hand-edit.
+  systemd.services.docker-stack = {
+    description = "Bring the compose stack under ~/Projects/servers up";
+    # Requires, not just wants: if dockerd is genuinely dead there is nothing
+    # to launch and the failure should be dockerd's, not a confusing
+    # "docker: not found" from this unit.
+    requires = ["docker.service"];
+    after = ["docker.service"];
+    wantedBy = ["multi-user.target"];
+    unitConfig = {
+      # Re-run on every boot. `ConditionPathExists` guards the directory so a
+      # box that has never had the stack restored skips cleanly instead of
+      # landing in --failed on first install.
+      ConditionPathExists = "/home/${username}/Projects/servers";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = username;
+      WorkingDirectory = "/home/${username}/Projects/servers";
+      ExecStart = "${dockerStack}/bin/docker-stack";
+      TimeoutStartSec = "15min"; # first boot pulls 13 images, that is minutes
     };
   };
 

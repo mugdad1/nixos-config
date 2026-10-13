@@ -3,3 +3,22 @@ result-*
 .direnv
 .envrc
 *.qcow2
+
+# ── secrets ──────────────────────────────────────────────────────────────────
+# Never commit a PRIVATE key or an unencrypted secret. The public age recipient
+# key in .sops.yaml and the ENCRYPTED files under secrets/ are meant to be
+# committed — those are safe by construction. This block is the backstop for
+# the things that are not: an age identity, a .env written by hand, a token
+# pasted into a scratch file during a session.
+.sops/
+age/
+keys.txt
+*.agekey
+*.pem
+id_rsa
+id_ed25519
+!id_ed25519.pub
+.env
+.env.*
+!.env.example
+secrets/*.dec.*

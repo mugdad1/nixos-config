@@ -38,6 +38,11 @@
     # never imported.
     ./backup.nix
     ./services.nix
+    # sops-nix wiring. Host-specific on purpose: the secrets FILE is
+    # secrets/thinkcentre.sops.yaml, so importing this into modules/core would
+    # hand the laptop a server secret path. Listed explicitly for the reason
+    # written above — a directory module does not sweep up its siblings.
+    ./secrets.nix
   ];
 
   # NixOS's default /boot, which is where this box actually mounts the ESP

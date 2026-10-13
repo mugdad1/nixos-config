@@ -36,6 +36,16 @@
       url = "github:sst/opencode";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Secrets. The repo is PUBLIC (github.com/mugdad1/nixos-config), so a
+    # credential can never be written inline in Nix — see .sops.yaml for the
+    # full reasoning. sops-nix decrypts at activation with an age key that
+    # never enters git, which keeps secrets declarative (they survive a
+    # reinstall) without publishing them.
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -53,6 +63,7 @@
         nixpkgs.lib.nixosSystem {
           modules = [
             ./hosts/${host}
+            inputs.sops-nix.nixosModules.sops
           ];
           specialArgs = {
             inherit host inputs variables;
