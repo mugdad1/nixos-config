@@ -133,6 +133,54 @@
     # host from `hostname`, so it resolves to #thinkcentre here and #t480s on
     # the laptop with no branch in the script.
     (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
+
+    # ── server baseline, added 2026-10-13 ───────────────────────────────────
+    # modules/home/cli.nix carries most of these on the laptop, but it is a
+    # *home-manager* module (home.packages / programs.*) and this host is
+    # headless, so it imports modules/core only and never sees that file. The
+    # desktop half of cli.nix (brightnessctl, playerctl, wl-clipboard, udiskie,
+    # poweralertd, pamixer, swappy…) is deliberately not mirrored here. This is
+    # the headless-useful subset plus the box-admin tools it needs.
+
+    git # THE missing one. This host is a git server — wiki, study and
+    # nixos-config all live here and get pulled/pushed. Without this the repos
+    # were unrunnable. It never came in because the laptop gets git from
+    # home-manager (modules/home/git.nix → programs.git), not systemPackages.
+
+    # ── pulled across from modules/home/cli.nix (headless-useful only) ──────
+    eza # ls
+    fd # find (fzf's backend)
+    ripgrep-all # rga — grep inside pdfs/zips; useful for the study corpus
+    file
+    tree
+    wget
+    unzip
+    zip
+    p7zip
+    ncdu # disk usage analyzer — this box has 3 filesystems to watch
+    duf # df
+    dust # du
+    tealdeer # tldr
+    glow # render markdown in the terminal (wiki / study notes)
+    entr # run a command on file change
+    killall
+    strace
+    socat
+    binutils # objdump/strings/nm — for debugging containers & bins
+    just # command runner
+
+    # ── box admin: hardware + disks ─────────────────────────────────────────
+    smartmontools # SMART health for the ADATA + root drives
+    gptfdisk # sgdisk — partition tables
+    parted
+    hdparm
+    lsof
+    htop
+    btop # cli.nix sets it up via programs.btop; here plain pkgs.btop
+    lazygit # same — programs.lazygit on the laptop, bare package here
+    iotop
+    mtr
+    traceroute
   ];
 
   # hostname comes from core/network.nix: networking.hostName = host = "thinkcentre".
