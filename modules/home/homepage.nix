@@ -13,9 +13,9 @@
   # the existing inode instead, which is the whole trick here.
   deploy = pkgs.writeShellScriptBin "push-server-index" ''
     set -eu
-    rsync -L --inplace --verbose ${index} void@100.97.91.119:Projects/servers/caddy/index.html
+    rsync -L --inplace --verbose ${index} void@100.124.75.45:Projects/servers/caddy/index.html
     echo "--- verifying the container serves the new bytes:"
-    curl -s --max-time 8 http://100.97.91.119/ | grep -c "href=" | sed 's/^/links served: /'
+    curl -s --max-time 8 http://100.124.75.45/ | grep -c "href=" | sed 's/^/links served: /'
   '';
 in {
   # The same page, readable locally too — useful when the tailnet is down and

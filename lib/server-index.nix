@@ -12,7 +12,7 @@
 # line that was deleted on 2026-10-08.
 {
   g ? import ./gruvbox.nix,
-  host ? "http://100.97.91.119",
+  host ? "http://100.124.75.45",
 }: let
   inherit (builtins) concatStringsSep filter map;
   optionalString = cond: str: if cond then str else "";
@@ -66,7 +66,7 @@ in
      tr:first-child a{color:#${c.bright_yellow};font-weight:700}
      hr{border:0;border-top:1px solid #${c.bg2};margin:26px 0}
     </style>
-    <h1>mugdad &mdash; 100.97.91.119</h1>
+    <h1>mugdad &mdash; 100.124.75.45</h1>
     <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand, run <b>push-server-index</b> instead.</p>
     <table>
     ${concatStringsSep "\n" (map row sorted)}

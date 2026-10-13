@@ -35,7 +35,7 @@ in {
         Fingerprinting = true;
       };
 
-      # Caddy's service index on the ThinkCentre (`http://100.97.91.119/`),
+      # Caddy's service index on the ThinkCentre (`http://100.124.75.45/`),
       # not SearXNG — his pick 2026-10-11: links and a search box in one
       # place doesn't work, because SearXNG's homepage template renders only
       # a title and the search box (no tile grid; custom shortcuts exist
@@ -47,7 +47,7 @@ in {
       # clicks "Continue with http" — the exception sticks in
       # permissions.sqlite.
       Homepage = {
-        URL = "http://100.97.91.119/";
+        URL = "http://100.124.75.45/";
         StartPage = "homepage";
         Locked = false;
       };
@@ -121,7 +121,7 @@ in {
         "media.autoplay.default" = 5;
         "media.autoplay.blocking_policy" = 2;
       };
-      # SearXNG on the ThinkCentre (`http://100.97.91.119:8888`, stack entry
+      # SearXNG on the ThinkCentre (`http://100.124.75.45:8888`, stack entry
       # 13) over the tailnet, as the address-bar search engine. Declared as a
       # real engine here rather than through `policies.SearchEngines`, so the
       # two policy blocks can't fight over which one owns the default. The
@@ -133,11 +133,11 @@ in {
           "SearXNG" = {
             urls = [
               {
-                template = "http://100.97.91.119:8888/search";
+                template = "http://100.124.75.45:8888/search";
                 params = [{name = "q"; value = "{searchTerms}";}];
               }
             ];
-            icon = "http://100.97.91.119:8888/static/themes/simple/img/favicon.png";
+            icon = "http://100.124.75.45:8888/static/themes/simple/img/favicon.png";
             definedAliases = ["@sx"];
           };
         };
