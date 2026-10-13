@@ -29,10 +29,19 @@
     openFirewall = true;
 
     settings = {
-      # Key-only. A password on an internet-adjacent daemon is a thing to guess
-      # at; a 256-bit ed25519 key is not. There is already a key on this box
-      # (~/.ssh/id_ed25519), so key-only does not lock anyone out.
-      PasswordAuthentication = false;
+      # PASSWORD AUTH, 2026-10-13, on his word ("fix it allow sshing with
+      # password"). This reverses the earlier key-only decision: the ThinkCentre
+      # install left no key in authorized_keys and he wanted to log in from the
+      # LAN without the one-time key paste, so PasswordAuthentication is on.
+      #
+      # Tradeoff, stated once and not argued: :22 is open to the whole wifi (see
+      # openFirewall below) and now accepts passwords, so the daemon is only as
+      # strong as the password. Root stays locked out and only his account is
+      # reachable, which is the part still worth keeping. To go back to keys,
+      # flip this to false and drop the key in ~/.ssh/authorized_keys.
+      PasswordAuthentication = true;
+      # Passwords only — keyboard-interactive prompts can be scripted around by
+      # some clients and adds nothing here once passwords are accepted.
       KbdInteractiveAuthentication = false;
       PermitRootLogin = "no";
 
