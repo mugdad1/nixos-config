@@ -106,6 +106,7 @@
     ripgrep
     vim
     rsync
+git
     docker-compose
     # sv-watch's DNS sweep shells out to dig; not in NixOS's default path.
     # (pkgs.dnsutils provides dig — there is no pkgs.dig.)
