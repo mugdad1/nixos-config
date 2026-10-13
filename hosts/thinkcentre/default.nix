@@ -12,9 +12,14 @@
   ...
 }: {
   imports = [
-    # Hand-built from the live Void install and independently verified against
-    # the box (blkid / findmnt / lsblk, 2026-10-12): root btrfs 839da341…,
-    # ESP 646D-44FB at /boot/efi, backup btrfs 67dc44db… on the ADATA.
+    # REGENERATED ON THE BOX 2026-10-13 (commit 1c7883d) with
+    # `nixos-generate-config --show-hardware-config`. It now describes the real
+    # layout — root ext4 93ea1189… on sdb2, ESP 6D92-B60A at /boot, sdb3 swap —
+    # instead of the hand-built Void/donor layout it used to carry (root btrfs
+    # 839da341…, ESP 646D-44FB at /boot/efi), which would have mounted nothing
+    # on a reinstall and kernel-panicked.
+    # /srv/backup is deliberately NOT in that file — see the fileSystems entry
+    # further down for why it cannot survive regeneration there.
     # Regenerate with nixos-generate-config at install time and diff.
     ./hardware-configuration.nix
     ../../modules/core
@@ -35,9 +40,11 @@
     ./services.nix
   ];
 
-  # The ESP is mounted at /boot/efi on this disk (donor's layout), not NixOS's
-  # default /boot. Wrong here and systemd-boot writes to a directory that is
-  # not the ESP — the machine then boots the old Void GRUB and "nothing happened".
+  # NixOS's default /boot, which is where this box actually mounts the ESP
+  # (/dev/disk/by-uuid/6D92-B60A on sdb1 — matches fstab). The donor Void
+  # layout put it at /boot/efi; if this value ever drifts from the fstab entry,
+  # systemd-boot writes to a directory that is not the ESP and the machine
+  # silently boots whatever was there before ("nothing happened").
   boot.loader.efi.efiSysMountPoint = "/boot";
 
   # Headless: no games, no Wine, hence no 32-bit Mesa. modules/core/hardware.nix
@@ -54,14 +61,29 @@
   # disabled scrubbing on the t480s, whose root is btrfs and needs it. An
   # override here leaves the laptop untouched.
   #
-  # NOTE (2026-10-13): hardware-configuration.nix still declares the root and
-  # /srv/backup as fsType = "btrfs" with the donor's UUIDs (839da341… /
-  # 67dc44db…), which was hand-verified against the Void install on 2026-10-12.
-  # That file is now stale relative to an ext4 layout, and it is NOT edited
-  # here on purpose: the real UUIDs only exist on the box itself. Regenerate it
-  # with nixos-generate-config at install time and diff. Hand-writing ext4
-  # entries from the ThinkPad would ship a config with wrong UUIDs, and the
-  # machine would boot to a kernel panic.
+  # hardware-configuration.nix was REGENERATED on the box 2026-10-13 (see the
+  # note above the imports). The stale donor/btrfs UUIDs are gone from it. It is
+  # still never edited by hand here: the real UUIDs only exist on the box itself,
+  # and hand-writing entries from the ThinkPad would ship wrong UUIDs and panic
+  # at boot. Regenerate with nixos-generate-config and diff.
+  #
+  # Root is ext4, so the weekly scrub in modules/core/system.nix has no root
+  # filesystem to act on — hence mkForce off, same override shape as
+  # enable32Bit above. Scoped to THIS host: core enables it unconditionally, and
+  # the t480s root IS btrfs and needs it. Commenting it out in core would have
+  # silently disabled scrubbing on the laptop.
+  #
+  # OPEN (2026-10-13): /srv/backup IS btrfs — a backup disk that silently rots
+  # is exactly where scrubbing matters most. To scrub it weekly instead of not
+  # at all, replace the next line with:
+  #   services.btrfs.autoScrub = {
+  #     enable = true;
+  #     fileSystems = ["/srv/backup"];
+  #     interval = "weekly";
+  #   };
+  # Left alone deliberately: autoScrub.fileSystems evaluates to ["/"] on the
+  # t480s but [] here, and nothing in this repo sets it — so flipping enable
+  # without also naming the mount would be a guess about what gets scrubbed.
   services.btrfs.autoScrub.enable = lib.mkForce false;
 
   # Docker engine only. The 12 compose projects live in ~/Projects/servers and
@@ -70,10 +92,23 @@
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
 
-  # /srv/backup is declared in hardware-configuration.nix with nofail, so a
-  # missing disk skips the mount instead of hanging boot — same as the donor's
-  # runit unit, without the unit. Do NOT also port a backup-mount service:
-  # two mounters racing the same UUID is how the donor double-mounted it.
+  # /srv/backup — the ADATA SP550, btrfs, labelled "backup".
+  #
+  # MOVED HERE from hardware-configuration.nix on 2026-10-13. It used to live in
+  # that file, but nixos-generate-config only reports filesystems that are in the
+  # LIVE fstab — and this one never is, because it is exactly the entry that
+  # makes it. So regenerating on the box silently dropped it, backup-daily started
+  # failing every night with "/srv/backup is not mounted", and sda sat unmounted.
+  # Declaring it on the host means it survives every future regeneration.
+  #
+  # nofail: a missing disk skips the mount instead of hanging boot — same as the
+  # donor's fstab. Do NOT also port a backup-mount service: two mounters racing
+  # the same UUID is how the donor double-mounted it.
+  fileSystems."/srv/backup" = {
+    device = "/dev/disk/by-uuid/67dc44db-b497-44e0-b45c-a70050558dd3";
+    fsType = "btrfs";
+    options = ["defaults" "nofail"];
+  };
 
   # Time. The CMOS battery was removed 2026-10-04, so every AC-cut boot starts
   # at 2015-01-01 until NTP steps it (measured 10–20 s typical, >120 s once).
