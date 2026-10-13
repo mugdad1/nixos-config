@@ -4,10 +4,17 @@ set -euo pipefail
 
 CURRENT_USERNAME=$(whoami)
 
-RESET=$(tput sgr0)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-BLUE=$(tput setaf 4)
+# Colour setup. These used to be bare `tput` calls, which meant the installer
+# died instantly over ssh from kitty or ghostty: those set TERM=xterm-kitty /
+# xterm-ghostty, a fresh box has no terminfo entry for either, tput exits
+# non-zero, and `set -e` above aborts before a single line of output. The
+# terminal itself still renders plain ANSI regardless of terminfo, so the
+# fallback is the raw escape sequence — colour keeps working, and the script
+# no longer depends on the terminfo database being present.
+RESET=$(tput sgr0 2>/dev/null || printf '\033[0m')
+RED=$(tput setaf 1 2>/dev/null || printf '\033[31m')
+GREEN=$(tput setaf 2 2>/dev/null || printf '\033[32m')
+BLUE=$(tput setaf 4 2>/dev/null || printf '\033[34m')
 
 OK="[${GREEN}OK${RESET}]\t"
 INFO="[${BLUE}INFO${RESET}]\t"
