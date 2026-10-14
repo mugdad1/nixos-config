@@ -29,7 +29,11 @@
     {name = "study"; port = "8091"; desc = "the study PWA — chapters, glossary, day entries"; first = true;}
     {name = "immich"; port = "2283"; desc = "photos &amp; video backup";}
     {name = "jellyfin"; port = "8096"; desc = "media server";}
-    {name = "vaultwarden"; port = "8082"; desc = "password manager";}
+    # `url` overrides the generated host:port link — the vault is HTTPS-only
+    # (web vault needs a secure context, decisions.md row 86) and reachable
+    # only through tailscale serve, so its plain :8082 link would just throw
+    # the Subtle Crypto error again.
+    {name = "vaultwarden"; port = "8082"; desc = "password manager"; url = "https://thinkcentre.tailbc99bb.ts.net"; note = "tailnet https";}
     {name = "gitea"; port = "3000"; desc = "git, self-hosted"; note = "ssh :2222";}
     # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
     # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
@@ -55,7 +59,12 @@
     (filter (s: s.first or false) services)
     ++ (filter (s: !(s.first or false)) services);
 
-  row = s: ''<tr><td><a href="${host}:${s.port}">${s.name}</a></td><td>${s.desc}</td><td class="m">:${s.port}${optionalString (s ? note) " ${s.note}"}</td></tr>'';
+  # `url` wins over the generated host:port when an entry needs an absolute
+  # link (vaultwarden → tailscale HTTPS, see its entry above).
+  row = s: let
+    href = s.url or "${host}:${s.port}";
+  in
+    ''<tr><td><a href="${href}">${s.name}</a></td><td>${s.desc}</td><td class="m">:${s.port}${optionalString (s ? note) " ${s.note}"}</td></tr>'';
 in
   ''
     <!doctype html>
