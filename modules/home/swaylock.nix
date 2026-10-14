@@ -1,9 +1,15 @@
-{config, ...}: let
+{config, pkgs, ...}: let
   g = import ../../lib/gruvbox.nix;
   raw = g.raw;
 in {
   programs.swaylock = {
     enable = true;
+    # swaylock-effects, not vanilla swaylock — the settings below use
+    # `fade-in` and `grace`, which vanilla 1.8.6 rejects as unrecognized
+    # options (seen in the log 2026-10-14: "unrecognized option
+    # '--fade-in=0.200000'"), so the lock command never even started.
+    # effects 1.7.0.0 ships both flags (verified via --help).
+    package = pkgs.swaylock-effects;
     settings = {
       color = raw.bg0_h;
       image = "${config.home.homeDirectory}/Pictures/wallpapers/wallpaper";
