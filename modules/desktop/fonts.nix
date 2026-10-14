@@ -50,7 +50,7 @@
 
       (pkgs.stdenv.mkDerivation {
         name = "century-schoolbook";
-        src = ../../fonts;
+        src = ../../assets/fonts;
         installPhase = ''
           mkdir -p $out/share/fonts/truetype
           cp *.TTF $out/share/fonts/truetype/

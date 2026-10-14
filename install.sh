@@ -82,7 +82,7 @@ sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${H
 
 echo -e "${INFO}Preparing environment"
 mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
-ln -sf "$PWD/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
+ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
 
 #--- Hardware config ---#
 

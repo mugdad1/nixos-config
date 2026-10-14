@@ -81,7 +81,7 @@
   };
 
   programs.lazygit = let
-    gl = (import ../../lib/gruvbox.nix).raw;
+    gl = (import ../../../lib/gruvbox.nix).raw;
     H = v: "#${v}";
   in {
     enable = true;

@@ -14,7 +14,12 @@
 # systemd's default IS the journal, so the correct port is to DELETE the
 # redirect: `journalctl -u <name> -f -b`. Set journald persistent below so it
 # survives reboot the way those .log files did.
-{config, pkgs, username, ...}: let
+{
+  config,
+  pkgs,
+  username,
+  ...
+}: let
   # opencode v2 via the sst/opencode overlay (modules/core/opencode.nix).
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
@@ -62,14 +67,15 @@
       inetutils # hostname — NOT in NixOS's default path
       systemd # systemctl
     ];
-    text = builtins.readFile ./sv-watch.sh;
+    text = builtins.readFile ../../scripts/thinkcentre/sv-watch.sh;
   };
 
   # ─── docker-stack — the compose launcher ────────────────────────────────────
   # The one thing `nixos-rebuild` could not bring back after the migration: 13
   # compose projects / 18 containers live as FILES under ~/Projects/servers, so
   # a reinstall restored them and started none of them. See the long header in
-  # ./docker-stack.sh for why they were kept as compose rather than nixified.
+  # ../../scripts/thinkcentre/docker-stack.sh for why they were kept as compose
+  # rather than nixified.
   dockerStack = pkgs.writeShellApplication {
     name = "docker-stack";
     runtimeInputs = with pkgs; [
@@ -77,7 +83,7 @@
       coreutils
       gnugrep # `grep -qx` for the DISABLED list
     ];
-    text = builtins.readFile ./docker-stack.sh;
+    text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
   };
 in {
   # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
@@ -266,7 +272,7 @@ in {
   # instance of an active service — the same serialization the sleep gave.
   # AccuracySec matters: the default is 1 min, which would smear/alias a 60 s
   # cadence into something erratic.
-  environment.etc."sv-watch/http-endpoints".text = builtins.readFile ./http-endpoints;
+  environment.etc."sv-watch/http-endpoints".text = builtins.readFile ../../scripts/thinkcentre/http-endpoints;
 
   systemd.services.sv-watch = {
     description = "Health sweep: units, containers, HTTP endpoints, DNS";

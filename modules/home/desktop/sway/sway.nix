@@ -12,7 +12,7 @@
   variables,
   ...
 }: let
-  g = (import ../../../lib/gruvbox.nix).raw;
+  g = (import ../../../../lib/gruvbox.nix).raw;
   hex = c: "#${c}";
 
   mod = "\$mod";

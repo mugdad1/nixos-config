@@ -1,6 +1,7 @@
 # Nightly 03:17 backup — port of the donor's runit pair
 # /etc/sv/backup-daily (a sleep-loop, because Void has no cron at all) plus
-# /usr/local/bin/backup-run.sh, which is carried verbatim as ./backup-run.sh.
+# /usr/local/bin/backup-run.sh, which is carried verbatim as
+# ../../scripts/thinkcentre/backup-run.sh.
 #
 #   runit while-loop + /var/log/backup-daily.log  ->  systemd.timer + journald
 #   wait_for_sane_clock()                          ->  wait-sane-clock ExecStartPre
@@ -16,7 +17,7 @@
 # systemd-time-wait-sync is not shipped), so that ordering gates nothing. It is
 # kept below as documentation of intent only.
 {pkgs, ...}: let
-  backupRun = pkgs.writeShellScriptBin "backup-run" (builtins.readFile ./backup-run.sh);
+  backupRun = pkgs.writeShellScriptBin "backup-run" (builtins.readFile ../../scripts/thinkcentre/backup-run.sh);
 
   # SKIP, DON'T PROCEED. The donor's guard was best-effort: after 120 s it ran
   # anyway. That is actively dangerous here, because backup-run.sh rotates

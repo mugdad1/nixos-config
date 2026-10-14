@@ -1,5 +1,9 @@
-{config, pkgs, ...}: let
-  g = import ../../lib/gruvbox.nix;
+{
+  config,
+  pkgs,
+  ...
+}: let
+  g = import ../../../lib/gruvbox.nix;
   raw = g.raw;
 in {
   programs.swaylock = {

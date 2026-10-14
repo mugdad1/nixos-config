@@ -1,5 +1,5 @@
 {inputs, ...}: let
-  g = import ../../lib/gruvbox.nix;
+  g = import ../../../lib/gruvbox.nix;
   c = g.raw;
 in {
   imports = [inputs.zen-browser.homeModules.beta];
@@ -139,7 +139,12 @@ in {
             urls = [
               {
                 template = "http://100.124.75.45:8888/search";
-                params = [{name = "q"; value = "{searchTerms}";}];
+                params = [
+                  {
+                    name = "q";
+                    value = "{searchTerms}";
+                  }
+                ];
               }
             ];
             icon = "http://100.124.75.45:8888/static/themes/simple/img/favicon.png";

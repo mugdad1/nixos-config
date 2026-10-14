@@ -8,8 +8,8 @@
 #   rust-bin.fromRustupToolchainFile  -> rustc + cargo + std, ~1 GB alone
 #   the rust-overlay input            -> the overlay that provides rust-bin
 #
-# The cargo-* / rust tooling in modules/home/dev.nix (lines 57-79) and the
-# `cargo` on PATH in modules/home/lazyvim.nix are ALSO commented out — they are
+# The cargo-* / rust tooling in modules/home/terminal/dev.nix (lines 57-79) and the
+# `cargo` on PATH in modules/home/terminal/lazyvim.nix are ALSO commented out — they are
 # separate packages that only make sense alongside a toolchain.
 {...}: {}
 #
@@ -26,3 +26,4 @@
 #     (rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml)
 #   ];
 # }
+

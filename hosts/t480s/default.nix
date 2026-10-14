@@ -70,7 +70,7 @@
   # ── ship the service index to Caddy ────────────────────────────────────────
   #
   # WHY THIS IS A UNIT AND NOT A MANUAL COMMAND: lib/server-index.nix renders
-  # the page, modules/home/homepage.nix provides `push-server-index` to ship
+  # the page, modules/home/apps/homepage.nix provides `push-server-index` to ship
   # it, and nobody ever ran it. The flake was corrected to 100.124.75.45 and
   # the served page kept printing 100.97.91.119 — plus a /etc/sv/tailscaled
   # path that no longer exists — because those are bytes on the SERVER's disk
@@ -103,7 +103,7 @@
       ExecStart = "${pkgs.writeShellScript "push-server-index" ''
         set -eu
         # -L --inplace are load-bearing, and the comment belongs to
-        # modules/home/homepage.nix — read it there rather than duplicating
+        # modules/home/apps/homepage.nix — read it there rather than duplicating
         # the reasoning: Caddy has this file bind-mounted read-only, so only a
         # write-through of the existing inode is picked up without a restart.
         target=${username}@100.124.75.45:Projects/servers/caddy/index.html

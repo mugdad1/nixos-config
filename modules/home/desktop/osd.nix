@@ -1,6 +1,6 @@
 {pkgs, ...}: let
-  c = (import ../../lib/gruvbox.nix).css;
-  rgba = (import ../../lib/gruvbox.nix).hexToRgba;
+  c = (import ../../../lib/gruvbox.nix).css;
+  rgba = (import ../../../lib/gruvbox.nix).hexToRgba;
 in {
   home.packages = with pkgs; [swayosd];
 

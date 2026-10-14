@@ -1,5 +1,5 @@
 {pkgs, ...}: let
-  c = (import ../../lib/gruvbox.nix).css;
+  c = (import ../../../lib/gruvbox.nix).css;
 in {
   programs.bat = {
     enable = true;

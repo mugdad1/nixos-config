@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  c = (import ../../../lib/gruvbox.nix).css;
+  c = (import ../../../../lib/gruvbox.nix).css;
 in {
   home.packages = with pkgs; [fastfetch];
 

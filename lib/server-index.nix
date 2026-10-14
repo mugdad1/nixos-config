@@ -8,10 +8,10 @@
 # (decisions.md row 78), so that half of the argument is gone. The page stays
 # here anyway, for the other half: the count is meant to follow the nix list,
 # and a page generated from the same `services` value below cannot drift from
-# it the way hand-written HTML does. `push-server-index` (modules/home/
-# homepage.nix) ships the rendered page to Caddy's docroot. **Add a service to
-# `services` below, run
-# `push-server-index`, and the index matches reality again** — the old
+# it the way hand-written HTML does. `push-server-index` (see
+# modules/home/apps/homepage.nix) ships the rendered page to Caddy's docroot.
+# **Add a service to `services` below, run `push-server-index`, and the index
+# matches reality again** — the old
 # hand-written `~/Projects/servers/caddy/index.html` had already drifted: it
 # was missing `study` (added today) and still advertised the whatsapp-bridge
 # line that was deleted on 2026-10-08.

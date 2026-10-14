@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  c = (import ../../lib/gruvbox.nix).css;
+  c = (import ../../../lib/gruvbox.nix).css;
   defaultApps = {
     text = ["com.mitchellh.ghostty.desktop"];
     image = ["imv-dir.desktop"];
@@ -85,9 +85,9 @@ in {
   home.file."Pictures/wallpapers/others".source = pkgs.symlinkJoin {
     name = "wallpapers-others";
     paths = [
-      ../../wallpapers/otherWallpaper/gruvbox
-      ../../wallpapers/otherWallpaper/nixos
-      ../../wallpapers/otherWallpaper/thinkpad
+      ../../../assets/wallpapers/otherWallpaper/gruvbox
+      ../../../assets/wallpapers/otherWallpaper/nixos
+      ../../../assets/wallpapers/otherWallpaper/thinkpad
     ];
   };
 

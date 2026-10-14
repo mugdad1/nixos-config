@@ -1,10 +1,7 @@
-{
-  pkgs,
-  ...
-}: let
+{pkgs, ...}: let
   # One declaration, one render: lib/server-index.nix holds the ThinkCentre's
   # service list and produces the HTML. This module only ships it.
-  index = pkgs.writeText "server-index.html" (import ../../lib/server-index.nix {});
+  index = pkgs.writeText "server-index.html" (import ../../../lib/server-index.nix {});
 
   # scp would also do it, but rsync creates a temp file and renames it over the
   # target, which swaps the INODE — and Caddy has this file bind-mounted
@@ -21,7 +18,7 @@ in {
   # The same page, readable locally too — useful when the tailnet is down and
   # the box is unreachable, and it is what push-server-index ships.
   home.file.".local/share/mugdad/server-index.html".text =
-    import ../../lib/server-index.nix {};
+    import ../../../lib/server-index.nix {};
 
   home.packages = [deploy];
 }
