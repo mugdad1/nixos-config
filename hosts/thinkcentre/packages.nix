@@ -40,6 +40,16 @@
     # the laptop with no branch in the script.
     (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
 
+    # ── added 2026-10-14 with the WhatsApp restore (decisions row 87) ────────
+    # The whatsapp-mcp server shells out to ffmpeg for audio conversion and
+    # video previews (audio.py / media_preview.py); without it those tools
+    # refuse and downloaded videos cannot be cut into readable frames. This is
+    # decisions.md row 38's second gap, the one `xbps-install ffmpeg` closed on
+    # Void. systemPackages rather than a `nix profile add` so a reinstall brings
+    # it back with the rest of the box (the imperative copy installed first,
+    # while bringing the stack up, was dropped once this line landed).
+    ffmpeg
+
     # ── server baseline, added 2026-10-13 ───────────────────────────────────
     # modules/home/terminal/cli.nix carries most of these on the laptop, but it
     # is a *home-manager* module (home.packages / programs.*) and this host is

@@ -227,6 +227,58 @@ in {
     };
   };
 
+  # ─── WhatsApp bridge (whatsapp-mcp) ───────────────────────────────────────
+  # RESTORED 2026-10-14 on his *"also bring me back whatsapp watcher"* — this
+  # reverses the 2026-10-08 removal (wiki decisions rows 57 / 82) by his word
+  # today; the fork is gone, so the code is a fresh clone of upstream
+  # verygoodplugins/whatsapp-mcp at v0.7.0 (wiki projects/whatsapp-mcp.md).
+  #
+  # The run shape is the old runit run script, ported exactly like the three
+  # units above (decisions.md row 41): the login user, HOME exported, and the
+  # log opened by a shell ALREADY running as that user, so store/bridge.log is
+  # never root-owned and downloaded media lands readable — row 38 is what a
+  # root run does: 12 dirs / 30 files of root:root 0600 media that every tool
+  # then failed to open. No `Group =` (row 78: NixOS has no group named after
+  # the user, and a unit that fails there takes switch-to-configuration down
+  # with it). Restart=always + RestartSec=3 is the donor's tmux
+  # `while true … sleep 3` loop, which is what offers a fresh QR when the old
+  # one expires (~20 s per code) instead of dying unpaired.
+  #
+  # One instance only, ever: a second bridge means two QR channels and two
+  # REST servers, and health answers `connected: true` from one while the
+  # other cycles QR codes forever (wiki whatsapp-mcp.md § Reinstall restore).
+  # ffmpeg for media rendering is in the user profile (`nix profile install
+  # nixpkgs#ffmpeg`, on PATH as ~/.nix-profile/bin), not in this unit.
+  systemd.services.whatsapp-bridge = {
+    description = "WhatsApp bridge (whatsapp-mcp whatsmeow) on 127.0.0.1:8080";
+    wantedBy = ["multi-user.target"];
+    after = ["network-online.target"];
+    wants = ["network-online.target"];
+    serviceConfig = {
+      Type = "simple";
+      User = username;
+      # The repo is a plain clone in the home directory, not a store path —
+      # it holds the paired session (store/whatsapp.db), so it must run in
+      # place or pairing would be lost on every rebuild.
+      WorkingDirectory = "/home/${username}/Projects/whatsapp-mcp/whatsapp-bridge";
+      Environment = [
+        "HOME=/home/${username}"
+        "USER=${username}"
+        "LOGNAME=${username}"
+        "PATH=/home/${username}/.nix-profile/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin"
+      ];
+      # bash -c carries the `>> store/bridge.log` redirect itself: systemd's
+      # own StandardOutput=append: opens the file from PID 1 as root, which is
+      # the row-38 trap in a different costume. The `mkdir -p store` is there
+      # because the redirect is evaluated BEFORE the bridge would create the
+      # directory itself — on a fresh clone (no store/ yet) the unit fails with
+      # "store/bridge.log: No such file or directory" and crash-loops.
+      ExecStart = "${pkgs.bash}/bin/bash -c 'mkdir -p store && exec ./whatsapp-bridge >> store/bridge.log 2>&1'";
+      Restart = "always";
+      RestartSec = "3";
+    };
+  };
+
   # The unit half of the launcher defined above.
   #
   # Ordering: Requires/After docker.service (a launcher that runs before the
