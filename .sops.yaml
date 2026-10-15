@@ -21,8 +21,33 @@
 # The public recipient key is safe here by construction — it can only encrypt.
 keys:
   - &mugdad age1rghqxla52fzremfpkr5uktprzyu479exrl952ad555errfpxeuws7qc4mj
+  # SECOND recipient, added 2026-10-15 when the original private key was found
+  # to be gone from the ThinkCentre: no AGE-SECRET-KEY-1 anywhere on the
+  # filesystem, none in either repo's git history, and never in the backup —
+  # backup-run.sh's SOURCES never covered /var/lib/sops-nix or ~/.config/sops.
+  # Without it, sops-install-secrets died at "cannot read keyfile
+  # /var/lib/sops-nix/key.txt" and the activation snippet failed, so no secret
+  # rendered on that host (not just the new ones — the four telegram/opencode
+  # entries never decrypted there either).
+  #
+  # The old recipient stays listed on purpose. The pre-existing
+  # thinkcentre.sops.yaml is encrypted ONLY to it, so if `age-key.txt` ever
+  # turns up it still opens; losing access to a key is not a reason to destroy
+  # the ciphertext it can read. New files below are encrypted to BOTH, so
+  # either key opens them.
+  - &mugdad_2026 age1j3pyjf9635qfacfk75jgrtn4dq509cuyhrnla52ws0wjsldprv0q8vflhw
 creation_rules:
   - path_regex: secrets/[^/]+\.sops\.yaml$
     key_groups:
       - age:
           - *mugdad
+          # MUST be listed HERE, not only under `keys:` above. This gotcha
+          # cost a round trip on 2026-10-15: adding the new recipient to
+          # `keys:` alone produced a file with exactly ONE age blob — still
+          # encrypted only to the old, lost key — because `key_groups` in the
+          # matching creation rule is what sops reads, and it enumerates its
+          # own recipients. `keys:` is only the default pool for rules that
+          # don't name one. Caught by counting blobs (`grep -c 'BEGIN AGE
+          # ENCRYPTED'`), which is now the check worth re-running after any
+          # change here: two entries expected, one means the rule wasn't hit.
+          - *mugdad_2026
