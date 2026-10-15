@@ -50,6 +50,15 @@
     # while bringing the stack up, was dropped once this line landed).
     ffmpeg
 
+    # ── added 2026-10-15 with the QR pairing page ─────────────────────────────
+    # qr-serve.py is a hand-run script inside the whatsapp-mcp clone, and
+    # without an interpreter on PATH the only way to run it is
+    # `nix shell nixpkgs#python3 -c python3 …`. This makes the pairing command
+    # a one-liner he can type himself. Not a system-wide dev environment: the
+    # MCP server keeps its own venv in the repo, so this is just the runtime
+    # the hand tools need.
+    python3
+
     # ── server baseline, added 2026-10-13 ───────────────────────────────────
     # modules/home/terminal/cli.nix carries most of these on the laptop, but it
     # is a *home-manager* module (home.packages / programs.*) and this host is

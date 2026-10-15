@@ -373,6 +373,20 @@ in {
     };
   };
 
+  # ── QR pairing page over Tailscale (2026-10-15) ────────────────────────────
+  # qr-serve.py (bridge dir, run by hand while pairing) serves the freshest QR
+  # on :8877 so the code can be read from the laptop: the phone doing the
+  # scanning cannot display its own code, and this box has no screen either —
+  # 127.0.0.1:8877 in the wiki's method history was reachability, not a
+  # deliberate bind.
+  #
+  # Scoped to tailscale0 rather than networking.firewall.allowedTCPPorts: a
+  # QR links a device to his WhatsApp account, so it must not be readable from
+  # the LAN, and qr-serve.py binds the tailnet address for the same reason.
+  # Outside an actual pairing attempt nothing listens on the port, so the rule
+  # otherwise matches an empty port.
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8877];
+
   # The unit half of the launcher defined above.
   #
   # Ordering: Requires/After docker.service (a launcher that runs before the
