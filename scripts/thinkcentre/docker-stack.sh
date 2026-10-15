@@ -26,7 +26,11 @@
 # run as: docker-stack.service (a oneshot at boot), or by hand for a re-stack.
 set -u
 
-STACK_DIR="${STACK_DIR:-/home/${USER:-mugdad}/Projects/servers}"
+# CASE 2026-10-15: ~/Projects -> ~/projects (lowercase), matching the
+# reinstall's restored layout and the guard in services.nix. The default below
+# only ever applies when STACK_DIR is unset; the unit does not set it, so this
+# is what actually decides where the launcher looks.
+STACK_DIR="${STACK_DIR:-/home/${USER:-mugdad}/projects/servers}"
 
 # Deliberately not started at boot.
 #

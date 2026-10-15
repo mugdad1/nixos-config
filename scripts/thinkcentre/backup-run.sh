@@ -57,8 +57,15 @@ chmod 700 "$ROOT" || die "chmod 700 $ROOT failed"
 # --- sources ---------------------------------------------------------------
 # Each entry is one rsync source, mirrored into the snapshot at
 # $SLOT/<absolute path with the leading slash stripped>.
+#
+# CASE 2026-10-15: /home/mugdad/Projects -> /home/mugdad/projects. The 2026-10-15
+# reinstall restored the tree lowercase (AGENTS.md item 9), so the capital-P
+# entry hit the `[ ! -e ]` branch below and was reported "SKIP (missing)" —
+# every source. A backup that skips everything still exits 0 on its own, which
+# is the dangerous shape: only the READBACK step below would have caught it, and
+# it was pointed at capital-P paths too, so both halves failed together.
 SOURCES="
-/home/mugdad/Projects
+/home/mugdad/projects
 /home/mugdad/.local/state/opencode
 /home/mugdad/.local/bin
 /home/mugdad/.config/opencode-telegram-bot
@@ -78,10 +85,15 @@ SOURCES="
 # written by every opencode session and has been present in every snapshot
 # inspected. Prefer a file that cannot be renamed away over one that matches
 # today's log name.
+#
+# CASE 2026-10-15: two of the three were capital-P paths, so on the reinstalled
+# box they could never be found and this step died with "a required read-back
+# file is missing" — the correct signal, and the only reason the SOURCES bug
+# above was visible at all.
 READBACK="
-/home/mugdad/Projects/wiki/AGENTS.md
+/home/mugdad/projects/wiki/AGENTS.md
 /home/mugdad/.local/state/opencode/prompt-history.jsonl
-/home/mugdad/Projects/servers/README.md
+/home/mugdad/projects/servers/README.md
 "
 
 # NOTE: patterns use **/ so they match at ANY depth. A bare */foo only matches

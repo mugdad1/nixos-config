@@ -213,15 +213,29 @@ in {
   # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would
   # make it serve an empty store directory. Also a behaviour change worth
   # knowing: under runit this ran as ROOT (the run script had no chpst -u).
+  #
+  # CASE, 2026-10-15. This read /home/${username}/Projects/study — capital P —
+  # and the 2026-10-15 reinstall restored everything to ~/projects (lowercase).
+  # ext4 is case-sensitive, so the path simply did not exist: the unit failed at
+  # step CHDIR, `Restart=always` turned that into a 5 s loop (63 restarts by the
+  # time it was caught), and — the part that actually costs — a unit stuck
+  # failing makes switch-to-configuration exit 4, which fails the WHOLE
+  # `nixos-rebuild switch` even though every package built fine. AGENTS.md
+  # item 9 records the lowercase layout as the live one; the wiki's
+  # `~/Projects/...` spellings are history.
   systemd.services.study = {
     description = "Study PWA no-cache static server";
+    # Skip cleanly instead of crash-looping when the repo has not been restored
+    # yet — the same guard docker-stack already carries, and the reason that
+    # unit stayed quiet through this reinstall while these two did not.
+    unitConfig.ConditionPathExists = "/home/${username}/projects/study/scripts/serve.py";
     wantedBy = ["multi-user.target"];
     after = ["network.target"];
     serviceConfig = {
       Type = "simple";
       User = username;
-      WorkingDirectory = "/home/${username}/Projects/study";
-      ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/Projects/study/scripts/serve.py 8091 0.0.0.0";
+      WorkingDirectory = "/home/${username}/projects/study";
+      ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/projects/study/scripts/serve.py 8091 0.0.0.0";
       Restart = "always";
       RestartSec = "5s";
     };
@@ -249,8 +263,20 @@ in {
   # other cycles QR codes forever (wiki whatsapp-mcp.md § Reinstall restore).
   # ffmpeg for media rendering is in the user profile (`nix profile install
   # nixpkgs#ffmpeg`, on PATH as ~/.nix-profile/bin), not in this unit.
+  #
+  # CASE + GUARD, 2026-10-15. Two separate things were wrong here. The
+  # WorkingDirectory spelled ~/Projects (capital) while the reinstall restored
+  # to ~/projects (lowercase) — ext4 is case-sensitive, so the CHDIR failed.
+  # But the repo is absent under EITHER spelling on this box (only ~/projects
+  # {study,wiki,servers} came back), so fixing the case alone would not have
+  # helped: it would still fail every 3 s. Hence the condition, which is the
+  # shape docker-stack already used and which is why that unit stayed silent
+  # through the same reinstall. Until the repo is re-cloned upstream at v0.7.0
+  # (wiki whatsapp-mcp.md) this stays skipped-cleanly rather than failing, so
+  # it can never again hold `nixos-rebuild switch` hostage at exit 4.
   systemd.services.whatsapp-bridge = {
     description = "WhatsApp bridge (whatsapp-mcp whatsmeow) on 127.0.0.1:8080";
+    unitConfig.ConditionPathExists = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
     wantedBy = ["multi-user.target"];
     after = ["network-online.target"];
     wants = ["network-online.target"];
@@ -260,7 +286,7 @@ in {
       # The repo is a plain clone in the home directory, not a store path —
       # it holds the paired session (store/whatsapp.db), so it must run in
       # place or pairing would be lost on every rebuild.
-      WorkingDirectory = "/home/${username}/Projects/whatsapp-mcp/whatsapp-bridge";
+      WorkingDirectory = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
       Environment = [
         "HOME=/home/${username}"
         "USER=${username}"
@@ -304,13 +330,17 @@ in {
       # Re-run on every boot. `ConditionPathExists` guards the directory so a
       # box that has never had the stack restored skips cleanly instead of
       # landing in --failed on first install.
-      ConditionPathExists = "/home/${username}/Projects/servers";
+      # CASE 2026-10-15: was ~/Projects/servers (capital P); the reinstall
+      # restored to ~/projects, so this condition was false and the whole
+      # 18-container stack sat unstarted with the guard reading it as
+      # "not restored yet". Same lowercase rule as AGENTS.md item 9.
+      ConditionPathExists = "/home/${username}/projects/servers";
     };
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
       User = username;
-      WorkingDirectory = "/home/${username}/Projects/servers";
+      WorkingDirectory = "/home/${username}/projects/servers";
       ExecStart = "${dockerStack}/bin/docker-stack";
       TimeoutStartSec = "15min"; # first boot pulls 13 images, that is minutes
     };
