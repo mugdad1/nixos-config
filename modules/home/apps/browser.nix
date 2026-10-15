@@ -127,9 +127,49 @@ in {
         "media.autoplay.default" = 5;
         "media.autoplay.blocking_policy" = 2;
       };
+      # SearXNG in the address bar — his question 2026-10-15 (*"why search
+      # defult engine isnt sear?"*) pointed straight at this block: it said
+      # `ddg`, while the comment up at `Homepage` already claimed SearXNG
+      # owned the address bar. It did not. Now it does.
+      #
+      # force = Zen rewrites search.json.mozlz4 on every launch, so the
+      # symlink home-manager puts there has to be re-imposed by every
+      # rebuild; without it the first start reverts to the profile's own
+      # last-known file and the declared engine silently disappears.
+      #
+      # The box's own instance, by IP and not by MagicDNS name: the laptop
+      # runs --accept-dns=false (modules/core/tailscale.nix), so a tailnet
+      # hostname would need blocky's conditional to resolve — one more
+      # moving part for the thing that has to answer the moment you type.
+      # Plain http on purpose: the container is http-only, same as the
+      # homepage above.
+      #
+      # `ddg` stays in the list as a FALLBACK (app-provided, not default)
+      # so the bar still answers if the ThinkCentre or the tailnet is down.
+      # Delete `ddg.metaData = {}` to make it searxng-only.
       search = {
-        default = "ddg";
         force = true;
+        default = "searxng";
+        engines = {
+          searxng = {
+            name = "SearXNG";
+            urls = [
+              {
+                template = "http://100.88.29.31:8888/search";
+                params = [
+                  {
+                    name = "q";
+                    value = "{searchTerms}";
+                  }
+                ];
+              }
+            ];
+            icon = "http://100.88.29.31:8888/favicon.ico";
+            definedAliases = ["@sx"];
+          };
+          # app-provided entry: listed in the dropdown, NOT the default
+          ddg.metaData = {};
+        };
       };
 
       userChrome = with g.css; ''
