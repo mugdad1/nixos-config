@@ -35,6 +35,23 @@ in {
         Fingerprinting = true;
       };
 
+      # Caddy's service index on the ThinkCentre (`http://100.124.75.45/`),
+      # not SearXNG — his pick 2026-10-11: links and a search box in one
+      # place doesn't work, because SearXNG's homepage template renders only
+      # a title and the search box (no tile grid; custom shortcuts exist
+      # solely as `!bang` tokens). So: Caddy lists the 15 services as
+      # homepage, SearXNG stays the search engine in the address bar.
+      # Unlocked on purpose: he may repoint it at any time.
+      # Plain http on purpose too: both are http-only containers, so
+      # HTTPS-Only mode will show its warning page once per origin until he
+      # clicks "Continue with http" — the exception sticks in
+      # permissions.sqlite.
+      Homepage = {
+        URL = "http://100.124.75.45/";
+        StartPage = "homepage";
+        Locked = false;
+      };
+
       ExtensionSettings = {
         "uBlock0@raymondhill.net" = {
           install_url = "https://addons.mozilla.org/en-US/firefox/downloads/latest/ublock-origin/latest.xpi";
