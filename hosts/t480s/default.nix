@@ -77,6 +77,11 @@
   # "Correct in the repo" and "correct on the wire" are two steps and only the
   # first was being taken; this takes the second one without being asked.
   #
+  # The address is 100.88.29.31 as of 2026-10-15 — the ThinkCentre was
+  # reinstalled and tailscale re-registered it, so the 100.124.75.45 in the
+  # history above is dead. The remote path is lowercase `projects/` for the
+  # same reinstall reason; see modules/home/apps/homepage.nix for that one.
+  #
   # `restartTriggers` is the whole mechanism. NixOS hashes the rendered HTML
   # into the unit, and switch-to-configuration restarts a unit whose trigger
   # changed — so the push re-runs exactly when the page changes, costs nothing
@@ -105,7 +110,7 @@
         # modules/home/apps/homepage.nix — read it there rather than duplicating
         # the reasoning: Caddy has this file bind-mounted read-only, so only a
         # write-through of the existing inode is picked up without a restart.
-        target=${username}@100.124.75.45:Projects/servers/caddy/index.html
+        target=${username}@100.88.29.31:projects/servers/caddy/index.html
         src=${pkgs.writeText "server-index.html" (import ../../lib/server-index.nix {})}
         # Retried because tailscaled can be up-but-not-yet-connected for a few
         # seconds after a cold boot. One attempt would leave a permanently red
@@ -119,9 +124,8 @@
           fi
           sleep 10
         done
-        echo "$(date '+%F %T') push-server-index: shipped, links served: $(curl -s --max-time 8 http://100.124.75.45/ | grep -c 'href=')"
+        echo "$(date '+%F %T') push-server-index: shipped, links served: $(curl -s --max-time 8 http://100.88.29.31/ | grep -c 'href=')"
       ''}";
     };
   };
-
 }

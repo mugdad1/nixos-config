@@ -8,11 +8,20 @@
   # read-only at /usr/share/caddy/index.html, so a renamed inode leaves the
   # container serving the old bytes until it restarts. --inplace writes through
   # the existing inode instead, which is the whole trick here.
+  #
+  # IP + PATH, 2026-10-15. The tailnet address moved 100.124.75.45 ->
+  # 100.88.29.31 (the ThinkCentre was reinstalled; tailscale re-registered it
+  # under a new IP). Every hard-coded copy of the old one in this flake had to
+  # follow, or push-server-index ships to a dead address and the curl check
+  # below reports "links served: 0". The remote path was also capital-P
+  # `Projects/` — the server's restored tree is lowercase `projects/`, and
+  # rsync would have created a SECOND directory beside the real one, leaving
+  # Caddy serving the old file from the path it actually bind-mounts.
   deploy = pkgs.writeShellScriptBin "push-server-index" ''
     set -eu
-    rsync -L --inplace --verbose ${index} mugdad@100.124.75.45:Projects/servers/caddy/index.html
+    rsync -L --inplace --verbose ${index} mugdad@100.88.29.31:projects/servers/caddy/index.html
     echo "--- verifying the container serves the new bytes:"
-    curl -s --max-time 8 http://100.124.75.45/ | grep -c "href=" | sed 's/^/links served: /'
+    curl -s --max-time 8 http://100.88.29.31/ | grep -c "href=" | sed 's/^/links served: /'
   '';
 in {
   # The same page, readable locally too — useful when the tailnet is down and

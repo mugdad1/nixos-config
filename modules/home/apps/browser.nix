@@ -35,7 +35,7 @@ in {
         Fingerprinting = true;
       };
 
-      # Caddy's service index on the ThinkCentre (`http://100.124.75.45/`),
+      # Caddy's service index on the ThinkCentre (`http://100.88.29.31/`),
       # not SearXNG — his pick 2026-10-11: links and a search box in one
       # place doesn't work, because SearXNG's homepage template renders only
       # a title and the search box (no tile grid; custom shortcuts exist
@@ -46,8 +46,14 @@ in {
       # HTTPS-Only mode will show its warning page once per origin until he
       # clicks "Continue with http" — the exception sticks in
       # permissions.sqlite.
+      # IP 100.124.75.45 -> 100.88.29.31 on 2026-10-15, when the ThinkCentre
+      # was reinstalled and tailscale gave it a new address. It is an IP and
+      # not the MagicDNS name on purpose: the laptop refuses MagicDNS
+      # (--accept-dns=false, see modules/core/tailscale.nix), so a tailnet
+      # hostname would only resolve through blocky's conditional — one more
+      # moving part for a page that has to come up with the browser.
       Homepage = {
-        URL = "http://100.124.75.45/";
+        URL = "http://100.88.29.31/";
         StartPage = "homepage";
         Locked = false;
       };
