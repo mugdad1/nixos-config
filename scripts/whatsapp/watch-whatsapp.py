@@ -90,7 +90,9 @@ def main() -> int:
     cap = int(sys.argv[1]) if len(sys.argv) > 1 else 1800
 
     if STOP.exists():
-        log(f"refused-to-arm, STOP flag present {datetime.now():%Y-%m-%d %H:%M:%S}")
+        # Nothing written, deliberately: a refusal that leaves a line behind
+        # can be mistaken for an arm later, and the documented contract is
+        # rc=3 and silence.
         print("STOP flag present -- refusing to arm")
         return 3
 
