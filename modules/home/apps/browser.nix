@@ -110,7 +110,7 @@ in {
         "media.autoplay.blocking_policy" = 2;
       };
       search = {
-        default = "DuckDuckGo";
+        default = "ddg";
         force = true;
       };
 

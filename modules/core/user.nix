@@ -18,7 +18,7 @@
       # headless host and you get "attribute 'browser' missing". Gating on the
       # variables themselves rather than a hostname means a host gets the
       # desktop home stack exactly when its variables declare a desktop, with
-      # no host list to maintain. The ThinkCentre declares none.
+      # no host list to maintain.
       imports = lib.optionals (variables ? browser) [../home];
       home.username = username;
       home.homeDirectory = "/home/${username}";

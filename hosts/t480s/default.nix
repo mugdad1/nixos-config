@@ -9,7 +9,7 @@
     ./hardware-configuration.nix
     ../../modules/core
     # Desktop is opt-in per host, no longer dragged in by core (2026-10-12).
-    # This laptop wants one; the ThinkCentre does not import it.
+    # This laptop wants a desktop.
     ../../modules/desktop
   ];
 

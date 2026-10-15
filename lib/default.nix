@@ -15,8 +15,7 @@ _: {
     # the aggregator, so importing it again would import the scanner's own
     # caller.
     #
-    # Hosts do NOT use this — see the loud comment in
-    # hosts/thinkcentre/default.nix: mkHost passes `./hosts/${host}`, and a
+    # Hosts do NOT use this — mkHost passes `./hosts/${host}`, and a
     # directory module resolves to its default.nix only. That is deliberate
     # (a host's .sh / data files must never be swept in), so the host keeps an
     # explicit `imports` list while the shared module dirs stay zero-maintenance.

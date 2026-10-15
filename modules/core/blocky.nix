@@ -6,14 +6,12 @@ _: {
   #   and the blocked encrypted upstreams are ignored. No per-network switching.
   #
   # Both machines run parallel_best as of 2026-10-12 (AGH removed 2026-10-11,
-  # so both run blocky). The ThinkCentre races the encrypted pair alone; this
-  # host adds 192.168.44.187/.188 so it also resolves on the work LAN, still
-  # with no per-network switching.
+  # Blocky runs locally as DNS resolver.
   #
   # Quad9 and strategy: strict were both added on 2026-10-12 and both taken back
   # out the same day: a strict queue would stall behind the unreachable work
   # resolvers here, and Quad9 went from both machines on his word — this host in
-  # 64827ce (reverting 1b415e8), the ThinkCentre in /etc/blocky/config.yml.
+  # 64827ce (reverting 1b415e8).
   services.blocky = {
     enable = true;
     settings = {
@@ -21,7 +19,7 @@ _: {
 
       upstreams = {
         init.strategy = "fast"; # don't block startup on upstream probes
-        # blocky (0.33, the same build the ThinkCentre runs) rejects the bare
+        # blocky rejects the bare
         # tls:// and quic:// forms — tls:// dies on the empty port. Native form
         # only: tcp-tls:host:port / quic:host. Proven on the server 2026-10-11.
         groups.default = [

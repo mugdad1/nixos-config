@@ -13,14 +13,7 @@ in {
   networking = {
     hostName = host;
     enableIPv6 = false;
-    # NetworkManager + iwd exist for the ThinkPad (wife? no — workstation) only.
-    # The ThinkCentre is wired-only (eno1 into the room switch), so NM is
-    # unwanted bloat here — it is what pulls iwd and ModemManager along with it,
-    # even though this box has no modem and no 802.11 interface. Wifi and the
-    # NM/iwd stack stay on the laptop, which imports this same module, so the
-    # gate is keyed on host rather than on an option the shared module cannot
-    # see. The laptop's `wifi.backend = "iwd"` is left untouched (it lives on
-    # the t480s, never on this box).
+    # This laptop uses NetworkManager + iwd for Wi-Fi; the module enables both.
     networkmanager = {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
@@ -32,17 +25,13 @@ in {
       # nothing but Blocky answers.
       dns = lib.mkIf localDns "none";
     };
-    # No inbound ports are opened. Anything that needs one should open it in the
-    # module that configures the service, not centrally here, so that a port
-    # never outlives the service that needed it. (One exception: Tailscale opens
-    # UDP 41641 for its own transport, in modules/core/tailscale.nix.)
+    # No inbound ports are opened centrally here; each module owns its own.
     firewall.enable = true;
   };
 
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
-  # module when wifi.backend = "iwd". Off on thinkcentre — no wifi here.
-  networking.wireless.iwd.enable = true;
+    networking.wireless.iwd.enable = true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;

@@ -42,7 +42,6 @@ fi
 DMI_NAME="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
 DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 
-# Only the T480s laptop remains in this config (thinkcentre was removed).
 if grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
     HOST="t480s"
     GPU="intel"
