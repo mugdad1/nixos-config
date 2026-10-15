@@ -47,36 +47,27 @@
       # so "telegram/bot_token" is `telegram: { bot_token: ... }`.
       "telegram/bot_token" = {};
       "telegram/allowed_user_id" = {};
-      "opencode/server_username" = {};
       "opencode/server_password" = {};
+      # NOTE 2026-10-15: `opencode/server_username` was removed from this list.
+      # The username is the fixed string `opencode` (see the template below —
+      # the server 401s on any other), so it is a constant, not a secret, and
+      # declaring it here only rendered a 0400 root-owned file that nothing
+      # read. The ciphertext still sits harmlessly in
+      # secrets/thinkcentre.sops.yaml; sops ignores keys with no declaration,
+      # and re-encrypting the file to drop it would buy nothing.
 
       # Filen account (the cloud drive holding ~/filen — all KFU material).
-      #
-      # SEPARATE FILE, and `sopsFile` is why: this is secrets/filen.sops.yaml,
-      # not the thinkcentre file above. Adding a key to an EXISTING sops file
-      # means decrypting and re-encrypting it, which needs the PRIVATE age key
-      # — which was absent from this box after the 2026-10-15 reinstall. A
-      # FRESH file needs only the PUBLIC recipient to create (age encrypts to
-      # a public key; only decryption is private), so the credential could be
-      # captured the same day without the key being restored first.
-      #
-      # Verified 2026-10-15: sops -e against a fresh path matching
-      # .sops.yaml's creation rule encrypts with the public recipient alone,
-      # and the resulting ciphertext was scanned for the plaintext and the
-      # email — clean. The plaintext existed only in a scratch file under /tmp
-      # and was shredded.
-      #
-      # STILL INERT UNTIL THE KEY IS BACK: sops-nix cannot render this without
-      # /var/lib/sops-nix/key.txt, so the template below produces nothing on
-      # this box today. Restoring the key is the bootstrap step the README
-      # describes, and it also unblocks the four telegram/opencode secrets,
-      # which have never rendered on this host either.
-      "filen/email" = {
-        sopsFile = ../../secrets/filen.sops.yaml;
-      };
-      "filen/password" = {
-        sopsFile = ../../secrets/filen.sops.yaml;
-      };
+      # Same file as everything else since 2026-10-15 — see .sops.yaml for the
+      # second-recipient change that made one file possible. Originally written
+      # into a SEPARATE secrets/filen.sops.yaml with `sopsFile`, because the
+      # original private key was missing and adding a key to an existing sops
+      # file means decrypt+re-encrypt (needs the private key) while a fresh
+      # file needs only the public recipient. That workaround is retired now a
+      # new key is installed; the entry is kept with its own comment because
+      # the password in it was pasted in plaintext on 2026-10-15 and is due a
+      # rotation — re-encrypting after rotation now needs no workaround.
+      "filen/email" = {};
+      "filen/password" = {};
     };
 
     # The whole bot config, rendered at activation into a file that never
@@ -105,7 +96,24 @@
         # bot that is permanently blind while every unit reads green.
         OPENCODE_SERVER_VERSION=v2
         OPENCODE_API_URL=http://127.0.0.1:13420
-        OPENCODE_SERVER_USERNAME=${config.sops.placeholder."opencode/server_username"}
+        # USERNAME IS A LITERAL, not a sops placeholder, and NOT "mugdad".
+        # 2026-10-15: the server rejects Basic auth unless the username is
+        # exactly `opencode` — measured live against 127.0.0.1:13420, where
+        # username `opencode` returned HTTP 200 while `mugdad`, `root` and the
+        # empty string each returned 401, same password throughout. The value
+        # `mugdad` was a credential I minted myself when the secrets were first
+        # written; it was wrong from the start, and it produced exactly the
+        # symptom he reported — "opencode server is unavailable" — with the
+        # bot's own log saying only "check OPENCODE_SERVER_USERNAME and
+        # OPENCODE_SERVER_PASSWORD", which reads like a missing value rather
+        # than a wrong one.
+        #
+        # It is a constant of the server, not a credential, so it belongs in
+        # Nix where a reviewer can see it — and it doubles as the bot's own
+        # built-in fallback (`getEnvVar(...) || "opencode"`). The corresponding
+        # `opencode/server_username` entry was dropped from `sops.secrets`
+        # below: it rendered a root-owned file nothing reads.
+        OPENCODE_SERVER_USERNAME=opencode
         OPENCODE_SERVER_PASSWORD=${config.sops.placeholder."opencode/server_password"}
 
         # v2 requires a default model. `opencode` / `big-pickle` are this
@@ -114,6 +122,26 @@
         # configured here.
         OPENCODE_MODEL_PROVIDER=opencode
         OPENCODE_MODEL_ID=big-pickle
+      '';
+    };
+
+    # Credentials for the recurring Filen bisync (./services.nix).
+    #
+    # Its own template rather than reusing one above, because EnvironmentFile
+    # needs KEY=value lines while the secrets above feed a bot config with a
+    # specific shape. Both are rendered at activation into /run/secrets/
+    # rendered/, so no Filen credential exists as plaintext anywhere outside
+    # this encrypted file and that root-owned runtime directory.
+    #
+    # Owner `username` (default would be root:root 0400): the bisync unit runs
+    # as this user — it must write into ~/filen, which is that user's — and a
+    # root-owned EnvironmentFile gives the unit "Permission denied" at start.
+    templates."filen-sync.env" = {
+      owner = username;
+      mode = "0400";
+      content = ''
+        FILEN_CLI_EMAIL=${config.sops.placeholder."filen/email"}
+        FILEN_CLI_PASSWORD=${config.sops.placeholder."filen/password"}
       '';
     };
   };
