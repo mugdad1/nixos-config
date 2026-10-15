@@ -90,7 +90,7 @@ in {
         "network.dns.disablePrefetch" = true;
         "network.prefetch-next" = false;
         "network.predictor.enabled" = false;
-        "network.http.referer.XOriginPolicy" = 2;
+        "network.http.referer.XOriginPolicy" = 0;
         "network.http.referer.XOriginTrimmingPolicy" = 2;
         "privacy.trackingprotection.enabled" = true;
         "privacy.trackingprotection.socialtracking.enabled" = true;
