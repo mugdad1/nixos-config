@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Send one WhatsApp message through the bridge, log-first.
+
+    wa-send <chat_jid> <message> <why> [mentions]
+
+Every rule in here is Mugdad's, learned the hard way, not a style choice:
+
+* the log line is written BEFORE the send, so a send that never happened is
+  still visible and can be argued about afterwards (2026-09-30: the
+  unaccounted sends, *"never have that incident back"*).
+* the stop flag stops it. `~/.local/state/opencode/wa-stop` means the whole
+  tree is down -- sends included, no loopholes.
+* a `why` may not contain `|`: the log is pipe-delimited and a pipe in the
+  reason shreds every column after it.
+* if the bridge rejects the send, a `FAILED - (NOT SENT)` line is appended.
+  2026-10-03: the wrapper sent `chat_jid` where the bridge wants `recipient`,
+  so every send 400'd while the log line -- written first, by design -- claimed
+  success. Both directions of that mismatch are caught now.
+* every sent text is recorded in wa-sent-texts so the watcher can tell our own
+  sends from his typing. Filtering `is_from_me` instead would blind the
+  self-chat: it is the instruction channel, and every message he types there
+  carries that flag.
+"""
+
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+from datetime import datetime
+from pathlib import Path
+
+STATE = Path(os.environ.get("WA_STATE", str(Path.home() / ".local/state/opencode")))
+STOP = STATE / "wa-stop"
+LOG = STATE / "wa-send-log.md"
+SENT = STATE / "wa-sent-texts"
+BRIDGE = Path(
+    os.environ.get("WA_BRIDGE_DIR", str(Path.home() / "projects/whatsapp-mcp/whatsapp-bridge"))
+)
+API = "http://127.0.0.1:8080/api/send"
+
+
+def stamp() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M")
+
+
+def append(path: Path, text: str) -> None:
+    """Append as bytes: the log has carried non-UTF-8 before, and a decode
+    error on write is a send that happens with no record of it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "ab") as fh:
+        fh.write(text.encode("utf-8", "surrogateescape"))
+
+
+def main() -> int:
+    if len(sys.argv) < 4:
+        print(__doc__)
+        return 2
+    jid, message, why = sys.argv[1], sys.argv[2], sys.argv[3]
+    mentions = [m for m in sys.argv[4].split(",") if m] if len(sys.argv) > 4 else []
+
+    if STOP.exists():
+        print(f"STOP flag present ({STOP}) -- refusing to send")
+        return 1
+    if "|" in why:
+        print("refusing: a why containing '|' shreds the pipe-delimited log")
+        return 1
+
+    flat = message.replace("\n", "\\n")
+    append(LOG, f"{stamp()} | {jid} | {flat} | {why}\n")
+
+    try:
+        token = (BRIDGE / "store" / ".bridge-token").read_text().strip()
+    except OSError as exc:
+        append(LOG, f"FAILED - (NOT SENT) no bridge token: {exc}\n")
+        print(f"no bridge token: {exc}")
+        return 1
+
+    payload = {"recipient": jid, "message": message}
+    if mentions:
+        payload["mentions"] = mentions
+    req = urllib.request.Request(
+        API,
+        data=json.dumps(payload).encode(),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            reply = resp.read().decode(errors="replace")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")[:200]
+        append(LOG, f"FAILED - (NOT SENT) HTTP {exc.code} {body}\n")
+        print(f"bridge rejected: HTTP {exc.code} {body}")
+        return 1
+    except Exception as exc:  # unreachable, timeout, refused
+        append(LOG, f"FAILED - (NOT SENT) {exc}\n")
+        print(f"bridge unreachable: {exc}")
+        return 1
+
+    append(SENT, json.dumps(message) + "\n")
+    print(reply)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
