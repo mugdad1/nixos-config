@@ -1,4 +1,19 @@
 {pkgs, ...}: let
+  # filen-cli 0.2.9 — the Rust build (filen-rs), NOT nixpkgs' own 0.0.36,
+  # which is the old Go implementation. Declared in ../../pkgs/filen-cli.nix;
+  # the reasoning (musl-static vs gnu, prebuilt vs source) is written there.
+  #
+  # Declared HERE, in modules/core, so BOTH hosts get it from one place — this
+  # is shared systemPackages, not a home-manager entry, which is why it lands on
+  # the ThinkCentre too (that host imports no home-manager stack at all).
+  #
+  # This replaced a hand-run `curl | bash` into ~/.filen-cli on 2026-10-15,
+  # which is exactly the shape a reinstall loses: the binary lived outside the
+  # flake, and its installer only appends to bash/zsh profiles, so on a fish
+  # login shell it printed "No shell profile file found" and left `filen`
+  # unreachable. Declarative, it needs no PATH entry at all — /run/current-system/sw/bin
+  # carries it on both machines.
+  filen-cli = pkgs.callPackage ../../pkgs/filen-cli.nix {};
   # ─── DISABLED 2026-10-13 on his word ───────────────────────────────────────
   # Android SDK for Flutter APK builds (Noor app). He does not use Flutter or
   # Android Studio — only adb/fastboot for his phone, and android-tools (the
@@ -45,6 +60,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     cachix
+    filen-cli
     # adb / fastboot — STILL NEEDED for his phone. This is the only Android
     # bit that stays; everything below it that was toolchain-related is off.
     android-tools
