@@ -106,8 +106,6 @@
 
       nixosConfigurations = {
         t480s = mkHost "t480s";
-        # Lenovo ThinkCentre M900x (10LY) — headless server, migrated from Void.
-        thinkcentre = mkHost "thinkcentre";
       };
     };
 }

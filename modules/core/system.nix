@@ -22,10 +22,6 @@
     };
   };
 
-  services.btrfs.autoScrub = {
-    enable = true;
-    interval = "weekly";
-  };
 
   security.protectKernelImage = true;
 

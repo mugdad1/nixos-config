@@ -48,16 +48,6 @@ _: {
         prefetching = true;
       };
 
-      # Tailnet names still resolve, without Tailscale owning DNS: only queries
-      # for the tailnet suffix are forwarded to MagicDNS at quad-100. Everything
-      # else keeps the default upstreams above. (Same mechanism this repo ran
-      # 2026-09, when it was removed along with Tailscale itself.)
-      conditional = {
-        fallbackUpstream = false;
-        mapping = {
-          "tailbc99bb.ts.net" = "100.100.100.100";
-        };
-      };
     };
   };
 }

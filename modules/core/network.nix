@@ -21,7 +21,7 @@ in {
     # gate is keyed on host rather than on an option the shared module cannot
     # see. The laptop's `wifi.backend = "iwd"` is left untouched (it lives on
     # the t480s, never on this box).
-    networkmanager = lib.mkIf (host != "thinkcentre") {
+    networkmanager = {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
       # on Intel: the t480s was flapping between two BSSIDs of one SSID after
@@ -42,7 +42,7 @@ in {
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
   # module when wifi.backend = "iwd". Off on thinkcentre — no wifi here.
-  networking.wireless.iwd.enable = lib.mkIf (host != "thinkcentre") true;
+  networking.wireless.iwd.enable = true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;
