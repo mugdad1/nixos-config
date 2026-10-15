@@ -109,6 +109,11 @@ in {
         "media.autoplay.default" = 5;
         "media.autoplay.blocking_policy" = 2;
       };
+      search = {
+        default = "DuckDuckGo";
+        force = true;
+      };
+
       userChrome = with g.css; ''
         :root {
           --zen-main-browser-background: ${bg0_h} !important;
