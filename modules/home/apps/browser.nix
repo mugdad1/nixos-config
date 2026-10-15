@@ -85,13 +85,8 @@ in {
         "captivedetect.canonicalURL" = "";
         "network.allow-experiments" = false;
 
-        # 2026-10-14, his word: "make it dont enable https cuz all my services are http"
-        # — every self-hosted service (Caddy :80, SearXNG :8888, study :8091) is
-        # http-only, so HTTPS-Only Mode warns on each one. Disabled both prefs:
-        # "dom.security.https_only_mode" = true;
-        # "dom.security.https_only_mode_ever_enabled" = true;
-        "dom.security.https_only_mode" = false;
-        "dom.security.https_only_mode_pbm" = false;
+        "dom.security.https_only_mode" = true;
+        "dom.security.https_only_mode_pbm" = true;
         "network.dns.disablePrefetch" = true;
         "network.prefetch-next" = false;
         "network.predictor.enabled" = false;
