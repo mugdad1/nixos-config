@@ -49,6 +49,34 @@
       "telegram/allowed_user_id" = {};
       "opencode/server_username" = {};
       "opencode/server_password" = {};
+
+      # Filen account (the cloud drive holding ~/filen — all KFU material).
+      #
+      # SEPARATE FILE, and `sopsFile` is why: this is secrets/filen.sops.yaml,
+      # not the thinkcentre file above. Adding a key to an EXISTING sops file
+      # means decrypting and re-encrypting it, which needs the PRIVATE age key
+      # — which was absent from this box after the 2026-10-15 reinstall. A
+      # FRESH file needs only the PUBLIC recipient to create (age encrypts to
+      # a public key; only decryption is private), so the credential could be
+      # captured the same day without the key being restored first.
+      #
+      # Verified 2026-10-15: sops -e against a fresh path matching
+      # .sops.yaml's creation rule encrypts with the public recipient alone,
+      # and the resulting ciphertext was scanned for the plaintext and the
+      # email — clean. The plaintext existed only in a scratch file under /tmp
+      # and was shredded.
+      #
+      # STILL INERT UNTIL THE KEY IS BACK: sops-nix cannot render this without
+      # /var/lib/sops-nix/key.txt, so the template below produces nothing on
+      # this box today. Restoring the key is the bootstrap step the README
+      # describes, and it also unblocks the four telegram/opencode secrets,
+      # which have never rendered on this host either.
+      "filen/email" = {
+        sopsFile = ../../secrets/filen.sops.yaml;
+      };
+      "filen/password" = {
+        sopsFile = ../../secrets/filen.sops.yaml;
+      };
     };
 
     # The whole bot config, rendered at activation into a file that never
