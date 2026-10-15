@@ -48,6 +48,71 @@
     echo "$(date '+%F %T') opencode-telegram: opencode API is up, starting bot"
   '';
 
+  # The bot launcher, NIXIFIED 2026-10-15. It used to be a hand-written
+  # ~/.local/bin/opencode-telegram-start inherited from the Void install, and
+  # that single file was the unit's whole existence: the 2026-10-15 reinstall
+  # recreated none of ~/.local/bin, so ExecStart resolved to nothing, systemd
+  # reported 203/EXEC (not a crash, not a config error — the file is simply
+  # not there), and switch-to-configuration exited 4 over it, failing an
+  # otherwise perfectly good `nixos-rebuild switch`. The same class of bug as
+  # the capital-P paths: state the flake did not own, so the flake could not
+  # bring it back. Building it here makes the launcher part of the system
+  # closure — it exists on a fresh install by construction.
+  #
+  # The `npx -y @grinev/opencode-telegram-bot@latest` is unchanged on purpose.
+  # The previous comment reserved pinning it into the store as a separate
+  # decision, and that reservation still stands: `@latest` means every start
+  # can pick up a new bot version (impure, but the behaviour the donor ran),
+  # while pinning means an explicit version choice plus an npm dependency hash
+  # to maintain. This commit fixes WHO provides the script, not WHICH version
+  # of the bot runs.
+  opencodeTelegramStart = pkgs.writeShellScriptBin "opencode-telegram-start" ''
+    # Absolute npx, not a bare one: this script's PATH is whatever the unit
+    # sets, and a bare `npx` would resolve differently depending on it. `exec`
+    # so the node process replaces the shell — without it systemd sees a
+    # wrapper PID, SIGTERM lands on the shell first, and the bot gets SIGKILL
+    # on TimeoutStopSec instead of shutting down.
+    exec ${pkgs.nodejs}/bin/npx -y @grinev/opencode-telegram-bot@latest start
+  '';
+
+  # The recurring Filen 2-WAY sync, nixified 2026-10-15 (his ask: "2 way sync",
+  # and this repo's standing rule is that state lives in the flake).
+  #
+  # WHY bisync AND NOT `sync`: rclone's `sync` is strictly one-directional —
+  # it makes DEST look like SOURCE, and a file deleted locally would be deleted
+  # on the drive. `bisync` is genuinely bidirectional and is the only one of
+  # the two that propagates both ways. The first run used `--resync`, which
+  # establishes the baseline; the dry run before it reported 1794 files going
+  # remote -> local and ZERO deletions, and the real run matched exactly
+  # (1794 files, 11 top-level entries, 0 deletions).
+  #
+  # --resync ONLY when no baseline exists. Re-running it would silently
+  # re-baseline and could mask a genuine conflict, which defeats the point of a
+  # two-way sync. The baseline is rclone's own state:
+  #   ~/.cache/rclone/bisync/filen_..home_mugdad_filen.path{1,2}.lst
+  # (rclone 1.74.2's default state path — verified present after the first
+  # run). If that cache is ever wiped, the guard below re-baselines instead of
+  # failing, which is the correct recovery: an empty cache means rclone has no
+  # history to compare against, not that the data should be discarded.
+  filenSync = pkgs.writeShellApplication {
+    name = "filen-sync";
+    runtimeInputs = [
+      (pkgs.callPackage ../../pkgs/filen-cli.nix {})
+      pkgs.coreutils
+    ];
+    text = ''
+      state="$HOME/.cache/rclone/bisync/filen_..home_mugdad_filen.path1.lst"
+      args=(bisync "filen:" "$HOME/filen")
+
+      if [ ! -f "$state" ]; then
+        echo "[filen-sync] no baseline at $state — establishing it with --resync"
+        args+=(--resync)
+      fi
+
+      exec filen --skip-update rclone "''${args[@]}"
+    '';
+  };
+
   svWatch = pkgs.writeShellApplication {
     name = "sv-watch";
     runtimeInputs = with pkgs; [
@@ -190,11 +255,14 @@ in {
         "PATH=${pkgs.bash}/bin:${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
       ];
       ExecStartPre = waitOpencode;
-      # Kept as an imperative path on purpose: the wrapper does
-      # `npx -y @grinev/opencode-telegram-bot@latest start`, an impure network
-      # fetch at every start. Moving it into the store would pin it, which is
-      # worth doing — but it is a separate decision, not part of this port.
-      ExecStart = "/home/${username}/.local/bin/opencode-telegram-start";
+      # NIXIFIED 2026-10-15. This was the imperative
+      # /home/${username}/.local/bin/opencode-telegram-start — a file outside
+      # the flake, so a reinstall could not recreate it, which is exactly how
+      # it came back missing and took the whole rebuild down with a 203/EXEC.
+      # The store path replaces it; the wrapper's own comment still records
+      # that `npx ... @latest` is an impure fetch at every start, and that
+      # pinning the bot version remains an open, separate decision.
+      ExecStart = "${opencodeTelegramStart}/bin/opencode-telegram-start";
       # The 90 s readiness wait would otherwise hit the 90 s default start
       # timeout and get SIGKILLed mid-wait.
       TimeoutStartSec = "5min";
@@ -384,6 +452,65 @@ in {
       OnUnitActiveSec = "60s";
       AccuracySec = "1s";
       Unit = "sv-watch.service";
+    };
+  };
+
+  # ─── filen-sync — the 2-way drive mirror ───────────────────────────────────
+  # Periodic bidirectional sync of the Filen drive root into ~/filen, so the
+  # local copy (all KFU material, cv, obsidian, projects, wiki-private) tracks
+  # changes made from the phone/web and vice versa.
+  #
+  # Runs as `username`, not root: it writes into ~/filen, which belongs to that
+  # user, and a root run would stamp root-owned files into a directory the user
+  # then cannot edit — a permission bug that only shows up on the next hand
+  # write. HOME is set explicitly rather than assumed: the bisync baseline and
+  # rclone's own cache/config both resolve under it, and a wrong HOME makes
+  # every run look like a first run.
+  systemd.services.filen-sync = {
+    description = "Two-way bisync: Filen drive root <-> ~/filen";
+    # Ordering only. Needs network (it talks to api.filen.io) and the secrets
+    # rendered, otherwise the EnvironmentFile below is absent and the unit fails
+    # instead of skipping.
+    after = ["network-online.target" "sops-install-secrets.service"];
+    wants = ["network-online.target"];
+    unitConfig = {
+      # Skip cleanly when ~/filen has not been created/restored yet, rather than
+      # landing in --failed — the same guard study, docker-stack and
+      # opencode-telegram already carry. It will start on its own the moment the
+      # directory exists.
+      ConditionPathExists = "/home/${username}/filen";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      User = username;
+      Environment = [
+        "HOME=/home/${username}"
+        "USER=${username}"
+        "LOGNAME=${username}"
+      ];
+      # Filen credentials, rendered from sops at activation (./secrets.nix).
+      # A file, not Environment=: these are secrets, and Environment= would put
+      # them in the unit definition where `systemctl show` reads them back.
+      EnvironmentFile = [config.sops.templates."filen-sync.env".path];
+      ExecStart = "${filenSync}/bin/filen-sync";
+      # Generous but bounded: the very first run pulled 2.1 GiB. Bounded so a
+      # hung connection fails the unit instead of wedging it forever.
+      TimeoutStartSec = "60min";
+    };
+  };
+
+  systemd.timers.filen-sync = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      # Wait out boot: tailscale/network come up first, and an immediate sync
+      # would just fail and burn a retry.
+      OnBootSec = "10min";
+      # Cadence for an idle box. AccuracySec matters — the default of 1 min
+      # would smear a 30 min cadence into something erratic.
+      OnUnitActiveSec = "30min";
+      AccuracySec = "1min";
+      # NOT Persistent=: that only applies to OnCalendar timers. Missed runs
+      # while the box was off are recovered by OnBootSec instead.
     };
   };
 
