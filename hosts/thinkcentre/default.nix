@@ -88,8 +88,17 @@
   #
   # If the disk is ever reformatted again, mkfs regenerates the UUID, so this
   # line has to follow it — `blkid /dev/sda1` then update the value below.
+  # REFORMATTED 2026-10-15 on his order ("erase fully / recreate it just ext4"):
+  # the disk had lost its GPT while the ext4 superblock survived, so it held a
+  # readable filesystem the kernel could not address. Wiped and rebuilt as one
+  # GPT partition + mkfs.ext4 -L backup. New UUID 259b0fb9…; the old
+  # 2ad7d4fc… is gone and this line must follow it or boot times out on a
+  # device that no longer exists (the exact failure mode above). Before the
+  # wipe, its only unmirrored content — ~/projects/servers, 13 compose
+  # projects — was copied to the live path, since the box's own restore had
+  # left it absent and this disk was its last copy.
   fileSystems."/srv/backup" = {
-    device = "/dev/disk/by-uuid/2ad7d4fc-9c1d-4baa-a3fd-b05bc0248f28";
+    device = "/dev/disk/by-uuid/259b0fb9-b9d1-40fd-a68c-9f6ebdd60a3c";
     fsType = "ext4";
     options = ["defaults" "nofail"];
   };
