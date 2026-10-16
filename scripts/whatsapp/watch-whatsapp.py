@@ -5,8 +5,11 @@
 
 Every behaviour here is a scar, not a preference:
 
-* scope is the SAME closed list as replies -- 11 chats. His words 2026-10-03:
+* scope is the SAME closed list as replies -- 9 chats. His words 2026-10-03:
   "also dont watch others" / "keep watching and replaying to the 10 only".
+  2026-10-16: hassan and mohannad dropped from the list -- "never watch, never
+  read, never speak". The list is one thing, so the reply half follows the
+  watch half; wa-send carries the matching refusal as MUTE.
 * a persistent rowid cursor, so re-arms continue exactly where the last
   stopped -- no dupes, and no gap that swallows an instruction between two
   arms (that gap ate "Are u here" once).
@@ -45,6 +48,8 @@ BRIDGE = Path(
 DB = BRIDGE / "store" / "messages.db"
 
 # Reply scope and watch scope are one list. Anything not here is not read.
+# 2026-10-16: hassan and mohannad are OUT -- his words: "never watch, never
+# read, never speak". Not here means their rows are never even selected.
 WATCH = (
     "966551052452@s.whatsapp.net",  # self-chat -- the instruction channel
     "966554611442@s.whatsapp.net",  # mum
@@ -54,8 +59,6 @@ WATCH = (
     "966505560448@s.whatsapp.net",  # zahraa
     "966506836216@s.whatsapp.net",  # kawthar
     "966508615596@s.whatsapp.net",  # abood
-    "966506370279@s.whatsapp.net",  # hassan
-    "966565541131@s.whatsapp.net",  # mohannad
     "966577647909@s.whatsapp.net",  # ahmed al-khalifa (decisions row 88)
 )
 

@@ -20,6 +20,9 @@ Every rule in here is Mugdad's, learned the hard way, not a style choice:
   sends from his typing. Filtering `is_from_me` instead would blind the
   self-chat: it is the instruction channel, and every message he types there
   carries that flag.
+* MUTE is a refusal, not a preference: 2026-10-16, "never watch, never read,
+  never speak" -- hassan and mohannad. The watch half is enforced by their
+  absence from the watcher's scope; this is the speaking half.
 """
 
 import json
@@ -38,6 +41,16 @@ BRIDGE = Path(
     os.environ.get("WA_BRIDGE_DIR", str(Path.home() / "projects/whatsapp-mcp/whatsapp-bridge"))
 )
 API = "http://127.0.0.1:8080/api/send"
+
+# 2026-10-16, his words: "never watch, never read, never speak" -- hassan and
+# mohannad are out of BOTH scopes. The watcher drops them by omission; this is
+# the speaking half: a mechanical refusal, so "never speak" survives me.
+MUTE = frozenset(
+    {
+        "966506370279@s.whatsapp.net",  # hassan
+        "966565541131@s.whatsapp.net",  # mohannad
+    }
+)
 
 
 def stamp() -> str:
@@ -61,6 +74,9 @@ def main() -> int:
 
     if STOP.exists():
         print(f"STOP flag present ({STOP}) -- refusing to send")
+        return 1
+    if jid in MUTE:
+        print(f"{jid} is muted (his order 2026-10-16: never watch, never read, never speak) -- refusing")
         return 1
     if "|" in why:
         print("refusing: a why containing '|' shreds the pipe-delimited log")
