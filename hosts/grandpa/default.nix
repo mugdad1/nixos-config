@@ -16,9 +16,12 @@
 #   sudo nixos-generate-config --show-hardware-config
 # and replace it wholesale (never hand-edit the generated one).
 #
-# What this box HOSTS is deliberately undecided — nothing service-specific
-# (docker, backup, WhatsApp, blocky upstream tweaks beyond the shared pair) is
-# pre-wired. Add it here when it is known.
+# WHAT IT IS (his word, 2026-10-16): a **lightweight server** — headless, and
+# that part is now a decision, not a placeholder. Which services it runs is
+# still open: nothing service-specific (docker, backup, WhatsApp, blocky
+# upstream tweaks beyond the shared pair) is pre-wired. Add it here when a
+# service is actually chosen. Until install day the box does not exist yet —
+# see the hardware warning above.
 {...}: {
   imports = [
     ./hardware-configuration.nix
