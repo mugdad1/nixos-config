@@ -71,13 +71,28 @@ else
   note "/dev/sdb not present (expected on hosts without the backup disk)"
 fi
 
-# ── DNS (blocky owns 127.0.0.1) ────────────────────────────────────────────
-if dig +short +time=3 +tries=1 github.com @127.0.0.1 >/dev/null 2>&1 \
-   && [ -n "$(dig +short +time=3 +tries=1 github.com @127.0.0.1 2>/dev/null)" ]; then
-  ok "blocky answers github.com"
-else
-  bad "blocky does not answer github.com @127.0.0.1"
-fi
+# ── DNS: three separate truths, each probed directly (2026-10-16: the old
+#    check tested ONLY 127.0.0.1 and called it "DNS ok" while the house side
+#    was invisible — he called it a lie, correctly) ──────────────────────────
+# 1) this box's own resolver (blocky, 127.0.0.1)
+L=$(dig +short +time=3 +tries=1 github.com @127.0.0.1 2>/dev/null | head -1)
+if [ -n "$L" ]; then ok "blocky (127.0.0.1, this box's resolver) -> $L"
+else bad "blocky NOT answering on 127.0.0.1"; fi
+
+# 2) the HOUSE's DNS = the router (servers.md rule 4: this box never serves
+#    the LAN; a house device that cannot resolve starts HERE)
+R=$(dig +short +time=3 +tries=1 github.com @192.168.8.1 2>/dev/null | head -1)
+if [ -n "$R" ]; then ok "router 192.168.8.1 (the house's DNS) -> $R"
+else bad "ROUTER 192.168.8.1 NOT ANSWERING — the house has no DNS"; fi
+
+# 3) this box on the LAN side — refused is CORRECT (rule 4), an answer would
+#    be the surprise. Raw dig text decides; no shell one-liner guesswork.
+Q=$(dig +time=3 +tries=1 github.com @192.168.8.225 2>&1)
+case "$Q" in
+  *"connection refused"*) ok "192.168.8.225:53 refused — correct: this box does not serve the LAN" ;;
+  *"no servers could be reached"*) note "192.168.8.225:53 no reply (timeout) — not refused, check the interface" ;;
+  *) note "192.168.8.225:53 ANSWERS — something binds the LAN; rule 4 says nothing should" ;;
+esac
 
 # ── tailscale: the UNIT being active proves nothing (2026-10-16: active but
 #    BackendState=Stopped, no tailscale0) ─────────────────────────────────────
@@ -98,9 +113,17 @@ if [ -e "$STATE/wa-stop" ]; then
 else
   ok "guard lifted (wa-stop absent)"
 fi
-ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || echo 0)
-if [ "$ARMS" -le 1 ]; then ok "watcher arms: $ARMS"
-else bad "watcher arms: $ARMS — TWO ARMS ARE RUNNING, kill one"; fi
+# pgrep -c prints its count AND exits 1 when the count is 0 — appending an
+# echo on failure produced "0\n0" and a test error (2026-10-16: the script
+# then reported "TWO ARMS" with a count of zero — the exact lie he called out)
+ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || true)
+ARMS=$(printf '%s' "$ARMS" | head -n 1)
+case "$ARMS" in
+  ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
+  0) bad "watcher NOT armed — run wa-armsup.sh 1800" ;;
+  1) ok "watcher arms: 1" ;;
+  *) bad "watcher arms: $ARMS — TWO ARMS STARVE EACH OTHER, kill one" ;;
+esac
 if [ "$ARMS" -ge 1 ] && [ -f "$STATE/wa-watch.log" ]; then
   ok "last arm: $(grep '=== ARM' "$STATE/wa-watch.log" | tail -1 | sed 's/^=== //')"
 fi

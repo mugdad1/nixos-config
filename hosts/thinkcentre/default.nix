@@ -58,6 +58,17 @@
   # silently boots whatever was there before ("nothing happened").
   boot.loader.efi.efiSysMountPoint = "/boot";
 
+  # Chip sensors (his "Sensors detect" 2026-10-16): `sensors-detect --auto`
+  # found coretemp (CPU package/cores) and nct6683 (Nuvoton Super-I/O fan/
+  # volt/temp header) and modprobe'd them — transient, gone on every reboot
+  # unless named here. Declared so `sensors` works from a cold boot without
+  # re-running detection; a module that finds no hardware binds to nothing,
+  # so this is harmless on hosts without the chip (grandpa carries its own).
+  boot.kernelModules = [
+    "coretemp"
+    "nct6683"
+  ];
+
   # Docker engine only. The 12 compose projects live in ~/Projects/servers and
   # are deliberately OS-agnostic — they are restored by hand, not re-declared
   # here. Nothing in this flake starts a container on its own. The launcher is
