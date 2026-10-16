@@ -53,34 +53,18 @@ elif grep -qi 'thinkcentre' <<<"$DMI_FAMILY" || grep -qi '^10LY' <<<"$DMI_NAME";
     HOST="thinkcentre"
     GPU="intel"
 else
-    # grandpa — his answer to "how will u know him?": the board is the AMI one
-    # ("the mb is megatrends"), so bios_vendor is the tell. Checked LAST, so a
-    # Megatrends BIOS on a Lenovo box still lands on thinkcentre above. If even
-    # this misses (unknown board), do NOT abort like the old code did — ask.
-    DMI_BIOS="$(cat /sys/class/dmi/id/bios_vendor 2>/dev/null || true)"
-    if grep -qi 'megatrends' <<<"$DMI_BIOS"; then
-        HOST="grandpa"
-        GPU="intel"
-    fi
-fi
-
-if [[ -z ${HOST:-} ]]; then
-    # Auto-detection failed: ask instead of dying ("Could not detect host!" is
-    # how the installer once quit mid-install-day). tags match flake outputs.
-    HOST=$(whiptail --title "Host not auto-detected" \
-        --menu "Which box is this? (DMI: ${DMI_NAME:-?} / family: ${DMI_FAMILY:-?})" \
-        14 64 3 \
-        "grandpa"      "custom desktop — i3 2nd gen, AMI Megatrends board, GT 210" \
-        "thinkcentre"  "Lenovo ThinkCentre — the 512GB server" \
-        "t480s"        "ThinkPad T480s" \
-        3>&1 1>&2 2>&3) || exit 1
+    # His call, 2026-10-16: "if thinkcenter or thinkpad else grandpa". Three
+    # boxes in this house — if the DMI is neither of the other two, it IS
+    # grandpa. No BIOS string to get wrong, nothing to ask.
+    HOST="grandpa"
     GPU="intel"
 fi
 
 SUMMARY="\
 Username:   $CURRENT_USERNAME
 Host:       ${HOST:-unknown}
-GPU:        ${GPU:-unknown}"
+GPU:        ${GPU:-unknown}
+DMI seen:   name='${DMI_NAME:-}' family='${DMI_FAMILY:-}'"
 
 if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "NixOS Installer"); then
     exit 0
