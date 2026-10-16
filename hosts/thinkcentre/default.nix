@@ -40,7 +40,11 @@
     # probing `config.systemd.services.<name>` for each unit, which is the only
     # way to catch it — a green build proves nothing about files that were
     # never imported.
-    ./backup.nix
+    # ./backup.nix — DISABLED 2026-10-16: its whole target /srv/backup left the
+    # machine (ADATA 240 GB → grandpa, his order "there is no /srv/backup
+    # anymore"), so the 03:17 timer could only fail nightly. Re-enable only
+    # together with a mount point for it. Everything else stays:
+    # ./backup.nix
     ./services.nix
     ./packages.nix
     ./overrides.nix
@@ -77,42 +81,19 @@
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
 
-  # /srv/backup — the ADATA SP550, **ext4**, labelled "backup".
+  # /srv/backup — GONE as of 2026-10-16 on his order ("the thinkcentre is sda
+  # 512 only, there is no /srv/backup anymore"). The ADATA SP550 240 GB moved
+  # physically to grandpa, and this box's boot was observed blocking on the
+  # missing device — "nixos can't launch till i plug the 240gb" — despite the
+  # entry carrying nofail, so the mount stanza is removed outright rather than
+  # left to fail. This host now has exactly one disk: the 512 GB WAVE.
   #
-  # MOVED HERE from hardware-configuration.nix on 2026-10-13. It used to live in
-  # that file, but nixos-generate-config only reports filesystems that are in the
-  # LIVE fstab — and this one never is, because it is exactly the entry that
-  # makes it. So regenerating on the box silently dropped it, backup-daily started
-  # failing every night with "/srv/backup is not mounted", and sda sat unmounted.
-  # Declaring it on the host means it survives every future regeneration.
-  #
-  # REFORMATTED btrfs -> ext4 on 2026-10-13 on his order ("rm the backup
-  # completely so we start clean"), wiping the 11 Void-era snapshots after
-  # checking they held only content already restored to ~/Projects by hand
-  # (every home/void was ~600M of .local + Projects). backup-run.sh is plain
-  # rsync with --link-dest — hardlinks and nothing else — so the filesystem
-  # change costs the script nothing; there is no btrfs-specific call in it.
-  #
-  # nofail: a missing disk skips the mount instead of hanging boot — same as the
-  # donor's fstab. Do NOT also port a backup-mount service: two mounters racing
-  # the same UUID is how the donor double-mounted it.
-  #
-  # If the disk is ever reformatted again, mkfs regenerates the UUID, so this
-  # line has to follow it — `blkid /dev/sda1` then update the value below.
-  # REFORMATTED 2026-10-15 on his order ("erase fully / recreate it just ext4"):
-  # the disk had lost its GPT while the ext4 superblock survived, so it held a
-  # readable filesystem the kernel could not address. Wiped and rebuilt as one
-  # GPT partition + mkfs.ext4 -L backup. New UUID 259b0fb9…; the old
-  # 2ad7d4fc… is gone and this line must follow it or boot times out on a
-  # device that no longer exists (the exact failure mode above). Before the
-  # wipe, its only unmirrored content — ~/projects/servers, 13 compose
-  # projects — was copied to the live path, since the box's own restore had
-  # left it absent and this disk was its last copy.
-  fileSystems."/srv/backup" = {
-    device = "/dev/disk/by-uuid/259b0fb9-b9d1-40fd-a68c-9f6ebdd60a3c";
-    fsType = "ext4";
-    options = ["defaults" "nofail"];
-  };
+  # History (kept short): declared here (not in hardware-configuration.nix)
+  # because nixos-generate-config only reports live-fstab filesystems; ext4,
+  # label "backup", last wipe 2026-10-15 → UUID 259b0fb9… (now physically in
+  # grandpa, UUID irrelevant here). The nightly backup service went with it —
+  # see the ./backup.nix import below. Snapshots live ON that disk in
+  # /srv/backup/snapshots and survive the move.
 
   # Time. The CMOS battery was removed 2026-10-04, so every AC-cut boot starts
   # at 2015-01-01 until NTP steps it (measured 10–20 s typical, >120 s once).
