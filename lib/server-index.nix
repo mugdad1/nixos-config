@@ -13,7 +13,7 @@
 # **Add a service to `services` below, run `push-server-index`, and the index
 # matches reality again** — the old
 # hand-written `~/Projects/servers/caddy/index.html` had already drifted: it
-# was missing `study` (added today) and still advertised the whatsapp-bridge
+# was missing `study` (added today)
 # line that was deleted on 2026-10-08.
 {
   g ? import ./gruvbox.nix,

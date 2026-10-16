@@ -72,54 +72,10 @@
     # the hand tools need.
     python3
 
-    # ── WhatsApp tooling, nixified 2026-10-15 ─────────────────────────────────
-    # These four lived in ~/.local/bin, which is outside Nix and in practice
-    # outside the backup: reinstalls on 2026-10-08 AND 2026-10-15 deleted them,
-    # and the 10-14 rebuild was lost with them because the nightly job never
-    # produced a single snapshot. His word: "keep them in the nixos-config" so a
-    # reinstall cannot take them again.
-    #
-    # They stay plain script files under scripts/whatsapp/ and are installed
-    # VERBATIM -- writeTextFile with builtins.readFile, not writeShellScriptBin
-    # and not inline heredocs in this file: what he reads and edits in the repo
-    # is byte-for-byte what runs, with its own shebang and its own docstring
-    # explaining why each rule exists. python3 above resolves the interpreter.
-    (writeTextFile {
-      name = "wa-send";
-      destination = "/bin/wa-send";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/wa-send;
-    })
-    # Log-first send through the bridge's /api/send (field is `recipient`, not
-    # chat_jid -- the 2026-10-03 bug), refuses the stop flag, refuses a `|`
-    # in the why, writes FAILED - (NOT SENT) itself, and records every sent
-    # text so the watcher cannot wake on our own messages.
-    (writeTextFile {
-      name = "watch-whatsapp";
-      destination = "/bin/watch-whatsapp.py";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/watch-whatsapp.py;
-    })
-    # One-shot poller over store/messages.db with a persistent rowid cursor,
-    # scoped to the same 11 chats as the reply allow-list. Exits on a hit:
-    # the completion is what wakes the agent.
-    (writeTextFile {
-      name = "wa-armsup";
-      destination = "/bin/wa-armsup.sh";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/wa-armsup.sh;
-    })
-    # Supervisor -- one arm at a time (two arms starve each other on the shared
-    # cursor), and it stands down rather than respawning a refusing watcher.
-    (writeTextFile {
-      name = "qr-serve";
-      destination = "/bin/qr-serve.py";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/qr-serve.py;
-    })
-    # Pairing page for the next re-pair: re-reads the freshest QR out of
-    # store/bridge.log (a ~20 s code is dead the moment it is captured) and
-    # serves it on the Tailscale IP, --print for a terminal with no browser.
+    # ── WhatsApp tooling: REMOVED 2026-10-16, his order "rm whatsapp fully
+    # fully fully" / "Never whatsapp. No one." (decisions row 107). The four
+    # tools — wa-send, watch-whatsapp.py, wa-armsup.sh, qr-serve.py — are
+    # git history now, like the runit era before them.
 
     # ── server baseline, added 2026-10-13 ───────────────────────────────────
     # modules/home/terminal/cli.nix carries most of these on the laptop, but it

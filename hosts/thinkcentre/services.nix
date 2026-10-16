@@ -309,83 +309,11 @@ in {
     };
   };
 
-  # ─── WhatsApp bridge (whatsapp-mcp) ───────────────────────────────────────
-  # RESTORED 2026-10-14 on his *"also bring me back whatsapp watcher"* — this
-  # reverses the 2026-10-08 removal (wiki decisions rows 57 / 82) by his word
-  # today; the fork is gone, so the code is a fresh clone of upstream
-  # verygoodplugins/whatsapp-mcp at v0.7.0 (wiki projects/whatsapp-mcp.md).
-  #
-  # The run shape is the old runit run script, ported exactly like the three
-  # units above (decisions.md row 41): the login user, HOME exported, and the
-  # log opened by a shell ALREADY running as that user, so store/bridge.log is
-  # never root-owned and downloaded media lands readable — row 38 is what a
-  # root run does: 12 dirs / 30 files of root:root 0600 media that every tool
-  # then failed to open. No `Group =` (row 78: NixOS has no group named after
-  # the user, and a unit that fails there takes switch-to-configuration down
-  # with it). Restart=always + RestartSec=3 is the donor's tmux
-  # `while true … sleep 3` loop, which is what offers a fresh QR when the old
-  # one expires (~20 s per code) instead of dying unpaired.
-  #
-  # One instance only, ever: a second bridge means two QR channels and two
-  # REST servers, and health answers `connected: true` from one while the
-  # other cycles QR codes forever (wiki whatsapp-mcp.md § Reinstall restore).
-  # ffmpeg for media rendering is in the user profile (`nix profile install
-  # nixpkgs#ffmpeg`, on PATH as ~/.nix-profile/bin), not in this unit.
-  #
-  # CASE + GUARD, 2026-10-15. Two separate things were wrong here. The
-  # WorkingDirectory spelled ~/Projects (capital) while the reinstall restored
-  # to ~/projects (lowercase) — ext4 is case-sensitive, so the CHDIR failed.
-  # But the repo is absent under EITHER spelling on this box (only ~/projects
-  # {study,wiki,servers} came back), so fixing the case alone would not have
-  # helped: it would still fail every 3 s. Hence the condition, which is the
-  # shape docker-stack already used and which is why that unit stayed silent
-  # through the same reinstall. Until the repo is re-cloned upstream at v0.7.0
-  # (wiki whatsapp-mcp.md) this stays skipped-cleanly rather than failing, so
-  # it can never again hold `nixos-rebuild switch` hostage at exit 4.
-  systemd.services.whatsapp-bridge = {
-    description = "WhatsApp bridge (whatsapp-mcp whatsmeow) on 127.0.0.1:8080";
-    unitConfig.ConditionPathExists = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
-    wantedBy = ["multi-user.target"];
-    after = ["network-online.target"];
-    wants = ["network-online.target"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # The repo is a plain clone in the home directory, not a store path —
-      # it holds the paired session (store/whatsapp.db), so it must run in
-      # place or pairing would be lost on every rebuild.
-      WorkingDirectory = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "PATH=/home/${username}/.nix-profile/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin"
-      ];
-      # bash -c carries the `>> store/bridge.log` redirect itself: systemd's
-      # own StandardOutput=append: opens the file from PID 1 as root, which is
-      # the row-38 trap in a different costume. The `mkdir -p store` is there
-      # because the redirect is evaluated BEFORE the bridge would create the
-      # directory itself — on a fresh clone (no store/ yet) the unit fails with
-      # "store/bridge.log: No such file or directory" and crash-loops.
-      ExecStart = "${pkgs.bash}/bin/bash -c 'mkdir -p store && exec ./whatsapp-bridge >> store/bridge.log 2>&1'";
-      Restart = "always";
-      RestartSec = "3";
-    };
-  };
-
-  # ── QR pairing page over Tailscale (2026-10-15) ────────────────────────────
-  # qr-serve.py (bridge dir, run by hand while pairing) serves the freshest QR
-  # on :8877 so the code can be read from the laptop: the phone doing the
-  # scanning cannot display its own code, and this box has no screen either —
-  # 127.0.0.1:8877 in the wiki's method history was reachability, not a
-  # deliberate bind.
-  #
-  # Scoped to tailscale0 rather than networking.firewall.allowedTCPPorts: a
-  # QR links a device to his WhatsApp account, so it must not be readable from
-  # the LAN, and qr-serve.py binds the tailnet address for the same reason.
-  # Outside an actual pairing attempt nothing listens on the port, so the rule
-  # otherwise matches an empty port.
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8877];
+  # ── WhatsApp bridge: REMOVED 2026-10-16, his order ("rm whatsapp fully
+  # fully fully", "Never whatsapp. No one.") — decisions row 107. The unit,
+  # its case history and the tailscale0 QR port are gone with it.
+  # ~/projects/whatsapp-mcp stays on disk as the message-history archive;
+  # deleting that is his call, not this repo's.
 
   # The unit half of the launcher defined above.
   #
