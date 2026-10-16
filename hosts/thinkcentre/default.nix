@@ -112,6 +112,20 @@
   # no equivalent for. Exactly one of the two may be enabled.
   services.timesyncd.enable = true;
 
+  # NTP addressed by literal IPv4, NEVER by the pool hostname — the Void-era fix
+  # (decisions row 24) ported: chrony there carried `server 162.159.200.1 iburst`
+  # plus 216.239.35.0/.4 for exactly this reason, and this is the half timesyncd
+  # was missing. With the cell gone the box boots at 2015-01-01, and at that clock
+  # blocky's DoT/DoQ upstreams fail TLS validation, so DNS is dead too; a pool
+  # hostname then has to be resolved by the resolver that is down, the clock can
+  # never be fixed, and DNS never comes back. An IP needs no DNS, so NTP breaks
+  # the deadlock from its own end. All three measured reachable here 2026-10-16.
+  networking.timeServers = [
+    "162.159.200.1" # time.cloudflare.com
+    "216.239.35.0" # time.google.com
+    "216.239.35.4"
+  ];
+
   # Replaces Void's zramen runit unit (4 GiB, lz4, prio 100). zramSwap is
   # zram-generator underneath: create at boot, tear down at shutdown.
   zramSwap = {
