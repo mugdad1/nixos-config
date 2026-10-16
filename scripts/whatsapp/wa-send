@@ -75,9 +75,19 @@ def main() -> int:
     if STOP.exists():
         print(f"STOP flag present ({STOP}) -- refusing to send")
         return 1
-    if jid in MUTE:
+    # ONE-TIME TICKET (2026-10-16, his explicit words: "Temp allow" /
+    # "this is just 1 time ticket"): WA_MUTE_TEMP_ALLOW=<jid> lifts the
+    # refusal for that exact JID for this single invocation only. The seal
+    # below remains the mechanical default — with the variable unset (what
+    # every future call meets) the refusal fires exactly as before. Hassan
+    # has no ticket. مهند's ticket shows up in the send log like any other
+    # send, and the log is the count.
+    ticket = {j.strip() for j in os.environ.get("WA_MUTE_TEMP_ALLOW", "").split(",") if j.strip()}
+    if jid in MUTE and jid not in ticket:
         print(f"{jid} is muted (his order 2026-10-16: never watch, never read, never speak) -- refusing")
         return 1
+    if jid in MUTE and jid in ticket:
+        print(f"ONE-TIME TICKET honored for {jid} (explicit allow 2026-10-16) -- one send")
     if "|" in why:
         print("refusing: a why containing '|' shreds the pipe-delimited log")
         return 1
