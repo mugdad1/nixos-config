@@ -53,22 +53,34 @@ while read -r USE MNT; do
 done < <(df -h --output=pcent,target -x tmpfs -x devtmpfs -x overlay 2>/dev/null \
          | tail -n +2 | awk '{gsub(/^ +/,"",$1); print $1, $2}')
 
-# SMART of the backup disk (sudo -n: this box's sudo is passwordless)
-if [ -b /dev/sdb ]; then
-  H=$(sudo -n smartctl -H /dev/sdb 2>/dev/null | awk -F: '/result/{print $2}')
-  if echo "$H" | grep -qi PASSED; then ok "sdb SMART: PASSED"
-  else bad "sdb SMART verdict:${H:- unreadable (try: sudo smartctl -H /dev/sdb)}"; fi
-  # attr 5 / 1 / 160 raw — trend is the story. Baseline 2026-10-16: 5=45, 1=0, 160=0
-  read -r A1 A5 A160 <<<"$(sudo -n smartctl -A /dev/sdb 2>/dev/null \
+# SMART of the BACKUP disk — found by what it IS (the fs mounted on
+# /srv/backup), NEVER by a hard-coded sdX: after the 2026-10-16 reboot the
+# names swapped (ADATA went sdb→sda, the system disk took sdb), and the old
+# "/dev/sdb" check silently started watching the SYSTEM drive — visible only
+# as attr5 mysteriously "dropping" 45→0, which no SMART counter ever does.
+# sudo -n: this box's sudo is passwordless.
+BKPART=$(findmnt -no SOURCE /srv/backup 2>/dev/null | head -1)
+if [ -n "$BKPART" ] && [ -b "$BKPART" ]; then
+  PK=$(lsblk -no pkname "$BKPART" 2>/dev/null | head -1)
+  if [ -n "$PK" ]; then BKDISK="/dev/$PK"; else BKDISK="$BKPART"; fi
+  IDENT=$(lsblk -ndo MODEL,SERIAL "$BKDISK" 2>/dev/null | xargs)
+  H=$(sudo -n smartctl -H "$BKDISK" 2>/dev/null | awk -F: '/result/{print $2}')
+  if echo "$H" | grep -qi PASSED; then ok "backup disk $BKDISK ($IDENT): SMART PASSED"
+  else bad "backup disk $BKDISK ($IDENT): SMART verdict:${H:- unreadable}"; fi
+  # attr 5 / 1 / 160 raw — trend is the story. Baseline 2026-10-16 (ADATA
+  # SP550, serial 2G3020002085): 5=45, 1=0, 160=0
+  read -r A1 A5 A160 <<<"$(sudo -n smartctl -A "$BKDISK" 2>/dev/null \
     | awk '/^ *1 /{r1=$NF} /^ *5 /{r5=$NF} /^ *160 /{r160=$NF} END{print r1+0, r5+0, r160+0}')"
   if [ "${A1:-0}" -gt 0 ] || [ "${A160:-0}" -gt 0 ]; then
-    bad "sdb read errors creeping: attr1=$A1 attr160=$A160 (baseline 0/0)"
-  else ok "sdb read errors 0"; fi
+    bad "backup disk read errors creeping: attr1=$A1 attr160=$A160 (baseline 0/0)"
+  else ok "backup disk read errors 0"; fi
   if [ "${A5:-0}" -gt 45 ]; then
-    note "sdb attr5 moved: $A5 (baseline 45 on 2026-10-16) — watch it, replace on fast growth"
-  else ok "sdb attr5=$A5 (baseline 45)"; fi
+    note "backup disk attr5 moved: $A5 (baseline 45 on 2026-10-16) — watch it, replace on fast growth"
+  else ok "backup disk attr5=$A5 (baseline 45, ADATA)"; fi
+elif [ -d /srv/backup ]; then
+  bad "nothing mounted at /srv/backup — the backup disk is GONE (check lsblk for name swaps)"
 else
-  note "/dev/sdb not present (expected on hosts without the backup disk)"
+  note "/srv/backup not expected on this host"
 fi
 
 # ── DNS: three separate truths, each probed directly (2026-10-16: the old
