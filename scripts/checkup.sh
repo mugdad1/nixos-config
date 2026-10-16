@@ -33,7 +33,13 @@ for u in whatsapp-bridge tailscaled blocky; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
   else bad "unit $u not active"; fi
 done
-for t in backup-daily.timer sv-watch.timer; do
+# Timers — only ones this host actually INSTALLED. backup-daily.timer left with
+# the 240GB on 2026-10-16 (row 106); demanding it here made checkup FAIL by
+# design on a healthy box.
+TIMERS=""
+systemctl list-unit-files backup-daily.timer --no-legend 2>/dev/null | grep -q '^backup' && TIMERS="backup-daily.timer"
+TIMERS="$TIMERS sv-watch.timer"
+for t in $TIMERS; do
   if systemctl is-active --quiet "$t" 2>/dev/null; then ok "timer $t active"
   else bad "timer $t not active"; fi
 done
@@ -77,10 +83,14 @@ if [ -n "$BKPART" ] && [ -b "$BKPART" ]; then
   if [ "${A5:-0}" -gt 45 ]; then
     note "backup disk attr5 moved: $A5 (baseline 45 on 2026-10-16) — watch it, replace on fast growth"
   else ok "backup disk attr5=$A5 (baseline 45, ADATA)"; fi
-elif [ -d /srv/backup ]; then
+elif grep -q '/srv/backup' /etc/fstab 2>/dev/null; then
+  # Configured but not mounted = a REAL failure (the failure mode this check
+  # was born for). Only reach here if fstab still wants the disk.
   bad "nothing mounted at /srv/backup — the backup disk is GONE (check lsblk for name swaps)"
 else
-  note "/srv/backup not expected on this host"
+  # fstab does not configure it at all: the disk moved to grandpa (2026-10-16).
+  # An empty leftover mount-point directory must not scream.
+  note "/srv/backup not configured on this host — backup-disk checks skipped"
 fi
 
 # ── DNS: three separate truths, each probed directly (2026-10-16: the old
