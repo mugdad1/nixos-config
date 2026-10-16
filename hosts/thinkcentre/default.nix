@@ -40,11 +40,12 @@
     # probing `config.systemd.services.<name>` for each unit, which is the only
     # way to catch it — a green build proves nothing about files that were
     # never imported.
-    # ./backup.nix — DISABLED 2026-10-16: its whole target /srv/backup left the
-    # machine (ADATA 240 GB → grandpa, his order "there is no /srv/backup
-    # anymore"), so the 03:17 timer could only fail nightly. Re-enable only
-    # together with a mount point for it. Everything else stays:
-    # ./backup.nix
+    # ./backup.nix — RE-ENABLED the same evening (2026-10-16): the disk came
+    # back as /srv/backup ("use it as backup"), so the 03:17 timer has a real
+    # target again. It had been disabled earlier today when the disk was
+    # declared gone for grandpa (row 106). Mount, timer and the disk check in
+    # checkup.sh (fstab-gated) all move together or not at all.
+    ./backup.nix
     ./services.nix
     ./packages.nix
     ./overrides.nix
@@ -81,19 +82,25 @@
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
 
-  # /srv/backup — GONE as of 2026-10-16 on his order ("the thinkcentre is sda
-  # 512 only, there is no /srv/backup anymore"). The ADATA SP550 240 GB moved
-  # physically to grandpa, and this box's boot was observed blocking on the
-  # missing device — "nixos can't launch till i plug the 240gb" — despite the
-  # entry carrying nofail, so the mount stanza is removed outright rather than
-  # left to fail. This host now has exactly one disk: the 512 GB WAVE.
+  # /srv/backup — BACK, the same day it was buried (2026-10-16 evening, his
+  # order: *"use it as backup after formatting it to ext4"*). The disk never
+  # went to grandpa: the ADATA SP550 240 GB was wiped in the afternoon
+  # (wipefs + whole-disk blkdiscard, on his order "erease the 240 fuly"), then
+  # reformatted GPT + one ext4 partition, label "backup", NEW UUID below —
+  # found by SERIAL 2G3020002085, never by sdX (names swap across reboots:
+  # sdb yesterday, sda today).
   #
-  # History (kept short): declared here (not in hardware-configuration.nix)
-  # because nixos-generate-config only reports live-fstab filesystems; ext4,
-  # label "backup", last wipe 2026-10-15 → UUID 259b0fb9… (now physically in
-  # grandpa, UUID irrelevant here). The nightly backup service went with it —
-  # see the ./backup.nix import below. Snapshots live ON that disk in
-  # /srv/backup/snapshots and survive the move.
+  # THE LESSON OF THIS ENTRY (row 106): nofail alone did NOT let the box boot
+  # when the disk was missing — systemd sat on the absent .device job and the
+  # observed result was "nixos can't launch till i plug the 240gb". The
+  # missing half is x-systemd.device-timeout: the device wait gives up after
+  # 10 s, nofail skips the mount, boot continues. A missing backup disk is
+  # now a 10-second delay, never a dead box.
+  fileSystems."/srv/backup" = {
+    device = "/dev/disk/by-uuid/6fd6f2eb-ebbf-4921-bf4d-befabf226626";
+    fsType = "ext4";
+    options = ["defaults" "nofail" "x-systemd.device-timeout=10s"];
+  };
 
   # Time. The CMOS battery was removed 2026-10-04, so every AC-cut boot starts
   # at 2015-01-01 until NTP steps it (measured 10–20 s typical, >120 s once).
