@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# checkup.sh — one-shot health sweep of the ThinkCentre, printed as findings.
+#
+#     checkup          # everything, tldr-style: only problems are loud
+#     checkup -v       # also print the OK lines
+#
+# Built 2026-10-16 on his word ("check on him between times" + the tailscale
+# stop that nobody noticed + the sdb SMART reading). Every section here has
+# already bitten once:
+#   * tailscaled active but the node STOPPED — a green systemctl meant nothing,
+#     so the check is the interface + backend state, not the unit.
+#   * /dev/sdb holds the ONLY local snapshots — its SMART trend is watched
+#     (attr 5 was 45 on 2026-10-16; a moving number is the alarm, not 45).
+#   * one watcher arm only — two arms starve each other on the shared cursor.
+#   * repos shared between two hosts — ahead/behind both matter.
+#
+# Exit: 0 = all clean, 1 = at least one FAIL line (so it can gate a timer).
+set -u
+
+VERBOSE=0
+[ "${1:-}" = "-v" ] && VERBOSE=1
+
+FAIL=0
+ok()  { [ "$VERBOSE" = 1 ] && printf '  ok    %s\n' "$*"; return 0; }
+bad() { printf '  FAIL  %s\n' "$*"; FAIL=1; }
+note() { printf '  ...   %s\n' "$*"; }
+
+# ── units ───────────────────────────────────────────────────────────────────
+FAILED_UNITS=$(systemctl list-units --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+if [ -n "$FAILED_UNITS" ]; then bad "failed units: $FAILED_UNITS"; else ok "no failed units"; fi
+
+for u in whatsapp-bridge tailscaled blocky; do
+  if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
+  else bad "unit $u not active"; fi
+done
+for t in backup-daily.timer sv-watch.timer; do
+  if systemctl is-active --quiet "$t" 2>/dev/null; then ok "timer $t active"
+  else bad "timer $t not active"; fi
+done
+
+# ── containers (docker may legitimately be absent — grandpa-style posture) ──
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  DOWN=$(docker ps -a --filter 'status=exited' --filter 'status=created' \
+         --filter 'status=dead' --filter 'status=restarting' \
+         --format '{{.Names}}' 2>/dev/null | tr '\n' ' ')
+  if [ -n "$DOWN" ]; then bad "containers not running: $DOWN"; else ok "all containers running"; fi
+fi
+
+# ── disks ───────────────────────────────────────────────────────────────────
+while read -r USE MNT; do
+  if [ "${USE%\%}" -ge 90 ]; then bad "disk $MNT at $USE"
+  else ok "disk $MNT at $USE"; fi
+done < <(df -h --output=pcent,target -x tmpfs -x devtmpfs -x overlay 2>/dev/null \
+         | tail -n +2 | awk '{gsub(/^ +/,"",$1); print $1, $2}')
+
+# SMART of the backup disk (sudo -n: this box's sudo is passwordless)
+if [ -b /dev/sdb ]; then
+  H=$(sudo -n smartctl -H /dev/sdb 2>/dev/null | awk -F: '/result/{print $2}')
+  if echo "$H" | grep -qi PASSED; then ok "sdb SMART: PASSED"
+  else bad "sdb SMART verdict:${H:- unreadable (try: sudo smartctl -H /dev/sdb)}"; fi
+  # attr 5 / 1 / 160 raw — trend is the story. Baseline 2026-10-16: 5=45, 1=0, 160=0
+  read -r A1 A5 A160 <<<"$(sudo -n smartctl -A /dev/sdb 2>/dev/null \
+    | awk '/^ *1 /{r1=$NF} /^ *5 /{r5=$NF} /^ *160 /{r160=$NF} END{print r1+0, r5+0, r160+0}')"
+  if [ "${A1:-0}" -gt 0 ] || [ "${A160:-0}" -gt 0 ]; then
+    bad "sdb read errors creeping: attr1=$A1 attr160=$A160 (baseline 0/0)"
+  else ok "sdb read errors 0"; fi
+  if [ "${A5:-0}" -gt 45 ]; then
+    note "sdb attr5 moved: $A5 (baseline 45 on 2026-10-16) — watch it, replace on fast growth"
+  else ok "sdb attr5=$A5 (baseline 45)"; fi
+else
+  note "/dev/sdb not present (expected on hosts without the backup disk)"
+fi
+
+# ── DNS (blocky owns 127.0.0.1) ────────────────────────────────────────────
+if dig +short +time=3 +tries=1 github.com @127.0.0.1 >/dev/null 2>&1 \
+   && [ -n "$(dig +short +time=3 +tries=1 github.com @127.0.0.1 2>/dev/null)" ]; then
+  ok "blocky answers github.com"
+else
+  bad "blocky does not answer github.com @127.0.0.1"
+fi
+
+# ── tailscale: the UNIT being active proves nothing (2026-10-16: active but
+#    BackendState=Stopped, no tailscale0) ─────────────────────────────────────
+if [ -d /sys/class/net/tailscale0 ]; then
+  TS=$(tailscale status 2>&1 | head -1)
+  case "$TS" in
+    "Tailscale is stopped"*|*"Logged out"*) bad "tailscale0 exists but: $TS" ;;
+    *) ok "tailscale: $TS" ;;
+  esac
+else
+  bad "tailscale0 missing — node is DOWN (sudo tailscale up --accept-dns=false)"
+fi
+
+# ── whatsapp duty ───────────────────────────────────────────────────────────
+STATE="${WA_STATE:-$HOME/.local/state/opencode}"
+if [ -e "$STATE/wa-stop" ]; then
+  note "wa-stop PRESENT — sends and watcher are (deliberately) down"
+else
+  ok "guard lifted (wa-stop absent)"
+fi
+ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || echo 0)
+if [ "$ARMS" -le 1 ]; then ok "watcher arms: $ARMS"
+else bad "watcher arms: $ARMS — TWO ARMS ARE RUNNING, kill one"; fi
+if [ "$ARMS" -ge 1 ] && [ -f "$STATE/wa-watch.log" ]; then
+  ok "last arm: $(grep '=== ARM' "$STATE/wa-watch.log" | tail -1 | sed 's/^=== //')"
+fi
+
+# ── repos (two hosts share them: pull before push, always) ──────────────────
+for R in "$HOME/projects/wiki" "$HOME/nixos-config"; do
+  [ -d "$R/.git" ] || continue
+  S=$(git -C "$R" status -sb 2>/dev/null | head -1)
+  case "$S" in
+    *"ahead "*) bad "$(basename "$R"): local commits not pushed — $S" ;;
+    *"behind "*) bad "$(basename "$R"): behind remote — git pull first — $S" ;;
+    *) ok "$(basename "$R"): $S" ;;
+  esac
+  D=$(git -C "$R" status --porcelain 2>/dev/null | head -1)
+  [ -n "$D" ] && note "$(basename "$R"): uncommitted changes present"
+done
+
+# ── muse-spark supervision (the second agent) ───────────────────────────────
+if command -v opencode >/dev/null 2>&1; then
+  SERVER_SESS=$(timeout 10 opencode api get /api/session 2>/dev/null \
+    | grep -o '"agent":"server"' | wc -l | tr -d ' ')
+  note "muse-spark 'server' sessions so far: ${SERVER_SESS:-0}"
+fi
+
+echo
+if [ "$FAIL" = 1 ]; then echo "RESULT: FAIL (see lines above)"; else echo "RESULT: all clean"; fi
+exit "$FAIL"

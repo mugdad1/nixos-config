@@ -21,10 +21,17 @@
     curl
     dnsutils # dig — no pkgs.dig; dnsutils provides it
     jq
+    # sensors — same as thinkcentre (mirror rule, decisions row 103): chip
+    # temperatures/voltages/fans, useful on a spinning-HDD box
+    lm_sensors
     ripgrep
     rsync
     tmux
     vim
+
+    # Health sweep — the same script thinkcentre runs (installed verbatim;
+    # sections that don't apply here — sdb, docker — say so instead of failing)
+    (writeShellScriptBin "checkup" (builtins.readFile ../../scripts/checkup.sh))
 
     # ── asked for by name ────────────────────────────────────────────────────
     gh

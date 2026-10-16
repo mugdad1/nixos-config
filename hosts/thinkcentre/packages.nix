@@ -12,10 +12,23 @@
     dnsutils
     docker-compose
     jq
+    # sensors — chip temperatures/voltages/fans (his ask 2026-10-16; run
+    # `sensors-detect` once if the chip needs probing, config lands in /etc)
+    lm_sensors
     ripgrep
     rsync
     tmux
     vim
+
+    # ── health sweep, added 2026-10-16 on his word ("check between times") ──
+    # Plain tracked file scripts/checkup.sh, installed verbatim (same
+    # writeShellScriptBin shape as mcli): units, containers, disk use, the
+    # backup disk's SMART trend (sdb attr5 baseline 45), blocky, tailscale
+    # (interface + backend, NOT just the unit — active-but-stopped fooled
+    # everyone once), the watcher's one-arm rule, both repos' ahead/behind,
+    # and a count of muse-spark sessions. Prints findings, tldr; exit 1 on any
+    # FAIL so a timer can gate on it later.
+    (writeShellScriptBin "checkup" (builtins.readFile ../../scripts/checkup.sh))
 
     # ── added 2026-10-12 on his word ─────────────────────────────────────────
     gh # gh api / gh repo view, same as on the laptop
