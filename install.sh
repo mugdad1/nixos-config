@@ -57,7 +57,10 @@ else
     # boxes in this house — if the DMI is neither of the other two, it IS
     # grandpa. No BIOS string to get wrong, nothing to ask.
     HOST="grandpa"
-    GPU="intel"
+    # No GPU. The box is headless and its GeForce GT 210 has no supported
+    # driver left in nixpkgs (340.x is gone), so the card is blacklisted
+    # rather than driven. Reported for confirmation only.
+    GPU="none"
 fi
 
 SUMMARY="\
