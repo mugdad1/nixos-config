@@ -52,62 +52,63 @@
     nixpkgs,
     self,
     ...
-  } @ inputs:
-    let
-      system = "x86_64-linux";
+  } @ inputs: let
+    system = "x86_64-linux";
 
-      mkHost = host:
-        let
-          variables = import ./hosts/${host}/variables.nix;
-        in
-        nixpkgs.lib.nixosSystem {
-          modules = [
-            ./hosts/${host}
-            inputs.sops-nix.nixosModules.sops
-          ];
-          specialArgs = {
-            inherit host inputs variables;
-            inherit (variables) username;
-          };
-        };
+    mkHost = host: let
+      variables = import ./hosts/${host}/variables.nix;
     in
-    {
-      formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
-
-      devShells.${system} = {
-        default = nixpkgs.legacyPackages.${system}.mkShell {
-          packages = with nixpkgs.legacyPackages.${system}; [
-            alejandra
-            statix
-            deadnix
-            shellcheck
-            shfmt
-            treefmt
-            stylua
-            taplo
-            nixd
-          ];
-        };
-
-        kernel = nixpkgs.legacyPackages.${system}.mkShell {
-          packages = with nixpkgs.legacyPackages.${system}; [
-            gnumake
-            gcc
-            linuxPackages_latest.kernel.dev
-          ];
-          shellHook = ''
-            export KDIR="${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev}/lib/modules/${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev.version}/build"
-            echo "Kernel dev shell ready"
-            echo "Kernel: $(uname -r)"
-            echo "KDIR: $KDIR"
-          '';
+      nixpkgs.lib.nixosSystem {
+        modules = [
+          ./hosts/${host}
+          inputs.sops-nix.nixosModules.sops
+        ];
+        specialArgs = {
+          inherit host inputs variables;
+          inherit (variables) username;
         };
       };
+  in {
+    formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
-      nixosConfigurations = {
-        t480s = mkHost "t480s";
-        # Lenovo ThinkCentre M900x (10LY) — headless server, migrated from Void.
-        thinkcentre = mkHost "thinkcentre";
+    devShells.${system} = {
+      default = nixpkgs.legacyPackages.${system}.mkShell {
+        packages = with nixpkgs.legacyPackages.${system}; [
+          alejandra
+          statix
+          deadnix
+          shellcheck
+          shfmt
+          treefmt
+          stylua
+          taplo
+          nixd
+        ];
+      };
+
+      kernel = nixpkgs.legacyPackages.${system}.mkShell {
+        packages = with nixpkgs.legacyPackages.${system}; [
+          gnumake
+          gcc
+          linuxPackages_latest.kernel.dev
+        ];
+        shellHook = ''
+          export KDIR="${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev}/lib/modules/${nixpkgs.legacyPackages.${system}.linuxPackages_latest.kernel.dev.version}/build"
+          echo "Kernel dev shell ready"
+          echo "Kernel: $(uname -r)"
+          echo "KDIR: $KDIR"
+        '';
       };
     };
+
+    nixosConfigurations = {
+      t480s = mkHost "t480s";
+      # Lenovo ThinkCentre M900x (10LY) — headless server, migrated from Void.
+      thinkcentre = mkHost "thinkcentre";
+      # Grandpa's custom desktop (i3 2nd gen, GT 210, HDD, UEFI) — headless
+      # server / CLI box. hardware-configuration.nix is still a PLACEHOLDER
+      # until the machine is in hand; do not deploy this host yet.
+      grandpa = mkHost "grandpa";
+    };
+  };
 }
