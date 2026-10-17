@@ -43,7 +43,10 @@
     opencode
     # The one real gap against thinkcentre's list (his "see the thinkcentre"):
     # the runtime for hand tools and quick scripts, same as on the server.
-    python3
+    # Wrapped with pyserial (Midea dongle probing, 2026-10-17) — withPackages
+    # python3 is a strict superset of the bare interpreter, so this single
+    # entry covers both roles; a second bare python3 would collide on bin/python3.
+    (python3.withPackages (p: [p.pyserial]))
     # mcli is repo-owned (scripts/mcli.sh), not a nixpkgs package. Normally
     # installed through home.packages, but this host is headless and imports no
     # home stack, so it is wired in here — the same shape thinkcentre uses.
@@ -81,7 +84,7 @@
     # then go in over the serial pair. usbutils for the bus view, picocom for
     # a human session at the module's 9600 baud, pyserial for scripted probes.
     picocom
-    python3Packages.pyserial # import serial — scripted 9600-baud probes
+    # pyserial rides on the wrapped python3 above (see its comment there)
     usbutils # lsusb / usb-devices
 
     # ── box admin: hardware + disks ─────────────────────────────────────────
