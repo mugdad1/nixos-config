@@ -312,8 +312,11 @@ in {
   # ── WhatsApp bridge: REMOVED 2026-10-16, his order ("rm whatsapp fully
   # fully fully", "Never whatsapp. No one.") — decisions row 107. The unit,
   # its case history and the tailscale0 QR port are gone with it.
-  # ~/projects/whatsapp-mcp stays on disk as the message-history archive;
-  # deleting that is his call, not this repo's.
+  # The last piece went 2026-10-17, on his "rm whatsapp mcp": the 222 M
+  # ~/projects/whatsapp-mcp clone — which this comment used to keep on disk as
+  # the message-history archive — was deleted after a recon found no store/,
+  # no messages.db and no unpushed work (decisions row 111). Nothing in this
+  # repo referenced the path, so no unit moved with it.
 
   # The unit half of the launcher defined above.
   #
