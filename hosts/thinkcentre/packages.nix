@@ -20,6 +20,15 @@
     tmux
     vim
 
+    # ── AC project, 2026-10-17 ("put all tools u need") ──────────────────────
+    # Builds and flashes the ESP8266 NodeMCU from this box (the remote is
+    # broken; dad said he can't do it — he's doing it). The esp8266:esp8266
+    # core and the libraries (Blynk, DHT, IRremoteESP8266) are fetched by
+    # arduino-cli itself into ~/.arduino15 on first setup — not nix packages,
+    # so nothing else is needed here. Upload goes over /dev/ttyUSB0 (CP210x),
+    # which the dialout group in default.nix unlocks.
+    arduino-cli
+
     # ── health sweep, added 2026-10-16 on his word ("check between times") ──
     # Plain tracked file scripts/checkup.sh, installed verbatim (same
     # writeShellScriptBin shape as mcli): units, containers, disk use, the

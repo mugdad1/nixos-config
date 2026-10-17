@@ -81,7 +81,9 @@
   # systemd.services.docker-stack in ./services.nix; ./overrides.nix carries
   # the network posture.
   virtualisation.docker.enable = true;
-  users.users.${username}.extraGroups = ["docker"];
+  # dialout: /dev/ttyUSB0 for the ESP8266 flashing (AC project, 2026-10-17) —
+  # without it the CP210x serial port is root-only and every upload needs sudo.
+  users.users.${username}.extraGroups = ["docker" "dialout"];
 
   # /srv/backup — BACK, the same day it was buried (2026-10-16 evening, his
   # order: *"use it as backup after formatting it to ext4"*). The disk never
