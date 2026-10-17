@@ -47,6 +47,7 @@
     # checkup.sh (fstab-gated) all move together or not at all.
     ./backup.nix
     ./services.nix
+    ./home-assistant.nix
     ./packages.nix
     ./overrides.nix
     # sops-nix wiring. Host-specific on purpose: the secrets FILE is
