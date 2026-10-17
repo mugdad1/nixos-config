@@ -81,7 +81,7 @@
     # then go in over the serial pair. usbutils for the bus view, picocom for
     # a human session at the module's 9600 baud, pyserial for scripted probes.
     picocom
-    pyserial
+    python3Packages.pyserial # import serial — scripted 9600-baud probes
     usbutils # lsusb / usb-devices
 
     # ── box admin: hardware + disks ─────────────────────────────────────────
