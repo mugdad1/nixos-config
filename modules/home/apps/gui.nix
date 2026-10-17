@@ -40,9 +40,6 @@
       kdePackages.polkit-kde-agent-1
       wlsunset
 
-      ## Terminal
-      kitty
-
       ## GNOME apps (PDF viewer, archive manager)
       evince
       file-roller
