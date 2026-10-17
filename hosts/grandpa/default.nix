@@ -1,7 +1,7 @@
-# Grandpa's custom desktop — Intel i3 2nd gen (Sandy Bridge), 6–8 GiB RAM, a
-# GeForce GT 210, a single spinning HDD, UEFI. Headless: it is a server / CLI
-# box, not a workstation, so it imports modules/core only and never
-# modules/desktop.
+# Grandpa's custom desktop — Intel i3-2120 (Sandy Bridge, 2 cores / 4 threads),
+# 6 GiB RAM, a GeForce GT 210, a single 298 GiB spinning HDD, UEFI. Headless: it
+# is a server / CLI box, not a workstation, so it imports modules/core only and
+# never modules/desktop.
 #
 # THE GT 210 (why there is no driver line anywhere in this host): it is a 2009
 # Tesla-era card (GT218) whose only NVIDIA driver was the 340.x legacy branch,
@@ -11,17 +11,33 @@
 # the card sits idle. If a screen is ever wanted, the fix is a cheap GT 710/1030,
 # never the dead 340 blob.
 #
-# ⚠️ NOT YET ON THE HARDWARE: ./hardware-configuration.nix is a PLACEHOLDER.
-# On install day, on the box, run
-#   sudo nixos-generate-config --show-hardware-config
-# and replace it wholesale (never hand-edit the generated one).
+# ON THE HARDWARE SINCE 2026-10-16 — the placeholder warning this header used to
+# carry is gone, because install day happened: system profiles system-1 (16:08)
+# through system-4 (20:14) that day, and ./hardware-configuration.nix is the real
+# generated file (root /dev/sda2 via UUID 06ff4257-…, ESP /dev/sda1 via UUID
+# 0B56-3DF8), not a placeholder. Disk: one 298 GiB HDD — sda1 1 GiB vfat at
+# /boot, sda2 297 GiB ext4 at /. Boot: systemd-boot 261.3 on UEFI 2.31 (AMI),
+# Secure Boot off. Wired NIC enp3s0 (74:d4:35:23:e6:d5) at 192.168.8.254/24 by
+# the type-matched networkd rule in ./overrides.nix; tailnet 100.106.116.60.
+# Verified 2026-10-17: 0 failed units, booted from the current flake.lock
+# (nixpkgs 6510408, 2026-10-10).
+#
+# A "Display" LINE THAT IS NOT A DISPLAY — read this before chasing it: `fastfetch`
+# here reports `Display (Unknown-1): 1024x768` and lists the GT 210 as a "GPU".
+# Both come from the firmware framebuffer, not from any monitor. At boot the UEFI
+# firmware lights the card and hands the kernel a linear framebuffer; the builtin
+# simpledrm driver binds it (card0's driver is simple-framebuffer), and its one
+# connector — literally named Unknown-1 — always reports connected/enabled at the
+# firmware's default mode with no EDID, which is also why the physical size is a
+# guess. fastfetch then follows that card up to PCI 0000:01:00.0 and names the GPU
+# behind it. Nothing is attached and nothing is wrong.
 #
 # WHAT IT IS (his word, 2026-10-16): a **lightweight server** — headless, and
-# that part is now a decision, not a placeholder. Which services it runs is
-# still open: nothing service-specific (docker, backup, WhatsApp, blocky
-# upstream tweaks beyond the shared pair) is pre-wired. Add it here when a
-# service is actually chosen. Until install day the box does not exist yet —
-# see the hardware warning above.
+# that part is a decision, not a placeholder. Which services it runs is still the
+# open question: it runs the core set only (sshd, tailscaled, blocky,
+# systemd-networkd, systemd-timesyncd, zram), and nothing service-specific
+# (docker, backup, WhatsApp, extra blocky upstreams beyond the shared pair) is
+# pre-wired. Add it here when a service is actually chosen.
 {...}: {
   imports = [
     ./hardware-configuration.nix
@@ -47,7 +63,7 @@
 
   # No display is ever attached. Blacklist the whole NVIDIA stack so neither
   # nouveau nor the blob claims the text console or costs a few hundred MB of
-  # 6–8 GiB for nothing; the console still comes up on efifb.
+  # 6 GiB for nothing; the console still comes up on efifb.
   boot.blacklistedKernelModules = [
     "nouveau"
     "nvidia"
@@ -67,7 +83,7 @@
   ];
 
   # zram, not a swap partition: the disk is a slow spinning HDD and RAM is only
-  # 6–8 GiB, so compressed RAM swap buys far more than a swap file on the
+  # 6 GiB, so compressed RAM swap buys far more than a swap file on the
   # platter. Same shape as thinkcentre.
   zramSwap = {
     enable = true;
