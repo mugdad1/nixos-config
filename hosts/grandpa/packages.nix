@@ -75,6 +75,15 @@
     wget
     zip
 
+    # ── usb/serial probing (Midea dongle work, 2026-10-17) ──────────────────
+    # The Midea AC Wi-Fi dongle is not a USB device (no data lines — lsusb
+    # stays empty in every port), so detection is: confirm that with lsusb,
+    # then go in over the serial pair. usbutils for the bus view, picocom for
+    # a human session at the module's 9600 baud, pyserial for scripted probes.
+    picocom
+    pyserial
+    usbutils # lsusb / usb-devices
+
     # ── box admin: hardware + disks ─────────────────────────────────────────
     btop
     gptfdisk # sgdisk
