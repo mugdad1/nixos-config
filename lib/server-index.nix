@@ -40,6 +40,15 @@
       desc = "the study PWA — chapters, glossary, day entries";
       first = true;
     }
+    # home assistant, added 2026-10-17 with the AC project's close
+    # (decisions.md row 114) — HA + ESPHome run natively on this box,
+    # firewall :8123 on LAN + tailnet, so the tailnet link answers
+    # from every host on the network.
+    {
+      name = "home assistant";
+      port = "8123";
+      desc = "local home automation — the ac, dashboards, sensors";
+    }
     {
       name = "immich";
       port = "2283";
