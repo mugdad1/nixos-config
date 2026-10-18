@@ -11,9 +11,12 @@
   # sets this plainly for the machines that want it.
   hardware.graphics.enable32Bit = lib.mkForce false;
 
-  # The disk is a single ext4 HDD — no btrfs, so the weekly scrub has nothing to
-  # act on. mkForce (not a comment in core) so the laptop, whose root IS btrfs,
-  # keeps scrubbing.
+  # The disk is a single ext4 HDD — no btrfs, so a scrub has nothing to act on.
+  # **CORRECTED 2026-10-18:** the "the laptop, whose root IS btrfs, keeps
+  # scrubbing" half of this comment was false — the t480s root is ext4 too
+  # (`c0e89f41…`), and nothing in this repo enables `services.btrfs.autoScrub`
+  # at all. So this is a guard against a future core default, not a host fix;
+  # see the longer note in hosts/thinkcentre/overrides.nix.
   services.btrfs.autoScrub.enable = lib.mkForce false;
 
   # ── network: NetworkManager out, systemd-networkd in ───────────────────────

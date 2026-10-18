@@ -105,9 +105,12 @@
       t480s = mkHost "t480s";
       # Lenovo ThinkCentre M900x (10LY) — headless server, migrated from Void.
       thinkcentre = mkHost "thinkcentre";
-      # Grandpa's custom desktop (i3 2nd gen, GT 210, HDD, UEFI) — headless
-      # server / CLI box. hardware-configuration.nix is still a PLACEHOLDER
-      # until the machine is in hand; do not deploy this host yet.
+      # Grandpa's box — Intel i3-2120 (Sandy Bridge), 6 GiB, single 298 GiB HDD,
+      # headless server / CLI box. NixOS **installed 2026-10-16** and
+      # `hardware-configuration.nix` is the real generated file from that day
+      # (see the header in hosts/grandpa/default.nix and decisions.md rows
+      # 103 / 112); the placeholder warning this comment used to carry is gone.
+      # It deploys like the other two: `--flake .#grandpa`.
       grandpa = mkHost "grandpa";
     };
   };

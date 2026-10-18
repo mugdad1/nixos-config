@@ -14,11 +14,15 @@
 {username, ...}: {
   imports = [
     # REGENERATED ON THE BOX 2026-10-13 (commit 1c7883d) with
-    # `nixos-generate-config --show-hardware-config`. It now describes the real
-    # layout — root ext4 93ea1189… on sdb2, ESP 6D92-B60A at /boot, sdb3 swap —
-    # instead of the hand-built Void/donor layout it used to carry (root btrfs
-    # 839da341…, ESP 646D-44FB at /boot/efi), which would have mounted nothing
-    # on a reinstall and kernel-panicked.
+    # `nixos-generate-config --show-hardware-config`, and its UUIDs have moved
+    # twice since as the disks were replaced/reformatted. **Re-checked against
+    # the committed file 2026-10-18:** root ext4 `edd8dd39…`, ESP `876C-A703`
+    # at /boot, **`swapDevices = [ ]`** — this comment said "root 93ea1189… on
+    # sdb2, ESP 6D92-B60A, sdb3 swap" until today, which is the pre-`80c4652`
+    # disk, and a comment that contradicts the file it sits above is worse than
+    # no comment. The real file is the truth; read it, do not read this.
+    # (The earlier hand-built Void/donor layout — root btrfs 839da341…, ESP
+    # 646D-44FB at /boot/efi — would have mounted nothing on a reinstall.)
     # /srv/backup is deliberately NOT in that file — see the fileSystems entry
     # further down for why it cannot survive regeneration there.
     # Regenerate with nixos-generate-config at install time and diff.
@@ -58,7 +62,9 @@
   ];
 
   # NixOS's default /boot, which is where this box actually mounts the ESP
-  # (/dev/disk/by-uuid/6D92-B60A on sdb1 — matches fstab). The donor Void
+  # (/dev/disk/by-uuid/876C-A703 on sda1 — matches the generated file; this
+  # line said 6D92-B60A until 2026-10-18, which was the disk before 80c4652).
+  # The donor Void
   # layout put it at /boot/efi; if this value ever drifts from the fstab entry,
   # systemd-boot writes to a directory that is not the ESP and the machine
   # silently boots whatever was there before ("nothing happened").

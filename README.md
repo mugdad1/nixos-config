@@ -6,16 +6,23 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 ## Hosts
 
-Two hosts, both deploying from `main`:
+Three hosts, all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
 | `t480s`     | Laptop — Sway desktop, home-manager             | ThinkPad T480s      |
 | `thinkcentre` | Headless server — Docker, blocky, tailscale, sshd | ThinkCentre M900x (10LY) |
+| `grandpa`   | Headless lightweight server — blocky, tailscale, sshd, no Docker | Custom i3-2120 box |
 
-The ThinkCentre imports **no** desktop and **no** home-manager stack: its
-`variables.nix` declares no `browser`/`terminal`/`launcher`, and
-`modules/core/user.nix` only imports `modules/home` when `variables ? browser`.
+Installed: `t480s` (NixOS since 2026-10-11), `thinkcentre` (2026-10-13),
+`grandpa` (2026-10-16). The two servers import **no** desktop and **no**
+home-manager stack: their `variables.nix` declares no
+`browser`/`terminal`/`launcher`, and `modules/core/user.nix` only imports
+`modules/home` when `variables ? browser`.
+
+`grandpa` is deliberately the smallest of the three — no Docker, no backup
+disk, no sops key. Adding a service there is a decision, not a default; see
+`hosts/grandpa/default.nix`.
 
 ## Structure
 
@@ -41,17 +48,25 @@ nixos-config/
 │       ├── overrides.nix     # every lib.mkForce + the networkd posture
 │       ├── backup.nix        # nightly 03:17 backup timer + clock gate
 │       ├── services.nix      # opencode, telegram bot, study, docker-stack, sv-watch
+│       ├── home-assistant.nix # HA container + the :8123 firewall opening
 │       ├── secrets.nix       # sops-nix wiring (host-specific file)
 │       ├── hardware-configuration.nix
 │       └── variables.nix
+│   └── grandpa/
+│       ├── default.nix       # identity: imports, boot, zram, no docker/no secrets
+│       ├── packages.nix      # headless subset of the ThinkCentre's list
+│       ├── overrides.nix     # 32-bit Mesa off, networkd posture, sshd
+│       ├── hardware-configuration.nix
+│       └── variables.nix
 ├── modules/
-│   ├── core/                 # Shared system layer (14 files) — both hosts
+│   ├── core/                 # Shared system layer (15 files) — all three hosts
 │   ├── desktop/              # Desktop environment — t480s only
 │   └── home/                 # Home-manager stack — only where variables declare a desktop
 │       ├── default.nix       # scanPaths + ../../scripts/default.nix
 │       ├── terminal/         # cli, dev, fish, shell, glow, lazyvim + fastfetch/, ghostty/, lazyvim-config/
 │       ├── apps/             # browser, git, gui, homepage, vscodium, xdg
 │       └── desktop/          # theme, osd, swaylock + sway/, waybar/, rofi/, swaync/
+├── pkgs/                     # callPackage files: filen-cli.nix, notify-telegram.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
 │   └── thinkcentre/          # backup-run.sh, sv-watch.sh, docker-stack.sh, http-endpoints
 ├── secrets/                  # ENCRYPTED sops files (committed, useless without a key)
@@ -103,12 +118,14 @@ mcli update                  # nix flake update + rebuild
 # Or explicitly:
 sudo nixos-rebuild switch --flake .#t480s
 sudo nixos-rebuild switch --flake .#thinkcentre
+sudo nixos-rebuild switch --flake .#grandpa
 ```
 
 `mcli` itself is repo-owned (`scripts/mcli.sh`) and installed as a system
-package on **both** hosts — on `t480s` it also comes through
-`home.packages`, on `thinkcentre` it is wired in `hosts/thinkcentre/packages.nix`
-because that host deliberately imports no home-manager stack.
+package on **all three** hosts — on `t480s` it also comes through
+`home.packages`, on `thinkcentre` and `grandpa` it is wired in their
+`hosts/<host>/packages.nix` because those hosts deliberately import no
+home-manager stack.
 
 Other `mcli` commands: `diag`, `cleanup`, `trim`.
 
@@ -131,6 +148,15 @@ install -m 600 age-key.txt ~/.config/sops/age/keys.txt
 
 Paths are enforced in `hosts/thinkcentre/secrets.nix`
 (`sops.age.keyFile = "/var/lib/sops-nix/key.txt"`); the reasoning is in
+
+**The key is also what turns alerting on.** `notify-telegram`
+(`modules/core/monitoring.nix`) reads its bot token from the sops-rendered
+`/run/secrets/rendered/notify-telegram.env`. A host that has no key — and no
+`secrets.nix` to render one, which today is both `t480s` and `grandpa` — logs
+`NOTIFY(no-token)` to journald and **exits 0**, deliberately, so a host that
+cannot deliver never grows an outbox. Giving the laptop or grandpa real alert
+delivery is therefore a two-step job: **place the key and add a `secrets.nix`**
+for that host. Nothing else about the alert path changes.
 `.sops.yaml`. Adding a secret: encrypt it into `secrets/thinkcentre.sops.yaml`
 (`sops -e -i`), declare it in `sops.secrets`, read it as
 `config.sops.placeholder."<name>"`.
@@ -155,7 +181,7 @@ and is not templated.
 
 ## Features
 
-- **Two hosts from one flake**, desktop opt-in per host
+- **Three hosts from one flake**, desktop opt-in per host
 - **Home Manager** for user packages and dotfiles (laptop only)
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
 - **Gruvbox** theme throughout
@@ -176,19 +202,28 @@ and is not templated.
 Worth knowing so they are not mistaken for oversights:
 
 - **`t480s` is not a server, but it does answer ssh** — `modules/core/sshd.nix`
-  is shared, so **both hosts** run sshd with `:22` open on every interface
+  is shared, so **all three hosts** run sshd with `:22` open on every interface
   (changed 2026-10-13 on his word, *"allow ssh like normally, in lan, in
   both"*). Password auth is on since the same day; root stays locked out and
-  `AllowUsers` is his account only. The firewall is enabled and the **only**
-  opened TCP port in the whole flake is `22`.
-- **No swap partition on either host** — `zramSwap` (RAM-backed, lz4) covers
-  it: `modules/desktop/services.nix` for `t480s`,
-  `hosts/thinkcentre/default.nix` for the server.
+  `AllowUsers` is his account only. The firewall is enabled and the shared core
+  opens **no** TCP port except `22` — **corrected 2026-10-18:** this section
+  used to claim `22` was the only opened TCP port "in the whole flake", which
+  stopped being true when Home Assistant landed: `hosts/thinkcentre/
+  home-assistant.nix` additionally opens **`8123`** on `tailscale0` and on the
+  LAN. Tailscale opens UDP `41641` (`modules/core/tailscale.nix`,
+  `openFirewall = true`).
+- **No swap partition on any host** — `zramSwap` (RAM-backed, lz4) covers it:
+  `modules/desktop/services.nix` for `t480s`, `hosts/thinkcentre/default.nix`
+  and `hosts/grandpa/default.nix` for the servers.
 - **`thinkcentre`: no NetworkManager, iwd or ModemManager** — wired-only, DHCP
   via systemd-networkd (`hosts/thinkcentre/overrides.nix`).
-- **`thinkcentre`: no 32-bit Mesa, no btrfs scrub, no `mandb`** — the shared
+- **No btrfs anywhere** — all three roots are ext4, so nothing enables
+  `services.btrfs.autoScrub`; the `mkForce false` lines in the two server
+  overrides are guards, not host fixes (`t480s` is ext4 too — see the note in
+  `hosts/thinkcentre/overrides.nix`).
+- **`thinkcentre`: no 32-bit Mesa, no `mandb`** — the shared
   core enables/assumes them for the laptop; the host forces each off, because
-  a scrub or a 32-bit stack has nothing to act on there.
+  a 32-bit stack has nothing to act on there.
 
 ## History
 
@@ -196,7 +231,9 @@ The configuration covered `t480s` (laptop) and `asus` (a headless home server)
 before September 2026; the `asus` host and everything that served it were
 removed then. The ThinkCentre replaced it as the real second host — migrated
 from Void + runit on 2026-10-13, with `modules/core` decoupled from the
-desktop first (2026-10-12) so a headless host could import it.
+desktop first (2026-10-12) so a headless host could import it. **A third host
+joined on 2026-10-16: `grandpa`** (i3-2120, headless, core set only — no
+Docker, no secrets, no backup), installed and verified headless the next day.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,

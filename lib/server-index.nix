@@ -12,9 +12,15 @@
 # modules/home/apps/homepage.nix) ships the rendered page to Caddy's docroot.
 # **Add a service to `services` below, run `push-server-index`, and the index
 # matches reality again** — the old
-# hand-written `~/Projects/servers/caddy/index.html` had already drifted: it
-# was missing `study` (added today)
-# line that was deleted on 2026-10-08.
+# hand-written `~/Projects/servers/caddy/index.html` had already drifted twice
+# before this file took over: it was missing `study`, and it kept a line for a
+# service that was deleted on 2026-10-08.
+#
+# COMMENT REPAIRED 2026-10-18: those two lines used to read as one broken
+# sentence ("…was missing `study` (added today)" followed by "…line that was
+# deleted on 2026-10-08."), the remains of an earlier edit that cut the middle
+# out. The facts are the two drift cases named above; nothing was reworded to
+# sound tidier than the record.
 {
   g ? import ./gruvbox.nix,
   # The tailscale IP moved 100.124.75.45 -> 100.88.29.31 on 2026-10-15, the

@@ -13,14 +13,17 @@
   hardware.graphics.enable32Bit = lib.mkForce false;
 
   # ── btrfs scrub ────────────────────────────────────────────────────────────
-  # No btrfs here — this box runs ext4, so the weekly scrub that
-  # modules/core/system.nix enables has no filesystem to act on. Same mkForce
-  # pattern as enable32Bit above, and deliberately scoped to THIS host only:
-  # autoScrub lives in the shared core module, and commenting it out there
-  # would have silently disabled scrubbing on the t480s, whose root is btrfs
-  # and needs it. autoScrub.fileSystems evaluates to ["/"] on the t480s and []
-  # here, and nothing in this repo sets it, so flipping enable without naming
-  # the mount would be a guess about what gets scrubbed.
+  # No btrfs here — this box runs ext4, so a btrfs scrub would have no
+  # filesystem to act on. **CORRECTED 2026-10-18: this line is a guard, not a
+  # fix, and the comment it carried was wrong on both counts.** Nothing in this
+  # repo enables `services.btrfs.autoScrub` (grep it: zero hits outside these
+  # two overrides), and the t480s — named below as the host that "needs it" —
+  # has an **ext4** root as well (`/dev/disk/by-uuid/c0e89f41…`, ext4). So the
+  # weekly scrub this comment claimed to be switching off for the servers never
+  # ran on any host, and the mkForce changes nothing. It is kept as a
+  # deliberate no-op: if scrubbing is ever enabled in core (a btrfs host, or a
+  # future disk), a headless ext4 server must not inherit it, and a stated
+  # intent is cheaper to keep than to re-derive.
   #
   # OPEN ITEM CLOSED 2026-10-13: it asked whether /srv/backup should be
   # scrubbed — a backup disk that silently rots is exactly where scrubbing
