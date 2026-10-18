@@ -67,6 +67,9 @@ in {
     interactiveShellInit = ''
       set -g fish_greeting ""
 
+      # ~/.local/bin for hand-rolled scripts (router-reboot etc.)
+      fish_add_path ~/.local/bin
+
       # Ctrl-E edits the command line in $EDITOR (nvim)
       bind \ce edit_command_buffer
 
