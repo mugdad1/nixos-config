@@ -29,7 +29,7 @@
 #   **/.git/objects/pack  packed git objects - small, irrecoverable, kept.
 #   ~/Projects/servers/data/immich/postgres  included ON PURPOSE (immich DB).
 #
-# NOTE: ~/Projects/servers/{data,paperless/data,gitea/data,vaultwarden/data,
+# NOTE: ~/Projects/servers/{data,paperless/data,vaultwarden/data, (gitea/data dropped 2026-10-18, gitea removed)
 #       syncthing/data} all live INSIDE ~/Projects, so the wholesale Projects
 #       rsync already covers them - they are deliberately not listed twice.
 # ---------------------------------------------------------------------------

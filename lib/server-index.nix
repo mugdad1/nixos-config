@@ -76,12 +76,8 @@
       url = "https://thinkcentre.tailbc99bb.ts.net";
       note = "tailnet https";
     }
-    {
-      name = "gitea";
-      port = "3000";
-      desc = "git, self-hosted";
-      note = "ssh :2222";
-    }
+    # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
+    # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
     # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
     # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
     # dead, so it came off this list too or the index ships a dead link.
@@ -122,11 +118,8 @@
       port = "8081";
       desc = "yt-dlp web ui, downloads to the box";
     }
-    {
-      name = "gitea mirror";
-      port = "4321";
-      desc = "github &rarr; local gitea backup";
-    }
+    # gitea mirror dropped 2026-10-18 — took it down with gitea ("it mirror cuz
+    # its bad"). Its db held only job configs, no data of its own.
     {
       name = "caddy";
       port = "80";

@@ -17,8 +17,6 @@
 # LAST VERIFIED 2026-10-18 (200/302 each).
 http://127.0.0.1/          # caddy - index + reverse proxy
 http://127.0.0.1:2283/     # immich
-http://127.0.0.1:3000/     # gitea
-http://127.0.0.1:4321/     # gitea-mirror
 http://127.0.0.1:61208/    # glances
 http://127.0.0.1:8000/     # paperless
 http://127.0.0.1:8081/     # metube
