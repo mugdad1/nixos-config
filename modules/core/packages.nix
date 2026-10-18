@@ -1,4 +1,21 @@
 {pkgs, ...}: let
+  # sops — the CLI for editing secrets/fleet.sops.yaml (2026-10-18, his
+  # "add it fast"). It is NOT needed to DECRYPT: that is done at activation by
+  # sops-install-secrets, which reads the age key from /var/lib/sops-nix/key.txt
+  # and needs no CLI at all. This is for the interactive half — `sops
+  # secrets/fleet.sops.yaml` opens the ciphertext in $EDITOR and re-encrypts on
+  # save, which is the only sane way to add or rotate a value.
+  #
+  # It was absent from ALL THREE hosts until today, which made the README's
+  # "adding a secret" instructions un-runnable without a detour through
+  # `nix shell` — and a bootstrap step that does not work on the box it is
+  # written for is the kind of doc rot this repo just spent a day deleting.
+  #
+  # Declared in modules/core so every host gets it from one place (the two
+  # servers import no home-manager stack, so a systemPackage is the only route
+  # that covers them). It needs the age key to be useful: with the key on all
+  # three hosts (row 121) it works everywhere.
+  sops = pkgs.sops;
   # filen-cli 0.2.9 — the Rust build (filen-rs), NOT nixpkgs' own 0.0.36,
   # which is the old Go implementation. Declared in ../../pkgs/filen-cli.nix;
   # the reasoning (musl-static vs gnu, prebuilt vs source) is written there.
@@ -60,6 +77,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     cachix
+    sops
     filen-cli
     # adb / fastboot — STILL NEEDED for his phone. This is the only Android
     # bit that stays; everything below it that was toolchain-related is off.
