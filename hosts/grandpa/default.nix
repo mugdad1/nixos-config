@@ -126,4 +126,11 @@
     database.type = "sqlite3";
     stateDir = "/var/lib/forgejo";
   };
+
+  # The module has no openFirewall (checked 2026-10-18 in nixpkgs 6510408), and
+  # modules/core/network.nix turns the firewall on for every host — so without
+  # this line forgejo listens but nobody can reach it. Verified live: active +
+  # LISTEN :3000 with a curl from the thinkcentre still timing out (000/exit 28)
+  # until the port was allowed. LAN-only box, plain http, same as gitea was.
+  networking.firewall.allowedTCPPorts = [ 3000 ];
 }
