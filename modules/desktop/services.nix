@@ -60,6 +60,27 @@ in {
 
     irqbalance.enable = true;
     bpftune.enable = true;
+
+    # sched_ext: EEVDF stays the in-kernel default, this swaps a BPF scheduler
+    # in over it at runtime (kernel >= 6.12; ours is 7.2, and /sys/kernel/sched_ext
+    # is what the unit conditions on). scx_bpfland is the interactive-aware one:
+    # it sorts tasks by voluntary context-switch rate and prioritizes the
+    # interactive queue, which is the laptop case — nix builds, indexing or
+    # containers churning while you type.
+    #
+    # NOT scx_lavd, despite it being the usual "gaming" answer: its scheduling
+    # domains are built per-LLC and per-core type (P/E, AMD CCDs), and a Kaby
+    # Lake-R is a single homogeneous cluster, so its main advantage does not
+    # apply here. A BORE/BMQ kernel was considered and rejected too — same
+    # reasoning, and it would mean replacing the mainline kernel for gains that
+    # show up mostly on heterogeneous CPUs.
+    #
+    # If the scheduler process dies, the kernel falls back to EEVDF by itself;
+    # disabling this option and rebuilding undoes it entirely.
+    scx = {
+      enable = true;
+      scheduler = "scx_bpfland";
+    };
   };
 
   # tuigreet's --remember cache; lives here (not shared boot.nix) because
