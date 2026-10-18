@@ -132,33 +132,44 @@ Other `mcli` commands: `diag`, `cleanup`, `trim`.
 ## sops secrets — bootstrap BEFORE the first switch
 
 The repo is public, so no credential is ever written inline in Nix. The
-encrypted file `secrets/thinkcentre.sops.yaml` and the **public** age
+encrypted file `secrets/fleet.sops.yaml` and the **public** age
 recipient in `.sops.yaml` are committed; the **private** key never is. On a
 reinstall that key is the one thing a declarative system cannot restore for
 itself — **copy it into place before `nixos-rebuild switch`, or activation
 fails while decrypting:**
 
 ```bash
-# ThinkCentre (server) — mode 600, root:root, BEFORE the first switch:
+# EVERY host — mode 600, root:root, BEFORE the first switch:
 sudo install -m 600 -o root -g root age-key.txt /var/lib/sops-nix/key.txt
 
-# Laptop — used by hand for `sops` edits, not by activation:
+# Laptop ONLY, in addition — used by hand for `sops` edits, not by activation:
 install -m 600 age-key.txt ~/.config/sops/age/keys.txt
 ```
 
-Paths are enforced in `hosts/thinkcentre/secrets.nix`
-(`sops.age.keyFile = "/var/lib/sops-nix/key.txt"`); the reasoning is in
+All three hosts use the same path
+(`sops.age.keyFile = "/var/lib/sops-nix/key.txt"`, set as a fleet default in
+`modules/core/monitoring.nix` and restated in `hosts/thinkcentre/secrets.nix`);
+the reason it is not a home directory is that `sops-install-secrets` runs early
+in boot, before homes are necessarily useful, and a root-owned path under
+`/var/lib` states plainly that this is machine state. **The key was placed on
+`t480s` and `grandpa` on 2026-10-18** — before that only the ThinkCentre had it.
 
-**The key is also what turns alerting on.** `notify-telegram`
-(`modules/core/monitoring.nix`) reads its bot token from the sops-rendered
-`/run/secrets/rendered/notify-telegram.env`. A host that has no key — and no
-`secrets.nix` to render one, which today is both `t480s` and `grandpa` — logs
-`NOTIFY(no-token)` to journald and **exits 0**, deliberately, so a host that
-cannot deliver never grows an outbox. Giving the laptop or grandpa real alert
-delivery is therefore a two-step job: **place the key and add a `secrets.nix`**
-for that host. Nothing else about the alert path changes.
-`.sops.yaml`. Adding a secret: encrypt it into `secrets/thinkcentre.sops.yaml`
-(`sops -e -i`), declare it in `sops.secrets`, read it as
+**The key is also what turns alerting on**, and since 2026-10-18 that is true
+on every host. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
+token from the sops-rendered `/run/secrets/rendered/notify-telegram.env` —
+root:root 0400, because every caller (smartd, sv-watch, `notify-telegram@`) runs
+as root. The token and the template that ships it are declared **fleet-wide in
+`modules/core/monitoring.nix`**, not in a per-host `secrets.nix`, so a host gets
+alerting the moment its key is in place and nothing else has to change. A host
+that has lost its key fails closed: it logs `NOTIFY(no-token)` to journald and
+**exits 0**, so a box that cannot deliver never grows an outbox.
+
+The ciphertext file is `secrets/fleet.sops.yaml` (renamed from
+`thinkcentre.sops.yaml` on 2026-10-18 — a fleet-wide secret in a file named
+after one host was drift; nothing was re-encrypted, the name is not in the
+ciphertext). `sops` is **not installed on any host** (checked 2026-10-18), so
+editing a secret means `nix shell nixpkgs#sops` first. Adding a secret: encrypt
+it into `secrets/fleet.sops.yaml`, declare it in `sops.secrets`, read it as
 `config.sops.placeholder."<name>"`.
 
 ## Development

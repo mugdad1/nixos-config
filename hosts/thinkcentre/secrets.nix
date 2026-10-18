@@ -10,7 +10,10 @@
 # file, in the repo, or on stdout.** Encrypted ciphertext may be committed,
 # because it is useless without a private key that never enters git.
 #
-#   secrets/thinkcentre.sops.yaml   AES-256-GCM ciphertext, committed
+#   secrets/fleet.sops.yaml   AES-256-GCM ciphertext, committed
+#                             (renamed from thinkcentre.sops.yaml 2026-10-18:
+#                             it is now the whole fleet's file, read by all
+#                             three hosts via modules/core/monitoring.nix)
 #   .sops.yaml                      the PUBLIC age recipient key, committed
 #   ~/.config/sops/age/keys.txt     private key, laptop, mode 600, NOT in git
 #   /var/lib/sops-nix/key.txt       private key, server,  mode 600, NOT in git
@@ -28,13 +31,17 @@
 #
 # Adding a secret:
 #   1. put a plaintext value in a scratch file OUTSIDE the repo
-#   2. `sops -e -i` it into secrets/thinkcentre.sops.yaml (or use `sops` on the
+#   2. `sops -e -i` it into secrets/fleet.sops.yaml (or use `sops` on the
 #      file to edit it in place — sops decrypts to your editor and re-encrypts)
 #   3. declare it in `sops.secrets` below, then reference
 #      `config.sops.placeholder."<name>"` from a template or a service
 {config, username, ...}: {
   sops = {
-    defaultSopsFile = ../../secrets/thinkcentre.sops.yaml;
+    # The file itself and this pointer are ALSO defaulted fleet-wide in
+    # modules/core/monitoring.nix (mkDefault, same value). Stated here as well
+    # because this file is where the other ThinkCentre-only secrets live and a
+    # reader should not have to go find which module supplies the default.
+    defaultSopsFile = ../../secrets/fleet.sops.yaml;
 
     # Where the private key lives ON THE SERVER. Deliberately NOT
     # ~/.config/sops/age/keys.txt: sops-install-secrets runs early in boot,
@@ -43,17 +50,18 @@
     age.keyFile = "/var/lib/sops-nix/key.txt";
 
     secrets = {
-      # Names map onto the YAML structure with `/` as the nesting separator,
-      # so "telegram/bot_token" is `telegram: { bot_token: ... }`.
-      "telegram/bot_token" = {};
-      "telegram/allowed_user_id" = {};
+      # NOTE 2026-10-18: `telegram/bot_token` and `telegram/allowed_user_id`
+      # used to be declared here. They moved to modules/core/monitoring.nix,
+      # because alerting now runs on all three hosts and every host needs the
+      # same two values — declaring them in a host file meant t480s and grandpa
+      # could not render notify-telegram.env at all. The values are unchanged.
       "opencode/server_password" = {};
       # NOTE 2026-10-15: `opencode/server_username` was removed from this list.
       # The username is the fixed string `opencode` (see the template below —
       # the server 401s on any other), so it is a constant, not a secret, and
       # declaring it here only rendered a 0400 root-owned file that nothing
       # read. The ciphertext still sits harmlessly in
-      # secrets/thinkcentre.sops.yaml; sops ignores keys with no declaration,
+      # secrets/fleet.sops.yaml; sops ignores keys with no declaration,
       # and re-encrypting the file to drop it would buy nothing.
 
       # Filen account (the cloud drive holding ~/filen — all KFU material).
@@ -145,26 +153,9 @@
       '';
     };
 
-    # Alert delivery (2026-10-18). Read by scripts/notify-telegram.sh, which is
-    # what sv-watch (units/containers/endpoints/DNS), smartd (disks) and the
-    # notify-telegram@ OnFailure unit all call - see modules/core/monitoring.nix
-    # for why alerting had to be rebuilt and why the delivery path is shared.
-    #
-    # DELIBERATELY root:root 0400 (the default), unlike the two templates above:
-    # sv-watch and smartd run as root, so nothing else needs to read it. The
-    # probe for the file in notify-telegram.sh is `[ -r ... ]` while running as
-    # root, so it is found there and NOT found on the hosts that have no sops
-    # key - which is the intended split: those two hosts keep logging their
-    # alerts to journald until the key is placed on them by hand (see
-    # ../../README.md, the bootstrap step).
-    #
-    # Path: /run/secrets/rendered/notify-telegram.env - the default baked into
-    # the script, so no unit has to be told where it is.
-    templates."notify-telegram.env" = {
-      content = ''
-        TELEGRAM_BOT_TOKEN=${config.sops.placeholder."telegram/bot_token"}
-        TELEGRAM_CHAT_ID=${config.sops.placeholder."telegram/allowed_user_id"}
-      '';
-    };
+    # NOTE 2026-10-18: the `notify-telegram.env` template used to be declared
+    # here; it moved to modules/core/monitoring.nix when alerting became a
+    # three-host thing (the token is fleet-wide, and the file that ships it
+    # belongs with the script that reads it). See that module.
   };
 }

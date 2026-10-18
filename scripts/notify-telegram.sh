@@ -13,14 +13,15 @@
 # a self-hosted relay nobody subscribed to.
 #
 # THE TOKEN IS NOT IN THIS FILE. The repo is public, so the token is ciphertext
-# in secrets/thinkcentre.sops.yaml and is rendered at activation into:
+# in secrets/fleet.sops.yaml and is rendered at activation into:
 #     /run/secrets/rendered/notify-telegram.env    (root:root 0400)
 # which is what this reads by default. Override with TELEGRAM_ENV_FILE, or by
 # exporting TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID (what a test does).
 #
-# A HOST WITHOUT THE KEY IS NOT A FAILURE. t480s and grandpa have no sops key
-# yet, so the file is absent there: the alert still lands in the journal with a
-# NOTIFY(no-token) marker, and the exit status is 0. That matters because
+# A HOST WITHOUT THE KEY IS NOT A FAILURE. Since 2026-10-18 all three hosts
+# have the key (restored by hand, see the README), but a fresh install - or a
+# host whose key was never placed - has no rendered file: the alert still lands
+# in the journal with a NOTIFY(no-token) marker, and the exit status is 0. That matters because
 # sv-watch's alert() QUEUES on a non-zero push and retries the queue every
 # sweep - a host that can never deliver would fill /var/lib/sv-watch/outbox
 # forever. Exit 1 is reserved for the honest case: a delivery was attempted and

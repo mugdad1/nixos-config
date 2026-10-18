@@ -29,10 +29,67 @@
 # interface notify-telegram implements (it ignores `-i`; the chat id is the
 # secret). `wall` also stays on - the journal copy is what you find when you
 # eventually look, and on a headless box it costs nothing.
-{pkgs, config, ...}: let
+{pkgs, config, lib, ...}: let
   notify = pkgs.callPackage ../../pkgs/notify-telegram.nix {};
 in {
   environment.systemPackages = [notify];
+
+  # ── the Telegram credential, for EVERY host ────────────────────────────────
+  #
+  # WHERE IT LIVES AND WHY IT IS HERE. This started in hosts/thinkcentre/
+  # secrets.nix, because until 2026-10-18 the ThinkCentre was the only host that
+  # could deliver anything. On his order ("do 1 2 now!", item 2 of the alerting
+  # work) the age key was placed on all three hosts, so t480s and grandpa can
+  # deliver too — and the credential had to move somewhere all three import.
+  # `modules/core` is that place, and this module is where the alert path
+  # already lives, so the token and the thing that sends with it are one file.
+  #
+  # Both options are `mkDefault` so a host that wants a different key path or a
+  # different ciphertext file can still say so and win.
+  #
+  # The ciphertext file was RENAMED the same day: secrets/thinkcentre.sops.yaml
+  # -> secrets/fleet.sops.yaml. A fleet-wide secret in a file named after one
+  # host is exactly the kind of drift the rest of this pass was spent deleting.
+  # Nothing re-encrypted — the file name is not in the ciphertext, and
+  # .sops.yaml's `path_regex` is generic (`secrets/[^/]+\.sops\.yaml$`), so it
+  # keeps covering the new name.
+  sops = {
+    defaultSopsFile = lib.mkDefault ../../secrets/fleet.sops.yaml;
+
+    # The private key, at the one path every host uses now:
+    # /var/lib/sops-nix/key.txt (root:root 0600), plus ~/.config/sops/age/
+    # keys.txt on the laptop for hand-editing with the `sops` CLI.
+    # DELIBERATELY not a home directory path: sops-install-secrets runs early
+    # in boot, before homes are necessarily useful, and a root-owned path under
+    # /var/lib states plainly that this is machine state, not user state.
+    #
+    # ON A FRESH INSTALL the key is the ONE thing the flake cannot restore for
+    # itself (it is not in the repo, by design). Restore it to this path before
+    # the first switch, or activation fails while decrypting.
+    age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
+
+    secrets = {
+      # Names map onto the YAML structure with `/` as the nesting separator, so
+      # "telegram/bot_token" is `telegram: { bot_token: ... }`. Moved here from
+      # the ThinkCentre's file 2026-10-18; the values are unchanged.
+      "telegram/bot_token" = {};
+      "telegram/allowed_user_id" = {};
+    };
+
+    # Rendered at activation to /run/secrets/rendered/notify-telegram.env, the
+    # path scripts/notify-telegram.sh reads by default — so no unit has to be
+    # told where the token is.
+    #
+    # root:root 0400 (the default) and NOT the `username` owner the ThinkCentre's
+    # other two templates use: every caller of notify-telegram is root (smartd,
+    # sv-watch, notify-telegram@), so nothing else needs to read it. The script's
+    # probe is `[ -r ... ]` as root, so a host that somehow lost its key fails
+    # closed — it logs NOTIFY(no-token) and exits 0 rather than queueing forever.
+    templates."notify-telegram.env".content = ''
+      TELEGRAM_BOT_TOKEN=${config.sops.placeholder."telegram/bot_token"}
+      TELEGRAM_CHAT_ID=${config.sops.placeholder."telegram/allowed_user_id"}
+    '';
+  };
 
   # OnFailure= hook for any unit that has to be heard about. Used by
   # backup-daily (hosts/thinkcentre/backup.nix); sv-watch already reports failed

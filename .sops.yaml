@@ -31,7 +31,9 @@ keys:
   # entries never decrypted there either).
   #
   # The old recipient stays listed on purpose. The pre-existing
-  # thinkcentre.sops.yaml is encrypted ONLY to it, so if `age-key.txt` ever
+  # thinkcentre.sops.yaml (renamed secrets/fleet.sops.yaml on 2026-10-18, when
+  # it became the file all three hosts read — the name is not in the ciphertext
+  # and the path_regex below covers it either way) is encrypted ONLY to it, so if `age-key.txt` ever
   # turns up it still opens; losing access to a key is not a reason to destroy
   # the ciphertext it can read. New files below are encrypted to BOTH, so
   # either key opens them.
