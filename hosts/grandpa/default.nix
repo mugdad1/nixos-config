@@ -111,8 +111,12 @@
     enable = true;
     settings = {
       server = {
-        DOMAIN = "192.168.8.254";
-        ROOT_URL = "http://192.168.8.254:3000/";
+        # Tailnet canonical (his pick 2026-10-18): he browses forgejo as
+        # 100.106.116.60:3000, and the old LAN pin threw Forgejo's "you are
+        # viewing through a different URL" banner on every page. Tailnet IP
+        # answers from every box on the network, LAN included.
+        DOMAIN = "100.106.116.60";
+        ROOT_URL = "http://100.106.116.60:3000/";
         HTTP_PORT = 3000;
         LANDING_PAGE = "explore";
       };
