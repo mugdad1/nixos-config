@@ -8,12 +8,13 @@
 # was throwing the failures at a discarded pipe. `systemctl` every 60 s plus
 # ONE push on a state CHANGE is the cheapest thing that can catch this.
 #
-# **ALERT DELIVERY IS OFF SINCE 2026-10-12** (his "just rm notify"): the ntfy
-# container left the stack that day, so this sweep only LOGS to the journal.
-# Nothing is pushed anywhere. `NTFY` below is retained but unused, and the
-# queue/flush machinery behind it is unreachable because push() is now an
-# unconditional printf. If alerting is ever wanted again, point it at
-# telegram rather than resurrecting ntfy.
+# **ALERT DELIVERY IS LIVE AGAIN SINCE 2026-10-18**, and it goes to Telegram -
+# never back to ntfy (the container he had me remove on 2026-10-12; it had zero
+# subscribers for its whole life). push() below shells out to the shared
+# `notify-telegram` script (pkgs/notify-telegram.nix) instead of the printf it
+# was between 2026-10-12 and today, which means the queue/flush machinery below
+# it is reachable again: a delivery that actually fails is retried every sweep
+# from /var/lib/sv-watch/outbox.
 #
 # SCOPE (2026-10-09): systemd units, docker containers, and the published HTTP
 # endpoints. Containers were added because a stopped container was invisible
@@ -38,9 +39,9 @@ set -u
 STATE="${STATE:-/run/sv-watch.state}"
 PENDING="${PENDING:-/run/sv-watch.http-pending}"
 ENDPOINTS="${ENDPOINTS:-/etc/sv-watch/http-endpoints}"
-# UNUSED since 2026-10-12 (ntfy removed from the stack) - kept commented so
-# nobody re-reads the line above as a promise that alerts go somewhere.
-# NTFY="${NTFY:-http://127.0.0.1:8085/thinkcentre-alerts}"
+# The ntfy URL that used to live here is GONE, not merely commented: delivery
+# moved to Telegram through `notify-telegram` (see push() below), and leaving a
+# dead URL in place is how the previous alerting outage stayed invisible.
 # Persistent outbox: an alert that cannot be delivered is WRITTEN HERE instead
 # of being lost. Deliberately not under /run - it has to survive the very
 # reboot whose alert it is holding (2026-10-09 08:52:39, docker DOWN, ntfy a
@@ -54,12 +55,36 @@ sub()  { case "$1" in docker:*) printf '%s' docker ;; url:*) printf '%s' HTTP ;;
 bare() { case "$1" in docker:*) printf '%s' "${1#docker:}" ;; url:*) printf '%s' "${1#url:}" ;; dns:*) printf '%s' "${1#dns:}" ;; *) printf '%s' "$1" ;; esac; }
 
 push() {    # $1=priority $2=title $3=body
-    # Delivery DISABLED 2026-10-12 on his "just rm notify": the ntfy container is
-    # gone (subscribers=0 for its whole life, so it never reached a phone), and he
-    # does not want a page at 3am. Returns 0 on purpose: the sweep still DETECTS
-    # and still LOGS the state change below, it just no longer tries to deliver
-    # anything and nothing can queue to the outbox forever.
-    printf '%s NOTIFY(off): [%s] %s -- %s\n' "$(now)" "$1" "$2" "$3"
+    # REAL DELIVERY, 2026-10-18 onward: one shared script (pkgs/notify-telegram
+    # .nix) posts to the Telegram Bot API with the sops-rendered token, so this
+    # sweep, smartd and backup-daily's OnFailure= hook all deliver the same way,
+    # through one place to fix when Telegram's API or the token changes.
+    #
+    # The exit status is LOAD-BEARING. alert() retries three times, then queues
+    # the message to $OUTBOX, and flush() re-sends that queue at the top of
+    # every sweep - so a send that actually failed must return non-zero, or the
+    # outbox degenerates into a write-only file. A host with no sops key does
+    # NOT fail: it logs NOTIFY(no-token) and exits 0 (see the script), which is
+    # what keeps the outbox from growing forever where delivering is impossible.
+    #
+    # Priority maps to the phone deliberately: high = buzz (a real DOWN),
+    # default/low = silent. Recovery lines arrive on their own schedule, and
+    # they were half the reason a 3am page was unwelcome in the first place.
+    #
+    # `notify-telegram` comes from the unit's runtimeInputs (hosts/thinkcentre/
+    # services.nix); when this is run by hand on a box that lacks it, say so in
+    # the journal rather than dying and skipping the state-change bookkeeping.
+    if ! command -v notify-telegram >/dev/null 2>&1; then
+        printf '%s NOTIFY(missing): [%s] %s -- %s\n' "$(now)" "$1" "$2" "$3"
+        return 0
+    fi
+    _rc=0
+    if [ "$1" = "high" ]; then
+        notify-telegram --title "$2" "$3" || _rc=$?
+    else
+        notify-telegram --silent --title "$2" "$3" || _rc=$?
+    fi
+    return "$_rc"
 }
 
 queue() {   # keep what could not be delivered: one TAB-separated line per message

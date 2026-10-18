@@ -131,6 +131,10 @@
       # monitor that silently checks nothing, which is worse than no monitor.
       inetutils # hostname — NOT in NixOS's default path
       systemd # systemctl
+      # The delivery path for push()/alert() below (2026-10-18). Same package
+      # smartd and the notify-telegram@ OnFailure unit use, so there is exactly
+      # one implementation of "send this to my phone".
+      (pkgs.callPackage ../../pkgs/notify-telegram.nix {})
     ];
     text = builtins.readFile ../../scripts/thinkcentre/sv-watch.sh;
   };

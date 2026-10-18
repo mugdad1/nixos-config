@@ -144,5 +144,27 @@
         FILEN_CLI_PASSWORD=${config.sops.placeholder."filen/password"}
       '';
     };
+
+    # Alert delivery (2026-10-18). Read by scripts/notify-telegram.sh, which is
+    # what sv-watch (units/containers/endpoints/DNS), smartd (disks) and the
+    # notify-telegram@ OnFailure unit all call - see modules/core/monitoring.nix
+    # for why alerting had to be rebuilt and why the delivery path is shared.
+    #
+    # DELIBERATELY root:root 0400 (the default), unlike the two templates above:
+    # sv-watch and smartd run as root, so nothing else needs to read it. The
+    # probe for the file in notify-telegram.sh is `[ -r ... ]` while running as
+    # root, so it is found there and NOT found on the hosts that have no sops
+    # key - which is the intended split: those two hosts keep logging their
+    # alerts to journald until the key is placed on them by hand (see
+    # ../../README.md, the bootstrap step).
+    #
+    # Path: /run/secrets/rendered/notify-telegram.env - the default baked into
+    # the script, so no unit has to be told where it is.
+    templates."notify-telegram.env" = {
+      content = ''
+        TELEGRAM_BOT_TOKEN=${config.sops.placeholder."telegram/bot_token"}
+        TELEGRAM_CHAT_ID=${config.sops.placeholder."telegram/allowed_user_id"}
+      '';
+    };
   };
 }

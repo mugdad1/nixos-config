@@ -56,6 +56,13 @@ in {
     description = "Snapshot sources onto /srv/backup (rsync + verify + rotate)";
     # Ordering of record only — see the header: this gates nothing on its own.
     after = ["time-sync.target"];
+    # And tell him when it fails. sv-watch's unit sweep would also see this,
+    # but only on its next 60 s tick and only as a generic "unit down" line -
+    # a backup that did not run is worth a page that names it, which is what
+    # the template unit in modules/core/monitoring.nix does. %n expands to this
+    # unit's own name, so the message reads "backup-daily.service failed on
+    # thinkcentre".
+    unitConfig.OnFailure = ["notify-telegram@%n.service"];
     # Tools backup-run.sh shells out to. This is the NixOS replacement for the
     # donor's hand-built PATH= line.
     path = with pkgs; [
