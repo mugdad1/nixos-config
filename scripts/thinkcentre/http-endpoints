@@ -9,7 +9,12 @@
 # is a failure. Two consecutive strikes are required before a page, so a cold
 # boot with containers still starting never alerts.
 #
-# Verified answering 2026-10-09 (200/302 each): all 15 below.
+# The count used to be part of that line ("all 15 below") and it drifted: the
+# list was down to 13 URLs while the comment still promised 15, because three
+# were removed and the sentence was not. It now says what it means - every line
+# below answers on the loopback as of this date. Re-checked 2026-10-18.
+#
+# LAST VERIFIED 2026-10-18 (200/302 each).
 http://127.0.0.1/          # caddy - index + reverse proxy
 http://127.0.0.1:2283/     # immich
 http://127.0.0.1:3000/     # gitea
@@ -23,3 +28,8 @@ http://127.0.0.1:8096/     # jellyfin
 http://127.0.0.1:8384/     # syncthing
 http://127.0.0.1:8888/     # searxng
 http://127.0.0.1:8091/     # study pwa
+# Added 2026-10-18: home assistant was advertised on the server index
+# (lib/server-index.nix) and described in the wiki while NOTHING health-checked
+# it - the sweep stopped at the compose containers. Verified answering 200 on
+# the loopback the same day.
+http://127.0.0.1:8123/     # home assistant
