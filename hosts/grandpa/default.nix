@@ -93,4 +93,37 @@
   };
 
   # hostname comes from core/network.nix: networking.hostName = host = "grandpa".
+
+  # ─── THE FIRST REAL SERVICE: Forgejo (2026-10-18) ────────────────────────
+  # His order: "rm gitea and it mirror cuz its bad ... u can use forjero" —
+  # gitea + gitea-mirror came off the thinkcentre (see its server-index and
+  # README), and the git host role moves here as the native NixOS service
+  # rather than a compose dir: this box has no docker, and the whole point of
+  # grandpa is that nixos-rebuild brings it back. GitHub stays the remote; this
+  # is the local web UI + LAN clone endpoint.
+  #
+  # Port 3000 is free again (gitea held it until today); git-ssh :2222 left
+  # with gitea too.
+  services.forgejo = {
+    enable = true;
+    settings = {
+      server = {
+        DOMAIN = "192.168.8.254";
+        ROOT_URL = "http://192.168.8.254:3000/";
+        HTTP_PORT = 3000;
+        LANDING_PAGE = "explore";
+      };
+      service = {
+        # Same posture gitea had on day one: signups open so the FIRST account
+        # becomes admin, then close it — his README rule: "create, then close
+        # it". Flip DISABLE_REGISTRATION to true right after first login.
+        DISABLE_REGISTRATION = false;
+        REQUIRE_SIGNIN_VIEW = false;
+      };
+      repository.DEFAULT_BRANCH = "main";
+    };
+    # SQLite: 6 GiB box, a handful of repos — no postgres, no redis.
+    database.type = "sqlite3";
+    stateDir = "/var/lib/forgejo";
+  };
 }
