@@ -137,5 +137,34 @@
     priority = 100;
   };
 
+  # CPU scheduler — sched_ext, added 2026-10-18 with the laptop (see
+  # modules/desktop/services.nix for the argument that produced it).
+  #
+  # EEVDF stays the kernel's default; this loads a BPF scheduler over it at
+  # runtime. Kernel here is 7.2.9, so the module's >= 6.12 requirement and its
+  # ConditionPathIsDirectory=/sys/kernel/sched_ext both hold (verified live:
+  # the directory exists, state=disabled before this).
+  #
+  # scx_bpfland because it classifies tasks by voluntary context-switch rate and
+  # prioritizes the interactive queue, which is the right bias on THIS box: 18
+  # containers (blocky on :53, home-assistant, opencode, the Telegram bot) answer
+  # latency-sensitive requests, while 03:17 backups, docker builds and the study
+  # site are throughput work that should yield. The 2.80 GHz i7-6700T is one
+  # homogeneous 4c/8t Skylake cluster, so nothing here needs a hybrid-aware
+  # scheduler.
+  #
+  # Host-specific, deliberately not modules/core: grandpa is a 2-core/4-thread
+  # Sandy Bridge that idles at load ~0.0 — a BPF scheduler there buys nothing and
+  # adds a moving part to the box he least wants to touch. The laptop carries its
+  # own copy in modules/desktop/services.nix for a different reason (someone is
+  # at the keyboard).
+  #
+  # Escape hatch, same as everywhere: `sudo systemctl stop scx` returns the box
+  # to EEVDF immediately, no reboot, no rebuild.
+  services.scx = {
+    enable = true;
+    scheduler = "scx_bpfland";
+  };
+
   # hostname comes from core/network.nix: networking.hostName = host = "thinkcentre".
 }
