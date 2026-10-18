@@ -167,9 +167,13 @@ that has lost its key fails closed: it logs `NOTIFY(no-token)` to journald and
 The ciphertext file is `secrets/fleet.sops.yaml` (renamed from
 `thinkcentre.sops.yaml` on 2026-10-18 — a fleet-wide secret in a file named
 after one host was drift; nothing was re-encrypted, the name is not in the
-ciphertext). `sops` is **not installed on any host** (checked 2026-10-18), so
-editing a secret means `nix shell nixpkgs#sops` first. Adding a secret: encrypt
-it into `secrets/fleet.sops.yaml`, declare it in `sops.secrets`, read it as
+ciphertext). **`sops` is installed on every host** as a system package
+(`modules/core/packages.nix`, 2026-10-18) — it was on none of them until then,
+which made these instructions un-runnable on the box they were written for. It
+is not needed to *decrypt*: activation does that through
+`sops-install-secrets` and the age key. It is the interactive half. Adding a
+secret: `sops secrets/fleet.sops.yaml` (opens the ciphertext in `$EDITOR`,
+re-encrypts on save), declare it in `sops.secrets`, read it as
 `config.sops.placeholder."<name>"`.
 
 ## Development
