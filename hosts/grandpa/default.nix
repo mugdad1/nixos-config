@@ -52,9 +52,11 @@
     # learned this the expensive way (see the long warning in its default.nix).
     ./packages.nix
     ./overrides.nix
-    # THE MD SERVICE (2026-10-18): mkdocs-material renders ~/projects/wiki, nginx
-    # serves it, a timer pulls git. See wiki.nix for the whole rationale.
-    ./wiki.nix
+    # THE MD SERVICE (2026-10-18, removed same day on his "u can rm the md one
+    # idont care that much"): mkdocs-material rendered ~/projects/wiki, nginx
+    # served it, a timer pulled git. wiki.nix kept on disk with its rationale;
+    # the git repo itself is untouched — only the renderer goes.
+    # ./wiki.nix
   ];
 
   # The ESP lives at /boot (systemd-boot writes there; NixOS's default is already
