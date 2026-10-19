@@ -8,10 +8,12 @@
 # (hosts/grandpa/glances.nix): native `services.glances`, same port, so both
 # boxes report what they actually are and the config survives a reinstall.
 #
-# The container was STOPPED, not deleted (`docker stop glances`; its
-# unless-stopped policy keeps it stopped across daemon restarts), and the port
-# is free for this service. To go back: `docker start glances` + disable this
-# module's import in ./default.nix.
+# The container was REMOVED at the end of the same day (`docker rm glances` —
+# a stopped container stays in `docker ps -aq` forever, and sv-watch watches
+# every container in that listing, so leaving it stopped meant a permanent
+# "docker DOWN: glances" page). The image may still be in the local docker
+# cache. To go back: disable this module's import in ./default.nix, rebuild,
+# then `docker run` the image again on :61208.
 #
 # MUST be listed in ./default.nix's imports — a directory module resolves to
 # default.nix ONLY and does not sweep up siblings.
