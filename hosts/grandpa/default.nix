@@ -159,7 +159,10 @@ in {
   systemd.services.docker-stack = {
     description = "Bring the compose stack under ~/projects/servers up";
     requires = ["docker.service"];
-    after = ["docker.service"];
+    # tailscaled too: gitea-mirror publishes 100.106.116.60:4321, and a bind to
+    # an address that does not exist yet is a dead container at boot.
+    after = ["docker.service" "tailscaled.service"];
+    wants = ["tailscaled.service"];
     wantedBy = ["multi-user.target"];
     unitConfig.ConditionPathExists = "/home/${username}/projects/servers";
     serviceConfig = {

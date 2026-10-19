@@ -33,10 +33,26 @@
   # systemd-resolved, which fights for the same file and fails evaluation.
   services.resolved.enable = lib.mkForce false;
   systemd.network.enable = true;
+  # DOCKER'S VETHs — the trap the Type=ether match below fell into once docker
+  # arrived (2026-10-19, forgejo + gitea-mirror moved to compose). A veth end is
+  # ALSO type `ether`, so 10-ethernet claimed every docker veth the moment a
+  # container started, and applying a .network file to it strips the bridge
+  # master: dockerd creates the pair, enslaves it, networkd claims it, the port
+  # falls out of the bridge — dmesg shows "entered promiscuous mode" then
+  # "left promiscuous mode" seconds later, the bridge sits NO-CARRIER, and
+  # every published port is a timeout from outside while `docker exec` and
+  # wget INSIDE the container answer fine (the container never notices).
+  # thinkcentre never hit this because its match is Name=eno1. networkd picks
+  # the FIRST matching .network, so this one sorts before 10- and hands veths
+  # straight back to docker, unmanaged.
+  systemd.network.networks."09-veth-unmanaged" = {
+    matchConfig.Kind = "veth";
+    networkConfig.Unmanaged = true;
+  };
   # The NIC name on a custom-built desktop is unknowable until the box is here,
   # so match by link TYPE (every ethernet port) instead of a hard-coded name like
   # the ThinkCentre's eno1. docker bridges are type `bridge`, not `ether`, so
-  # they are untouched.
+  # they are untouched — the veths needed 09-veth-unmanaged above.
   systemd.network.networks."10-ethernet" = {
     matchConfig.Type = "ether";
     networkConfig = {
