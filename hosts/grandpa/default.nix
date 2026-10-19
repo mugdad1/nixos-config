@@ -38,7 +38,14 @@
 # systemd-networkd, systemd-timesyncd, zram), and nothing service-specific
 # (docker, backup, WhatsApp, extra blocky upstreams beyond the shared pair) is
 # pre-wired. Add it here when a service is actually chosen.
-{pkgs, username, ...}: {
+{pkgs, username, ...}: let
+  dockerStack = pkgs.writeShellApplication {
+    name = "docker-stack";
+    runtimeInputs = with pkgs; [docker coreutils gnugrep];
+    # Same launcher thinkcentre uses — sweeps ~/projects/servers.
+    text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
+  };
+in {
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
@@ -148,12 +155,6 @@
   # the boot launcher so nixos-rebuild + reboot brings the stack back.
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
-
-  dockerStack = pkgs.writeShellApplication {
-    name = "docker-stack";
-    runtimeInputs = with pkgs; [docker coreutils gnugrep];
-    text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
-  };
 
   systemd.services.docker-stack = {
     description = "Bring the compose stack under ~/projects/servers up";
