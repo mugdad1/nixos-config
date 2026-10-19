@@ -93,8 +93,9 @@
     # config-sync checks when node is missing from PATH.
     nodejs
 
-    # tcpdump — the wiki has flagged "there is no tcpdump on the box" since
-    # row 146 (leak-hunt note). Network debug on a DNS/routing house needs it.
+    # tcpdump — the wiki has flagged "there is no tcpdump on the box" in the
+    # unnumbered no-leak row of decisions.md (file line 146) since 2026-10-09.
+    # Network debug on a DNS/routing house needs it.
     tcpdump
 
     # ── WhatsApp tooling: REMOVED 2026-10-16, his order "rm whatsapp fully

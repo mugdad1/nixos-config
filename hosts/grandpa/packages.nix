@@ -58,8 +58,8 @@
     # ── agent tooling, added 2026-10-19 ("all u need inside … also grandpa") ─
     # Mirrors hosts/thinkcentre/packages.nix — node for the study repo's gates
     # (`node --test`, scripts/check.sh; node missing from PATH = silent FAIL),
-    # tcpdump for network debug (the wiki's "no tcpdump on the box" note,
-    # decisions row 146).
+    # tcpdump for network debug (the "no tcpdump on the box" gap in the
+    # unnumbered no-leak row of decisions.md, file line 146).
     nodejs
     tcpdump
     # mcli is repo-owned (scripts/mcli.sh), not a nixpkgs package. Normally
