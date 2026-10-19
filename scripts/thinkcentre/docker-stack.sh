@@ -41,6 +41,12 @@ STACK_DIR="${STACK_DIR:-/home/${USER:-mugdad}/projects/servers}"
 # reads as an oversight.
 DISABLED='
 # uptime-kuma
+# glances — retired from compose 2026-10-19: the native NixOS service
+# (hosts/thinkcentre/glances.nix) owns :61208 now. This entry stops the stack
+# from re-creating the container on every boot — a recreated-but-not-started
+# container still sits in `docker ps -aq`, which sv-watch sweeps, so the page
+# "docker DOWN: glances" came back after every reboot.
+glances
 '
 
 have_compose() {
