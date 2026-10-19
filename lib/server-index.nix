@@ -78,25 +78,27 @@
     }
     # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
     # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
-    # grandpa's two services, added the same day gitea died (2026-10-18). The
+    # grandpa's services, added the same day gitea died (2026-10-18). The
     # row generator defaults to thinkcentre's host, so both carry an explicit
     # `url` — grandpa's tailnet IP 100.106.116.60, which answers from anywhere
-    # tailscale is up, same reason the HA link works. The wiki entry is the md
-    # service: git stays the source of truth, grandpa renders it every 15 min.
+    # tailscale is up, same reason the HA link works.
     {
       name = "forgejo";
       port = "3000";
-      desc = "git, self-hosted — replaced gitea, native nixos service";
+      desc = "git, self-hosted — replaced gitea, docker compose on grandpa";
       url = "http://100.106.116.60:3000";
       note = "grandpa";
     }
     {
-      name = "wiki";
-      port = "80";
-      desc = "this repo rendered as a site — mkdocs-material on grandpa";
-      url = "http://100.106.116.60";
-      note = "grandpa";
+      name = "gitea mirror";
+      port = "4321";
+      desc = "github → forgejo mirroring, back on grandpa 2026-10-19";
+      url = "http://100.106.116.60:4321";
+      note = "grandpa, tailnet only";
     }
+    # wiki (mkdocs-material on grandpa) dropped 2026-10-19 — row 128, the md
+    # service was removed on his "idont care that much". Port 80 on grandpa
+    # refuses now, so the row would ship a dead link. Read the wiki on GitHub.
     # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
     # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
     # dead, so it came off this list too or the index ships a dead link.
