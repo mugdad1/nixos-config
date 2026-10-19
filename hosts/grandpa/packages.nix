@@ -49,7 +49,19 @@
     # Wrapped with pyserial (Midea dongle probing, 2026-10-17) — withPackages
     # python3 is a strict superset of the bare interpreter, so this single
     # entry covers both roles; a second bare python3 would collide on bin/python3.
-    (python3.withPackages (p: [p.pyserial]))
+    # 2026-10-19, his word "add the things u need inside the nixos-config …
+    # also grandpa": aioesphomeapi joins pyserial so the agent can drive the
+    # ESP8266 AC (ac-control, 192.168.8.7) from this box too — same wrapped
+    # entry, no second python3.
+    (python3.withPackages (p: [p.pyserial p.aioesphomeapi]))
+
+    # ── agent tooling, added 2026-10-19 ("all u need inside … also grandpa") ─
+    # Mirrors hosts/thinkcentre/packages.nix — node for the study repo's gates
+    # (`node --test`, scripts/check.sh; node missing from PATH = silent FAIL),
+    # tcpdump for network debug (the wiki's "no tcpdump on the box" note,
+    # decisions row 146).
+    nodejs
+    tcpdump
     # mcli is repo-owned (scripts/mcli.sh), not a nixpkgs package. Normally
     # installed through home.packages, but this host is headless and imports no
     # home stack, so it is wired in here — the same shape thinkcentre uses.

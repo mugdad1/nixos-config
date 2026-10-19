@@ -79,7 +79,23 @@
     # a one-liner he can type himself. Not a system-wide dev environment: the
     # MCP server keeps its own venv in the repo, so this is just the runtime
     # the hand tools need.
-    python3
+    # 2026-10-19 ("add the things u need inside the nixos-config"): bare
+    # python3 upgraded to a withPackages env — same interpreter, now with
+    # aioesphomeapi so the agent can drive the ESP8266 AC (ac-control,
+    # 192.168.8.7) directly instead of a throwaway nix-shell every time.
+    # Superset of the old line: plain python3 still resolves.
+    (python3.withPackages (ps: [ps.aioesphomeapi]))
+
+    # ── added 2026-10-19, his word "all u need inside" ────────────────────────
+    # node: the study repo's gates run on `node --test` (scripts/check.sh,
+    # 145 tests) — before this, every study push needed
+    # `nix-shell -p nodejs` first, and the shell form silently FAILs the
+    # config-sync checks when node is missing from PATH.
+    nodejs
+
+    # tcpdump — the wiki has flagged "there is no tcpdump on the box" since
+    # row 146 (leak-hunt note). Network debug on a DNS/routing house needs it.
+    tcpdump
 
     # ── WhatsApp tooling: REMOVED 2026-10-16, his order "rm whatsapp fully
     # fully fully" / "Never whatsapp. No one." (decisions row 107). The four
