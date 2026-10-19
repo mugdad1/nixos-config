@@ -38,7 +38,7 @@
 # systemd-networkd, systemd-timesyncd, zram), and nothing service-specific
 # (docker, backup, WhatsApp, extra blocky upstreams beyond the shared pair) is
 # pre-wired. Add it here when a service is actually chosen.
-{...}: {
+{pkgs, username, ...}: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
@@ -59,7 +59,10 @@
     # ./wiki.nix
     # GITEA-MIRROR (2026-10-19, his "lets have gitea mirror … on grandpa"):
     # native systemd service, tailnet-only :4321, pushes GitHub → Forgejo.
-    ./gitea-mirror.nix
+    # MOVED TO DOCKER same day on his "i want forgero and mirror in docker
+    # now" — the module stays for its rationale; the compose file lives at
+    # ~/projects/servers/gitea-mirror/ and docker-stack sweeps it.
+    # ./gitea-mirror.nix
   ];
 
   # The ESP lives at /boot (systemd-boot writes there; NixOS's default is already
@@ -112,31 +115,60 @@
   #
   # Port 3000 is free again (gitea held it until today); git-ssh :2222 left
   # with gitea too.
-  services.forgejo = {
-    enable = true;
-    settings = {
-      server = {
-        # Tailnet canonical (his pick 2026-10-18): he browses forgejo as
-        # 100.106.116.60:3000, and the old LAN pin threw Forgejo's "you are
-        # viewing through a different URL" banner on every page. Tailnet IP
-        # answers from every box on the network, LAN included.
-        DOMAIN = "100.106.116.60";
-        ROOT_URL = "http://100.106.116.60:3000/";
-        HTTP_PORT = 3000;
-        LANDING_PAGE = "explore";
-      };
-      service = {
-        # Same posture gitea had on day one: signups open so the FIRST account
-        # becomes admin, then close it — his README rule: "create, then close
-        # it". Flip DISABLE_REGISTRATION to true right after first login.
-        DISABLE_REGISTRATION = false;
-        REQUIRE_SIGNIN_VIEW = false;
-      };
-      repository.DEFAULT_BRANCH = "main";
+  #
+  # MOVED TO DOCKER same day (2026-10-19, his "i want forgero and mirror in
+  # docker now") — compose file at ~/projects/servers/forgejo/, data still
+  # /var/lib/forgejo bind-mounted at the same path. COMMENT OUT, DON'T DELETE:
+  # this block is the record of the settings the container now carries in its
+  # own compose file (tailnet ROOT_URL, signups open, sqlite, :3000).
+  # services.forgejo = {
+  #   enable = true;
+  #   settings = {
+  #     server = {
+  #       DOMAIN = "100.106.116.60";
+  #       ROOT_URL = "http://100.106.116.60:3000/";
+  #       HTTP_PORT = 3000;
+  #       LANDING_PAGE = "explore";
+  #     };
+  #     service = {
+  #       DISABLE_REGISTRATION = false;
+  #       REQUIRE_SIGNIN_VIEW = false;
+  #     };
+  #     repository.DEFAULT_BRANCH = "main";
+  #   };
+  #   database.type = "sqlite3";
+  #   stateDir = "/var/lib/forgejo";
+  # };
+
+  # Docker (2026-10-19, his "why dont u dockerize grandpa" → "ok do it i want
+  # forgero and mirror in docker now") — grandpa's "no docker" posture (row
+  # 103) was a moment, not a rule (his own correction the same week). Same
+  # shape as thinkcentre: engine only in Nix, compose files under
+  # ~/projects/servers are the source of truth for what runs, docker-stack is
+  # the boot launcher so nixos-rebuild + reboot brings the stack back.
+  virtualisation.docker.enable = true;
+  users.users.${username}.extraGroups = ["docker"];
+
+  dockerStack = pkgs.writeShellApplication {
+    name = "docker-stack";
+    runtimeInputs = with pkgs; [docker coreutils gnugrep];
+    text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
+  };
+
+  systemd.services.docker-stack = {
+    description = "Bring the compose stack under ~/projects/servers up";
+    requires = ["docker.service"];
+    after = ["docker.service"];
+    wantedBy = ["multi-user.target"];
+    unitConfig.ConditionPathExists = "/home/${username}/projects/servers";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = username;
+      WorkingDirectory = "/home/${username}/projects/servers";
+      ExecStart = "${dockerStack}/bin/docker-stack";
+      TimeoutStartSec = "15min"; # first boot pulls the images
     };
-    # SQLite: 6 GiB box, a handful of repos — no postgres, no redis.
-    database.type = "sqlite3";
-    stateDir = "/var/lib/forgejo";
   };
 
   # The module has no openFirewall (checked 2026-10-18 in nixpkgs 6510408), and
@@ -144,5 +176,6 @@
   # this line forgejo listens but nobody can reach it. Verified live: active +
   # LISTEN :3000 with a curl from the thinkcentre still timing out (000/exit 28)
   # until the port was allowed. LAN-only box, plain http, same as gitea was.
+  # Still :3000 after the docker move — the compose file publishes 3000.
   networking.firewall.allowedTCPPorts = [ 3000 ];
 }
