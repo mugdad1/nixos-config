@@ -52,6 +52,9 @@
     ./backup.nix
     ./services.nix
     ./home-assistant.nix
+    # GLANCES (2026-10-19) — native service replacing the docker container that
+    # reported Alpine as the host OS. See glances.nix for the full story.
+    ./glances.nix
     ./packages.nix
     ./overrides.nix
     # sops-nix wiring. Host-specific on purpose: the secrets FILE is
