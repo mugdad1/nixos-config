@@ -57,6 +57,9 @@
     # served it, a timer pulled git. wiki.nix kept on disk with its rationale;
     # the git repo itself is untouched — only the renderer goes.
     # ./wiki.nix
+    # GITEA-MIRROR (2026-10-19, his "lets have gitea mirror … on grandpa"):
+    # native systemd service, tailnet-only :4321, pushes GitHub → Forgejo.
+    ./gitea-mirror.nix
   ];
 
   # The ESP lives at /boot (systemd-boot writes there; NixOS's default is already
