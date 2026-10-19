@@ -108,8 +108,11 @@ in {
         "captivedetect.canonicalURL" = "";
         "network.allow-experiments" = false;
 
-        "dom.security.https_only_mode" = true;
-        "dom.security.https_only_mode_pbm" = true;
+        # his word 2026-10-19: "disable https only mode (in zen)" — was true
+        # from the start of this block; the two flags cover normal + private
+        # windows, both off now.
+        "dom.security.https_only_mode" = false;
+        "dom.security.https_only_mode_pbm" = false;
         "network.dns.disablePrefetch" = true;
         "network.prefetch-next" = false;
         "network.predictor.enabled" = false;
