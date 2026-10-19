@@ -42,7 +42,10 @@
     '';
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-50HHef78QfnB2seVEvl5xZdD+qpfDmvd5Oz6jvRpMcI=";
+    # 2026-10-19: refreshed on grandpa — bun install's output shifted upstream
+    # (registry tarballs are not content-stable across time); first mismatch
+    # after resurrection reported `sha256-X5jx/aR43znbtt3tpHcbwCuxXkHdq+AM0nDemeW1Fv0=`.
+    outputHash = "sha256-X5jx/aR43znbtt3tpHcbwCuxXkHdq+AM0nDemeW1Fv0=";
   };
 in
   stdenv.mkDerivation {
