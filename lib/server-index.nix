@@ -29,6 +29,11 @@
   # below builds every link from it — so it must match what `tailscale ip -4`
   # reports on the box, not what an older page remembers.
   host ? "http://100.88.29.31",
+  # grandpa's tailnet IP — the second table's link base, same reasoning as
+  # `host` above (must match `tailscale ip -4` on grandpa, 100.106.116.60
+  # since it was registered 2026-10-16). His ask 2026-10-19: "in caddy can we
+  # have 2 things / 1 for thinkcentre and 1 for grandpa".
+  grandpa ? "http://100.106.116.60",
 }: let
   inherit (builtins) concatStringsSep filter map;
   optionalString = cond: str:
@@ -86,15 +91,23 @@
       name = "forgejo";
       port = "3000";
       desc = "git, self-hosted — replaced gitea, docker compose on grandpa";
-      url = "http://100.106.116.60:3000";
-      note = "grandpa";
+      machine = "grandpa";
     }
     {
       name = "gitea mirror";
       port = "4321";
       desc = "github → forgejo mirroring, back on grandpa 2026-10-19";
-      url = "http://100.106.116.60:4321";
-      note = "grandpa, tailnet only";
+      note = "tailnet only";
+      machine = "grandpa";
+    }
+    # glances on grandpa, added the same day he asked for it (2026-10-19) —
+    # NixOS-native service (hosts/grandpa/glances.nix), unlike the docker
+    # container on thinkcentre. Both are :61208, one per table.
+    {
+      name = "glances";
+      port = "61208";
+      desc = "cpu / temp / mem / disk, live — on grandpa";
+      machine = "grandpa";
     }
     # wiki (mkdocs-material on grandpa) dropped 2026-10-19 — row 128, the md
     # service was removed on his "idont care that much". Port 80 on grandpa
@@ -149,15 +162,28 @@
   ];
 
   # `first = true` entries are hoisted to the top, the rest keep their order.
+  # The split is by `machine` (default = thinkcentre): two tables on one page —
+  # his ask 2026-10-19 ("1 for thinkcentre and 1 for grandpa").
+  isG = s: (s.machine or "") == "grandpa";
+  tcServices = filter (s: !(isG s)) services;
+  gpServices = filter isG services;
   sorted =
-    (filter (s: s.first or false) services)
-    ++ (filter (s: !(s.first or false)) services);
+    (filter (s: s.first or false) tcServices)
+    ++ (filter (s: !(s.first or false)) tcServices);
 
   # `url` wins over the generated host:port when an entry needs an absolute
-  # link (vaultwarden → tailscale HTTPS, see its entry above).
+  # link (vaultwarden → tailscale HTTPS, see its entry above). Otherwise the
+  # link base follows the entry's machine — grandpa's rows get grandpa's IP.
   row = s: let
-    href = s.url or "${host}:${s.port}";
+    href =
+      s.url
+      or "${
+        if isG s
+        then grandpa
+        else host
+      }:${s.port}";
   in ''<tr><td><a href="${href}">${s.name}</a></td><td>${s.desc}</td><td class="m">:${s.port}${optionalString (s ? note) " ${s.note}"}</td></tr>'';
+  table = entries: concatStringsSep "\n" (map row entries);
 in ''
   <!doctype html>
   <meta charset="utf-8">
@@ -165,6 +191,7 @@ in ''
   <style>
    body{background:#${c.bg0_h};color:#${c.fg};font:15px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;max-width:760px;margin:48px auto;padding:0 20px}
    h1{color:#${c.bright_green};font-size:22px;font-weight:600}
+   h2{color:#${c.bright_green};font-size:16px;font-weight:600;margin:28px 0 6px}
    a{color:#${c.bright_blue};text-decoration:none}
    a:hover{text-decoration:underline}
    td{padding:5px 18px 5px 0;vertical-align:top}
@@ -172,10 +199,15 @@ in ''
    tr:first-child a{color:#${c.bright_yellow};font-weight:700}
    hr{border:0;border-top:1px solid #${c.bg2};margin:26px 0}
   </style>
-  <h1>mugdad &mdash; 100.88.29.31</h1>
+  <h1>mugdad &mdash; servers</h1>
   <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand, run <b>push-server-index</b> instead.</p>
+  <h2>thinkcentre &mdash; 100.88.29.31</h2>
   <table>
-  ${concatStringsSep "\n" (map row sorted)}
+  ${table sorted}
+  </table>
+  <h2>grandpa &mdash; 100.106.116.60</h2>
+  <table>
+  ${table gpServices}
   </table>
   <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
   <hr>

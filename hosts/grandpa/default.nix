@@ -39,7 +39,11 @@
 # engine under them (see the block below). Still nothing pre-wired — no backup,
 # no WhatsApp, no extra blocky upstreams. Adding a service here is his call,
 # not an improvement to file.
-{pkgs, username, ...}: let
+{
+  pkgs,
+  username,
+  ...
+}: let
   dockerStack = pkgs.writeShellApplication {
     name = "docker-stack";
     runtimeInputs = with pkgs; [docker coreutils gnugrep];
@@ -60,6 +64,9 @@ in {
     # learned this the expensive way (see the long warning in its default.nix).
     ./packages.nix
     ./overrides.nix
+    # GLANCES (2026-10-19, his "can we have glances for grandpa") — NixOS-native
+    # service on :61208, unlike thinkcentre's docker container. See glances.nix.
+    ./glances.nix
     # THE MD SERVICE (2026-10-18, removed same day on his "u can rm the md one
     # idont care that much"): mkdocs-material rendered ~/projects/wiki, nginx
     # served it, a timer pulled git. wiki.nix kept on disk with its rationale;
@@ -181,5 +188,5 @@ in {
   # LISTEN :3000 with a curl from the thinkcentre still timing out (000/exit 28)
   # until the port was allowed. LAN-only box, plain http, same as gitea was.
   # Still :3000 after the docker move — the compose file publishes 3000.
-  networking.firewall.allowedTCPPorts = [ 3000 ];
+  networking.firewall.allowedTCPPorts = [3000];
 }
