@@ -47,7 +47,7 @@
   # straight back to docker, unmanaged.
   systemd.network.networks."09-veth-unmanaged" = {
     matchConfig.Kind = "veth";
-    networkConfig.Unmanaged = true;
+    linkConfig.Unmanaged = true;
   };
   # The NIC name on a custom-built desktop is unknowable until the box is here,
   # so match by link TYPE (every ethernet port) instead of a hard-coded name like
