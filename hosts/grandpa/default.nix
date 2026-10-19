@@ -33,11 +33,12 @@
 # behind it. Nothing is attached and nothing is wrong.
 #
 # WHAT IT IS (his word, 2026-10-16): a **lightweight server** — headless, and
-# that part is a decision, not a placeholder. Which services it runs is still the
-# open question: it runs the core set only (sshd, tailscaled, blocky,
-# systemd-networkd, systemd-timesyncd, zram), and nothing service-specific
-# (docker, backup, WhatsApp, extra blocky upstreams beyond the shared pair) is
-# pre-wired. Add it here when a service is actually chosen.
+# that part is a decision, not a placeholder. It runs the core set (sshd,
+# tailscaled, blocky, systemd-networkd, systemd-timesyncd, zram) plus what he
+# has chosen since: Forgejo + gitea-mirror, and since 2026-10-19 docker as the
+# engine under them (see the block below). Still nothing pre-wired — no backup,
+# no WhatsApp, no extra blocky upstreams. Adding a service here is his call,
+# not an improvement to file.
 {pkgs, username, ...}: let
   dockerStack = pkgs.writeShellApplication {
     name = "docker-stack";
@@ -115,10 +116,9 @@ in {
   # ─── THE FIRST REAL SERVICE: Forgejo (2026-10-18) ────────────────────────
   # His order: "rm gitea and it mirror cuz its bad ... u can use forjero" —
   # gitea + gitea-mirror came off the thinkcentre (see its server-index and
-  # README), and the git host role moves here as the native NixOS service
-  # rather than a compose dir: this box has no docker, and the whole point of
-  # grandpa is that nixos-rebuild brings it back. GitHub stays the remote; this
-  # is the local web UI + LAN clone endpoint.
+  # README), and the git host role moves here. It was declared native at first
+  # because this box had no docker; a day later he dockerized it (below). GitHub
+  # stays the remote; this is the local web UI + LAN clone endpoint.
   #
   # Port 3000 is free again (gitea held it until today); git-ssh :2222 left
   # with gitea too.

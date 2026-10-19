@@ -6,12 +6,15 @@
 # rule 2026-10-16: "see the thinkcentre" / "dont add anything from u". The ONLY
 # gaps found by diffing the two files were python3, docker-compose and ffmpeg:
 # python3 is in (a basic runtime, no reason to differ); docker-compose and
-# ffmpeg are NOT, because they exist over there for docker and the WhatsApp
-# stack, and neither runs here. The four WhatsApp writeTextFile entries are out
-# for the same reason. opencode was deliberately omitted until 2026-10-16, when
-# he asked for it by name ("fish opencode gh git mcli tailscale"). There is no
-# ./services.nix and no ./secrets.nix on this host for the same "what it hosts
-# is undecided" reason.
+# ffmpeg are NOT — ffmpeg exists over there for the WhatsApp/media stack and
+# nothing here needs it, and compose runs as the v2 plugin bundled with the
+# docker engine this host gained on 2026-10-19, so a standalone docker-compose
+# package is dead weight. The four WhatsApp writeTextFile entries are out for
+# the same reason (WhatsApp was removed fleet-wide, row 107). opencode was
+# deliberately omitted until 2026-10-16, when he asked for it by name ("fish
+# opencode gh git mcli tailscale"). No ./services.nix and no host-local
+# ./secrets.nix here: secrets are fleet-scope in modules/core (sops,
+# secrets/fleet.sops.yaml, rows 121–122), not per-host files.
 #
 # ONLY active because ./packages.nix is named in the imports list of
 # ./default.nix — a directory module does not sweep up its siblings.

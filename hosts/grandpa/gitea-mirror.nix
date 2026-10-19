@@ -1,5 +1,12 @@
-# gitea-mirror — self-hosted GitHub → Forgejo mirroring app, native systemd
-# service on grandpa (no docker here — row 103/112: grandpa stays containerless).
+# gitea-mirror — self-hosted GitHub → Forgejo mirroring app on grandpa.
+# NATIVE, THEN MOVED TO DOCKER THE SAME DAY (2026-10-19): written as a native
+# systemd service because grandpa was containerless ("no docker here — row
+# 103"), then his *"i want forgero and mirror in docker now"* landed within the
+# day — the import in default.nix is commented out and the live thing is
+# ~/projects/servers/gitea-mirror/docker-compose.yml (image
+# ghcr.io/raylabshq/gitea-mirror, data /var/lib/gitea-mirror bind-mounted, port
+# bound to 100.106.116.60:4321 because docker bypasses the nftables interface
+# rules). This file stays for its rationale and the env setup below.
 # Restored 2026-10-19 on his *"lets have gitea mirror its faster easier"* — the
 # same build the fleet ran before, git-resurrected from `adfa060`:
 #   - package: ../../packages/gitea-mirror.nix (RayLabsHQ/gitea-mirror, built
