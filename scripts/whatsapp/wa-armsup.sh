@@ -77,9 +77,27 @@ wake() {
     bash -c '
       set -u
       flock 9 || exit 1
+      # RE-CHECK THE ROWS AT DELIVERY TIME, not at arm time. The lock is held
+      # for as long as the previous model turn takes (2026-10-20: up to four
+      # minutes), so a row that was unanswered when the arm caught it can be
+      # answered by the time this wake is actually delivered. Five such
+      # stale wakes fired in a row that afternoon, each one a prompt to
+      # answer a question already answered and each one holding the lock a
+      # REAL message was queued behind -- the exact latency the wake exists
+      # to remove. The poller knows how to tell our own sends apart (it
+      # matches wa-sent-texts); this asks the same question of the DB at the
+      # moment it matters and drops what is already answered.
+      #
+      # If the filter cannot run, the rows pass through unchanged: a
+      # redundant wake is better than a missed message.
+      pending="$(printf "%s\n" "$WA_ROWS" | watch-whatsapp.py --filter-answered 2>>"$WAKELOG" || printf "%s\n" "$WA_ROWS")"
+      if [ -z "$pending" ]; then
+        printf "%s wake: every carried row is already answered -- NOT waking\n" "$(date "+%F %T")" >>"$WAKELOG"
+        exit 0
+      fi
       opencode run --agent server -s "$WA_SESSION" "WA WAKE $(date "+%F %T") - the background watcher just exited on these rows (allow-list scoped, our own sends already filtered out). Answer them now in WhatsApp with wa-send: [AI] prefix, log-first, short first reply, investigating after. This is the wake prompt, not text typed by him in this session.
 
-$WA_ROWS" >>"$WAKELOG" 2>&1
+$pending" >>"$WAKELOG" 2>&1
       printf "%s wake done rc=%s\n" "$(date "+%F %T")" "$?" >>"$WAKELOG"
     ' 9>>"$WAKELOCK" &
 }

@@ -30,6 +30,7 @@ Every behaviour here is a scar, not a preference:
 
 import json
 import os
+import re
 import sqlite3
 import sys
 import time
@@ -89,7 +90,63 @@ def read_cursor() -> int:
         return 0
 
 
+# A hit line looks like:
+#   2026-10-20 13:31:44+03:00 | rowid=114 | 966551092452@s.whatsapp.net | 966551092452 | text
+# The rowid and the chat are what matter; the text is free-form and may itself
+# contain a pipe, so the pattern anchors on the two fixed fields.
+ROW_RE = re.compile(r"rowid=(\d+)\s*\|\s*([^|]+?)\s*\|")
+
+
+def filter_answered() -> int:
+    """Print the rows on stdin that are still UNANSWERED.
+
+    The wake is queued behind a lock for as long as the previous model turn
+    takes, so by the time it is DELIVERED the rows it carries may already
+    have an answer -- 2026-10-20: five stale wakes in a row, every one of
+    them a prompt to answer a question already answered, and every one of
+    them holding the lock a real message was waiting behind. This check runs
+    at delivery time, which is the only moment the question means anything.
+
+    A row counts as answered when a LATER row in the same chat is one of our
+    sends: is_from_me=1 AND its text is in wa-sent-texts. The text test is
+    what separates the two in the self-chat, where his own typing also
+    carries is_from_me=1 and only the sent-set tells them apart.
+
+    Fail-open: if the DB cannot be read, every row is printed. A redundant
+    wake is better than a missed message.
+    """
+    sent = read_sent()
+    kept = []
+    for raw in sys.stdin.read().splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        m = ROW_RE.search(line)
+        if not m:
+            kept.append(line)
+            continue
+        rowid, jid = int(m.group(1)), m.group(2)
+        try:
+            conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+            later = conn.execute(
+                "select content from messages "
+                "where chat_jid = ? and rowid > ? and is_from_me = 1",
+                (jid, rowid),
+            ).fetchall()
+            conn.close()
+        except sqlite3.Error:
+            kept.append(line)
+            continue
+        if not any(content and content in sent for (content,) in later):
+            kept.append(line)
+    if kept:
+        print("\n".join(kept))
+    return 0
+
+
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] == "--filter-answered":
+        return filter_answered()
     cap = int(sys.argv[1]) if len(sys.argv) > 1 else 1800
 
     if STOP.exists():
