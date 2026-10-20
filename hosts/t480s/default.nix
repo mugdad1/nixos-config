@@ -35,18 +35,18 @@
   services.throttled.enable = false;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
-  # WHPH — his productivity app (tasks/habits/timers), Linux bundle from
-  # upstream releases, packaged in pkgs/whph.nix. GUI only makes sense here
-  # (the t480s is the laptop with a display).
+  # WHPH — his old productivity app (tasks/habits/timers) — is fully gone as
+  # of 2026-10-20 on his "rm whph": both the ~/projects/whph clone and the
+  # pkgs/whph.nix derivation are deleted, not merely commented out. Kept here
+  # as a note only, so nobody re-adds it wondering. It was dropped because its
+  # sync bound to whatever the laptop happened to be on and only lived while
+  # the laptop was up — which is precisely what the self-hosted task store
+  # replaces: Vikunja on the ThinkCentre (tailscale only,
+  # http://100.88.29.31:3456/), Tasks.org on the phone, web UI on this
+  # machine (modules/home/apps/tasks.nix).
   environment.systemPackages = [
     pkgs.powertop
     pkgs.tmux
-    # WHPH removed 2026-10-20 on his "rm whph": its sync binds to whatever the
-    # laptop is on and only lives while the laptop is up, which is what the
-    # self-hosted task store replaces — Vikunja on the ThinkCentre (tailscale
-    # only, http://100.88.29.31:3456/), Tasks.org on the phone, web UI here
-    # (modules/home/apps/tasks.nix). Package kept, not deleted (house rule):
-    # (pkgs.callPackage ../../pkgs/whph.nix {})
   ];
 
   systemd.services.battery-threshold = {
