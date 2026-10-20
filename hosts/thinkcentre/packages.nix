@@ -53,20 +53,35 @@ in {
       text = builtins.readFile ../../scripts/thinkcentre/ac.sh;
     })
 
-    # Ships lib/server-index.nix's render to Caddy's docroot. rsync --inplace
-    # writes through the existing inode on purpose: Caddy has this file
-    # bind-mounted read-only, and a rename (plain rsync) swaps the inode,
-    # leaving the container serving the old bytes until it restarts. The curl
-    # check afterwards counts links, so a silent 0 tells you it went to a dead
-    # address. See modules/home/apps/homepage.nix for the reasoning.
+    # Ships lib/server-index.nix's render to Caddy's docroot.
+    #
+    # Writes THROUGH the existing inode (truncate + write) rather than rsync.
+    # Two reasons, both learned 2026-10-20: (1) Caddy has index.html
+    # bind-mounted read-only at /usr/share/caddy/index.html, so a rename swaps
+    # the inode and leaves the container serving the old bytes until it
+    # restarts; (2) the original rsync'd to `mugdad@100.88.29.31` — this box's
+    # own tailnet IP — which needs ssh-to-self key auth and failed with
+    # "Permission denied (publickey,password)" every time, so the page had
+    # drifted and was still advertising three services that were already gone.
+    # The docroot is on THIS machine; write to it directly.
     (writeShellApplication {
       name = "push-server-index";
-      runtimeInputs = with pkgs; [rsync curl coreutils gnused];
+      runtimeInputs = with pkgs; [coreutils gnugrep curl gnused];
       text = ''
         set -eu
-        rsync -L --inplace --verbose ${serverIndex} mugdad@100.88.29.31:projects/servers/caddy/index.html
+        dest="$HOME/projects/servers/caddy/index.html"
+        [ -f "$dest" ] || { echo "push-server-index: no $dest" >&2; exit 1; }
+        inode_before=$(stat -c %i "$dest")
+        cat ${serverIndex} > "$dest"
+        inode_after=$(stat -c %i "$dest")
+        [ "$inode_before" = "$inode_after" ] || {
+          echo "push-server-index: inode changed ($inode_before -> $inode_after)" >&2
+          echo "Caddy bind-mounts this read-only and will keep serving stale bytes." >&2
+          exit 1
+        }
+        echo "--- pushed $(stat -c %s "$dest") bytes in place (inode $inode_after)"
         echo "--- verifying the container serves the new bytes:"
-        curl -s --max-time 8 http://100.88.29.31/ | grep -c "href=" | sed 's/^/links served: /'
+        curl -s --max-time 8 http://127.0.0.1/ | grep -c "href=" | sed 's/^/links served: /'
       '';
     })
 
