@@ -35,7 +35,14 @@
   services.throttled.enable = false;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
-  environment.systemPackages = [pkgs.powertop pkgs.tmux];
+  # WHPH — his productivity app (tasks/habits/timers), Linux bundle from
+  # upstream releases, packaged in pkgs/whph.nix. GUI only makes sense here
+  # (the t480s is the laptop with a display).
+  environment.systemPackages = [
+    pkgs.powertop
+    pkgs.tmux
+    (pkgs.callPackage ../../pkgs/whph.nix {})
+  ];
 
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold";
