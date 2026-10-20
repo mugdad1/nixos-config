@@ -41,7 +41,12 @@
   environment.systemPackages = [
     pkgs.powertop
     pkgs.tmux
-    (pkgs.callPackage ../../pkgs/whph.nix {})
+    # WHPH removed 2026-10-20 on his "rm whph": its sync binds to whatever the
+    # laptop is on and only lives while the laptop is up, which is what the
+    # self-hosted task store replaces — Vikunja on the ThinkCentre (tailscale
+    # only, http://100.88.29.31:3456/), Tasks.org on the phone, web UI here
+    # (modules/home/apps/tasks.nix). Package kept, not deleted (house rule):
+    # (pkgs.callPackage ../../pkgs/whph.nix {})
   ];
 
   systemd.services.battery-threshold = {
