@@ -18,7 +18,13 @@ Every behaviour here is a scar, not a preference:
   would otherwise re-arm itself.
 * own sends are skipped by matching wa-sent-texts, NOT by is_from_me: the
   self-chat is the instruction channel and every message he types there is
-  is_from_me=1, so that filter blinds the one channel that can instruct us.
+  is_from_me=1, so a bare is_from_me filter blinds the one channel that can
+  instruct us.
+* is_from_me=1 OUTSIDE the self-chat is not a hit -- that is him typing on
+  his own handset, and it woke us as a false hit every time (row 93 his
+  "khallasit", row 159 his emoji to abood: two model turns spent answering
+  nothing). Inbound is is_from_me=0; the one exception is the self-chat,
+  where his own typing IS the inbound.
 * it EXITS when something arrives -- the completion is the wake-up. A watcher
   that keeps polling never wakes anything.
 * every arm writes an ARM header to wa-watch.log: a pipe into an SSH session
@@ -62,6 +68,11 @@ WATCH = (
     "966508615596@s.whatsapp.net",  # abood
     "966577647909@s.whatsapp.net",  # ahmed al-khalifa (decisions row 88)
 )
+
+# The one chat where his own typing counts as inbound: the instruction
+# channel (WATCH[0]). Everywhere else is_from_me=1 is a message HE sent and
+# nothing we answer (decisions row 148).
+SELF_JID = WATCH[0]
 
 
 def log(text: str) -> None:
@@ -198,6 +209,15 @@ def main() -> int:
             # Advance past our own sends as well, so a reply we made can never
             # wake us a second time.
             if content and content in sent:
+                cursor = rowid
+                continue
+            # Him typing on his own handset (is_from_me=1) outside the
+            # self-chat is not inbound -- it woke us on his own "khallasit"
+            # and his own emoji to abood (row 93, row 159), two turns spent
+            # answering nothing. The self-chat keeps is_from_me=1 rows: that
+            # is the instruction channel and every instruction he types there
+            # is is_from_me=1 by construction.
+            if row[5] and row[1] != SELF_JID:
                 cursor = rowid
                 continue
             hits.append(row)
