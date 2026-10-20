@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    # Frozen nixpkgs, used ONLY to pin hplip — see modules/core/hplip.nix.
+    # Deliberately pinned to an exact rev, not a branch: its whole job is to
+    # stay put while nixpkgs keeps moving.
+    nixpkgs-hplip.url = "github:NixOS/nixpkgs/6510408d147d8c5e6d76043e899e9251756f6a75";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
