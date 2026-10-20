@@ -84,7 +84,29 @@
     # aioesphomeapi so the agent can drive the ESP8266 AC (ac-control,
     # 192.168.8.7) directly instead of a throwaway nix-shell every time.
     # Superset of the old line: plain python3 still resolves.
-    (python3.withPackages (ps: [ps.aioesphomeapi]))
+    # 2026-10-20 ("add them to nixos config"): pillow joined it — image work
+    # (recolouring a photo of the house, masks, crops) kept falling back to a
+    # throwaway `nix shell nixpkgs#python3Packages.pillow` otherwise.
+    (python3.withPackages (ps: [
+      ps.aioesphomeapi
+      ps.pillow
+    ]))
+
+    # ── added 2026-10-20, his word "add them to nixos config" ─────────────────
+    # Every one of these was being pulled ad hoc through `nix shell` this
+    # session, which is exactly the habit the 2026-10-19 "all u need inside"
+    # row killed:
+    #   sqlite   — the agent's own session DB is sqlite (opencode.db); reading
+    #              or exporting anything out of it needed `nix shell nixpkgs#sqlite`
+    #   go, gcc  — building the whatsapp-bridge binary (`go build`, cgo needs a
+    #              C compiler) on a re-clone; the v0.7.0 build this session used
+    #              both from a throwaway shell
+    #   imagemagick — convert/identify for image work that pillow does not
+    #              cover (the render pipeline: crop, compose, export)
+    sqlite
+    go
+    gcc
+    imagemagick
 
     # ── added 2026-10-19, his word "all u need inside" ────────────────────────
     # node: the study repo's gates run on `node --test` (scripts/check.sh,
