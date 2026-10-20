@@ -49,6 +49,13 @@ STACK_DIR="${STACK_DIR:-/home/${USER:-mugdad}/projects/servers}"
 # documentation that the project still exists and was switched off on purpose,
 # which is the whole point: `# uptime-kuma` reads as a decision, an absent line
 # reads as an oversight.
+#
+# The directive below must sit here and NOT at the top of the file:
+# writeShellApplication prepends its own preamble (set -euo pipefail, PATH)
+# before this text, so a file-level directive at the top of this file lands
+# after those commands and stops applying file-wide. Scoping it to the
+# assignment is what actually works.
+# shellcheck disable=SC2016
 DISABLED='
 # uptime-kuma
 # glances — retired from compose 2026-10-19: the native NixOS service
