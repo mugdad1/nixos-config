@@ -47,6 +47,26 @@ DISABLED='
 # container still sits in docker ps -aq, which sv-watch sweeps, so the page
 # came back after every reboot.
 glances
+# ─── dropped 2026-10-20 on his word ──────────────────────────────────────────
+# "stirling and paperless i never used them u may remove them / im not sure
+# how will they be usefull / even syncting" and "mv metube to grandpa".
+#
+# READ THIS BEFORE REMOVING ANOTHER SERVICE BY HAND. The first attempt at
+# these four was `docker compose down` in each directory, and it WORKED — the
+# containers were gone and verified gone. Then the next `nixos-rebuild switch`
+# restarted THIS unit (WantedBy=multi-user.target, so it runs at every boot
+# and every switch), which walked ~/projects/servers and brought all four
+# straight back. They sat there healthy for over an hour while the front page
+# said they were removed — the index was lying again, for the second time
+# tonight. `docker compose down` alone is NOT a removal on this box; this
+# list is what makes it stick.
+#
+# metube moved thinkcentre -> grandpa; it is live there (100.106.116.60:8081,
+# its own docker-stack brings it up). Listed here so it is not also run here.
+stirling-pdf
+paperless
+syncthing
+metube
 '
 
 have_compose() {
