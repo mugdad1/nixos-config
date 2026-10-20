@@ -3,7 +3,17 @@
 # ./default.nix: mkHost passes `./hosts/${host}`, and a directory module
 # resolves to that directory's default.nix ONLY — it does not sweep up
 # siblings. See the warning above the imports there before adding a file.
-{pkgs, ...}: {
+{pkgs, ...}: let
+  # The rendered service index, same expression modules/home/apps/homepage.nix
+  # ships. It is duplicated HERE rather than referenced because home-manager
+  # never activates for mugdad on this host — verified 2026-10-20: no
+  # home-manager generations exist and /etc/profiles/per-user/mugdad/bin holds
+  # only man-page tools. So homepage.nix's writeShellScriptBin "push-server-index"
+  # was never landing on the thinkcentre, which is why `push-server-index` was
+  # "command not found" all evening while the rest of the flake worked. Shipping
+  # it as systemPackages, same shape as checkup and ac.
+  serverIndex = pkgs.writeText "server-index.html" (import ../../lib/server-index.nix {});
+in {
   environment.systemPackages = with pkgs; [
     # ── baseline ─────────────────────────────────────────────────────────────
     curl
@@ -41,6 +51,23 @@
       name = "ac";
       runtimeInputs = with pkgs; [curl python3 coreutils];
       text = builtins.readFile ../../scripts/thinkcentre/ac.sh;
+    })
+
+    # Ships lib/server-index.nix's render to Caddy's docroot. rsync --inplace
+    # writes through the existing inode on purpose: Caddy has this file
+    # bind-mounted read-only, and a rename (plain rsync) swaps the inode,
+    # leaving the container serving the old bytes until it restarts. The curl
+    # check afterwards counts links, so a silent 0 tells you it went to a dead
+    # address. See modules/home/apps/homepage.nix for the reasoning.
+    (writeShellApplication {
+      name = "push-server-index";
+      runtimeInputs = with pkgs; [rsync curl coreutils gnused];
+      text = ''
+        set -eu
+        rsync -L --inplace --verbose ${serverIndex} mugdad@100.88.29.31:projects/servers/caddy/index.html
+        echo "--- verifying the container serves the new bytes:"
+        curl -s --max-time 8 http://100.88.29.31/ | grep -c "href=" | sed 's/^/links served: /'
+      '';
     })
 
     # ── health sweep, added 2026-10-16 on his word ("check between times") ──
