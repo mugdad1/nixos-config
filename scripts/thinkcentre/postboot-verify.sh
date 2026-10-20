@@ -32,7 +32,7 @@ printf '\n== post-boot verify, boot %s\n' "$(ts)" >>"$OUT"
 # give the units their boot time (bridge first, watcher, agent last)
 sleep 75
 
-for u in whatsapp-bridge whatsapp-watcher server-agent; do
+for u in whatsapp-bridge whatsapp-watcher; do
   if systemctl is-active --quiet "$u"; then log "unit $u: active"
   else log "unit $u: NOT ACTIVE — chain cannot work"; fi
 done
@@ -48,11 +48,11 @@ case "$ARMS" in
 esac
 log "last arm: $(grep '=== ARM' "$STATE/wa-watch.log" 2>/dev/null | tail -1)"
 
-if tmux has-session -t server-agent 2>/dev/null; then
-  log "tmux session server-agent: present"
-else
-  log "tmux session server-agent: MISSING"
-fi
+# server-agent is NOT in the chain any more, and that is deliberate: he
+# removed the unit 2026-10-20 with "stop the server agent rm iit" / "cuz i
+# will just use normal session". The wake never needed the tmux screen —
+# `opencode run -s $WA_SESSION` reaches the same session without it — so the
+# proof now ends at the reply, not at a tmux window.
 
 if [ ! -f "$DB" ]; then
   log "messages.db missing — aborting the inject"

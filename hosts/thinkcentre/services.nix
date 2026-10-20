@@ -26,21 +26,19 @@
 
   # The dedicated WhatsApp session.
   #
-  # ROTATION IS BLOCKED UPSTREAM (2026-10-20 ~12:46): his order was "delete
-  # the mini server and create a new session" and the old one IS bloated --
-  # but every brand-new session now gets 403 "free tier can only be used
-  # from within OpenCode" on its FIRST turn, through all four paths:
-  #   opencode run (headless), opencode mini -s (TUI), opencode -s (full
-  #   TUI), run --standalone -- while every pre-existing session created
-  #   before ~12:00 today still answers (proved side by side: old duty
-  #   session, an old general/deepseek, an old general/glm all "ok"; all
-  #   three new probes failed). That is opencode's anti-abuse check for the
-  #   free tier, shipped today -- public issues (#49433, #49595) report the
-  #   same wall inside their own Desktop app.
-  # So the wake targets the session that can still call the model. Deleting
-  # it would leave the duty with NOTHING that can reply. Revisit rotation
-  # when new sessions stop 403ing: change this one binding, rebuild.
-  waSession = "ses_ea7b8efa2ffekVkrXOe8NEF8Kj";
+  # 2026-10-20, his word: *"i started a new session calledwhatsapp"* /
+  # *"this one talk to him and let him know his rules"* — the wake now
+  # targets the session HE opened (titled "whatsapp", agent build; the wake
+  # passes --agent server so the duty rules apply there). He chats with it
+  # directly and it gets woken here — one session, both ways.
+  #
+  # The earlier rotation attempt (mint a fresh id, delete the old) is still
+  # blocked upstream: brand-new sessions 403'd on their first turn through
+  # all four paths (run, mini -s, full TUI, --standalone) while pre-existing
+  # ones answered — opencode's free-tier anti-abuse check shipped 2026-10-20
+  # (#49433, #49595). His session minted at 14:05 works, so the wall was
+  # temporary; the point is moot now — the duty has his session.
+  waSession = "ses_ea703142affeXvUxkj3GQEtZDF";
 
   # The donor's 90 s readiness wait, verbatim in behaviour. It exists because
   # After= only guarantees opencode was SPAWNED, not that its API port answers — and
@@ -474,6 +472,19 @@ in {
   # agent, and `tmux attach -t server-agent` is where the reader sits. oneshot
   # + RemainAfterExit because tmux daemonizes — what it starts outlives the
   # unit either way, and ExecStopPost reaps the session on stop.
+  # ── server agent — REMOVED by his order, 2026-10-20 ────────────────────────
+  # *"stop the server agent rm iit"* → *"cuz i will just use normal session"*
+  # → *"i started a new session calledwhatsapp"*. The unit only ever held a
+  # tmux screen for `opencode mini --agent server`; the wake never needed it —
+  # `opencode run --agent server -s $WA_SESSION` reaches the same session
+  # headless, and he talks to that session directly from his own client. So
+  # the screen goes, the wake stays, and the duty is one session plus one
+  # watcher.
+  #
+  # Left in place as a comment, not deleted: if he ever wants the screen
+  # back, uncomment this block and rebuild (it starts a tmux session named
+  # server-agent holding `opencode mini --agent server -s ${waSession}`).
+  /*
   systemd.services.server-agent = {
     description = "server agent (opencode mini, WhatsApp duty) in tmux";
     wantedBy = ["multi-user.target"];
@@ -496,6 +507,7 @@ in {
       ExecStopPost = "${pkgs.tmux}/bin/tmux kill-session -t server-agent";
     };
   };
+  */
 
   # ── post-boot proof that the chain works (2026-10-20) ──────────────────────
   # His question after this morning's restart: *"check if server is app and he
@@ -509,6 +521,16 @@ in {
   # A timer, not a plain WantedBy=multi-user.target service: a oneshot that
   # takes ~2 min would hold the boot target open for 2 min, and the whole point
   # is that boot must finish and be judged afterwards.
+  # ── post-boot verifier — REMOVED by his order, 2026-10-20 ──────────────────
+  # *"i dont need post reboot cuz a normal session wakes him self like u"*.
+  # The timer existed to prove a chain that had no wake: every boot it
+  # injected a labelled row into the self-chat and waited for the reply. The
+  # wake is real now (wa-armsup -> `opencode run -s $WA_SESSION`), the duty
+  # sits in a normal session that comes up on its own the way this admin
+  # session does, and the inject only ever put test rows in his chat. So the
+  # timer goes, the script stays in the repo as history — re-enable by
+  # uncommenting if a boot ever needs proving again.
+  /*
   systemd.services.postboot-verify = {
     description = "WhatsApp chain end-to-end check after boot";
     serviceConfig = {
@@ -527,6 +549,7 @@ in {
       Unit = "postboot-verify.service";
     };
   };
+  */
 
   # The unit half of the launcher defined above.
   #

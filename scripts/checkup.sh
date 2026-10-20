@@ -209,16 +209,18 @@ for R in "$HOME/projects/wiki" "$HOME/nixos-config"; do
   [ -n "$D" ] && note "$(basename "$R"): uncommitted changes present"
 done
 
-# ── server agent supervision (the second agent: MiniMax, WhatsApp duty) ─────
-# The label used to say "muse-spark" — that name belongs to the agent that
-# held this duty before. The duty moved 2026-10-20 (decisions row 136b) to
-# `opencode mini --agent server` running MiniMax, and he corrected it the
-# same day: *"it isnt muse / server is minimax"*. The grep is on the agent
-# id the process reports, so only the wording was wrong, not the count.
+# ── WhatsApp duty: session count, no unit to supervise ──────────────────────
+# The duty used to sit in server-agent.service (a tmux screen holding
+# `opencode mini --agent server`); he removed the unit 2026-10-20 — *"stop the
+# server agent rm iit"*, *"cuz i will just use normal session"* — so the duty
+# is the wake (wa-armsup -> `opencode run -s $WA_SESSION`) plus whatever normal
+# session he opens himself. Nothing here FAILs on that: a missing screen is
+# his order, not a fault. The count is only a note — 0 is the expected number
+# until someone opens a session.
 if command -v opencode >/dev/null 2>&1; then
   SERVER_SESS=$(timeout 10 opencode api get /api/session 2>/dev/null \
     | grep -o '"agent":"server"' | wc -l | tr -d ' ')
-  note "server agent (MiniMax, WhatsApp duty) sessions so far: ${SERVER_SESS:-0}"
+  note "server agent sessions open: ${SERVER_SESS:-0} (no unit since 2026-10-20 — wake + his own sessions)"
 fi
 
 echo

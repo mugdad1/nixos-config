@@ -52,6 +52,52 @@ MUTE = frozenset(
     }
 )
 
+# THE SEND ALLOW-LIST -- a mechanical guard, added 2026-10-20 13:52.
+#
+# MUTE is a refusal, not a preference: 2026-10-16, "never watch, never read,
+# never speak" -- hassan and mohannad. The watch half is enforced by their
+# absence from the watcher's scope; this is the speaking half.
+#
+# This list is the same one, in the OTHER direction: the chats the agent may
+# SPEAK to. His words, 2026-09-29: "only these ur allowed to do" / "only
+# things i mentioned above" -- any chat not marked yes in the wiki's
+# who-is-who table is public, relay only, never answered.
+#
+# Why it is enforced in code and not left to care: on 2026-10-20 an agent
+# shell typed a mistyped JID (one digit off his own number) into wa-send and
+# the bridge DELIVERED it -- "Message sent to 966551092452@s.whatsapp.net",
+# resolved to a LID, out on the wire to a stranger who now has a message from
+# his account. Nothing refused it: the watch scope did not apply to a send,
+# and MUTE only covers two JIDs. A one-digit typo must not be able to reach
+# a person who is not on the list, so the list is checked here, before the
+# log line, before the request.
+#
+# Escape hatch, for the cases the list cannot know about: WA_ALLOW_ONCE=<jid>
+# permits exactly that JID for exactly one invocation, and the send is
+# logged like any other. The extended family group is NOT here -- his words
+# "الاحفاد -- dont send anything there" -- so it needs that ticket.
+ALLOW = frozenset(
+    {
+        "966551052452@s.whatsapp.net",  # self-chat -- the instruction channel
+        "966554611442@s.whatsapp.net",  # mum
+        "966503814854@s.whatsapp.net",  # dad
+        "966503814854-1552719936@g.us",  # the family group
+        "966567433284@s.whatsapp.net",  # horaa
+        "966505560448@s.whatsapp.net",  # zahraa
+        "966506836216@s.whatsapp.net",  # kawthar
+        "966508615596@s.whatsapp.net",  # abood
+        # ahmed al-khalifa (966577647909) is on the watch scope but is NOT
+        # here: he is not on the send list, so a reply to him needs the
+        # WA_ALLOW_ONCE ticket, same as any chat off the list.
+        #
+        # hassan and mohannad are deliberately ABSENT even though they are on
+        # the watch scope: MUTE refuses them ("never watch, never read, never
+        # speak") and a send allow-list that named them would be a trap for
+        # whoever edits this next. The MUTE check runs first and refuses them
+        # regardless.
+    }
+)
+
 
 def stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -88,6 +134,16 @@ def main() -> int:
         return 1
     if jid in MUTE and jid in ticket:
         print(f"ONE-TIME TICKET honored for {jid} (explicit allow 2026-10-16) -- one send")
+    # The allow-list guard. Everything else about a send is a judgement; this
+    # one is a brake on a typo reaching a stranger (see the note on ALLOW).
+    once = {j.strip() for j in os.environ.get("WA_ALLOW_ONCE", "").split(",") if j.strip()}
+    if jid not in ALLOW and jid not in once:
+        print(
+            f"{jid} is not on the send allow-list -- refusing "
+            "(his order 2026-09-29: only these ur allowed to do). "
+            "For a one-off to a chat off the list, set WA_ALLOW_ONCE=<jid>."
+        )
+        return 1
     if "|" in why:
         print("refusing: a why containing '|' shreds the pipe-delimited log")
         return 1
