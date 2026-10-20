@@ -90,6 +90,7 @@ ALLOW = frozenset(
         "966505560448@s.whatsapp.net",  # zahraa
         "966506836216@s.whatsapp.net",  # kawthar
         "966508615596@s.whatsapp.net",  # abood
+        "966541623044@s.whatsapp.net",  # abbas (his order 2026-10-20: add him to the 9)
         # ahmed al-khalifa (966577647909) is on the watch scope but is NOT
         # here: he is not on the send list, so a reply to him needs the
         # WA_ALLOW_ONCE ticket, same as any chat off the list.

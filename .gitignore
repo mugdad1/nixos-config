@@ -22,3 +22,7 @@ id_ed25519
 .env.*
 !.env.example
 secrets/*.dec.*
+
+# python bytecode from local py_compile / tooling — never track
+__pycache__/
+*.pyc

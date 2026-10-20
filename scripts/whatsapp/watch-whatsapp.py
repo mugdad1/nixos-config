@@ -67,6 +67,7 @@ WATCH = (
     "966506836216@s.whatsapp.net",  # kawthar
     "966508615596@s.whatsapp.net",  # abood
     "966577647909@s.whatsapp.net",  # ahmed al-khalifa (decisions row 88)
+    "966541623044@s.whatsapp.net",  # abbas (his order 2026-10-20: add him to the 9)
 )
 
 # The one chat where his own typing counts as inbound: the instruction
