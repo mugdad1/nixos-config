@@ -163,11 +163,16 @@ for R in "$HOME/projects/wiki" "$HOME/nixos-config"; do
   [ -n "$D" ] && note "$(basename "$R"): uncommitted changes present"
 done
 
-# ── muse-spark supervision (the second agent) ───────────────────────────────
+# ── server agent supervision (the second agent: MiniMax, WhatsApp duty) ─────
+# The label used to say "muse-spark" — that name belongs to the agent that
+# held this duty before. The duty moved 2026-10-20 (decisions row 136b) to
+# `opencode mini --agent server` running MiniMax, and he corrected it the
+# same day: *"it isnt muse / server is minimax"*. The grep is on the agent
+# id the process reports, so only the wording was wrong, not the count.
 if command -v opencode >/dev/null 2>&1; then
   SERVER_SESS=$(timeout 10 opencode api get /api/session 2>/dev/null \
     | grep -o '"agent":"server"' | wc -l | tr -d ' ')
-  note "muse-spark 'server' sessions so far: ${SERVER_SESS:-0}"
+  note "server agent (MiniMax, WhatsApp duty) sessions so far: ${SERVER_SESS:-0}"
 fi
 
 echo
