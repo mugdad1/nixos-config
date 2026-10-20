@@ -81,7 +81,11 @@ ALLOW = frozenset(
         "966551052452@s.whatsapp.net",  # self-chat -- the instruction channel
         "966554611442@s.whatsapp.net",  # mum
         "966503814854@s.whatsapp.net",  # dad
-        "966503814854-1552719936@g.us",  # the family group
+        "966503814854-1552717936@g.us",  # the family group (real JID: the old
+        #  ...19936 was a typo -- that group does not exist; the WATCH list and
+        #  messages.db both carry ...17936. The typo made every family-group
+        #  send either refuse (guard) or fail at the bridge, and it is why the
+        #  13:58 send came back "that group does not exist".)
         "966567433284@s.whatsapp.net",  # horaa
         "966505560448@s.whatsapp.net",  # zahraa
         "966506836216@s.whatsapp.net",  # kawthar
