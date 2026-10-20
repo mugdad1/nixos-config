@@ -13,6 +13,12 @@
 # the server agent will read it as a test, not as a typed instruction.
 set -u
 
+# systemd's PATH is store paths for coreutils/grep/bash only — tmux, sqlite3,
+# pgrep and sqlite3 live in /run/current-system/sw/bin, and all three checks
+# below reported false negatives on the first run (12:03:47: "arms: unreadable",
+# "tmux session: MISSING", "inject FAILED") for exactly that reason.
+export PATH=/run/wrappers/bin:/run/current-system/sw/bin:$PATH
+
 STATE="$HOME/.local/state/opencode"
 DB="$HOME/projects/whatsapp-mcp/whatsapp-bridge/store/messages.db"
 OUT="$STATE/postboot-verify.md"
@@ -31,7 +37,10 @@ for u in whatsapp-bridge whatsapp-watcher server-agent; do
   else log "unit $u: NOT ACTIVE — chain cannot work"; fi
 done
 
-ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || true)
+# anchored on the installed path — see the same note in scripts/checkup.sh:
+# a bare '[w]a-armsup\.sh' matched prose in a message and reported 3 arms on a
+# box that had exactly one.
+ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/wa-armsup\.sh' 2>/dev/null || true)
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   1) log "arms: 1 (one arm one writer holds)" ;;
@@ -63,7 +72,16 @@ if [ -z "$ROWID" ]; then
 fi
 log "injected test row rowid=$ROWID"
 
-sleep 45
+# 90s, not 45: the agent is a model round trip behind the watcher, and a cold
+# first call after boot took longer than the original 45s budget in testing.
+sleep 90
+
+# did the ARM itself see the row (independent of the agent answering)?
+if grep -q "$ROWID" "$STATE/wa-watch.log" 2>/dev/null; then
+  log "watcher: test row picked up"
+else
+  log "watcher: test row NOT seen in wa-watch.log — arm is not reading"
+fi
 
 REPLY=$(sqlite3 "$DB" \
   "select content from messages where chat_jid='$SELF' and rowid>$ROWID and is_from_me=1 order by rowid limit 1;" 2>/dev/null)
@@ -71,5 +89,5 @@ if [ -n "$REPLY" ]; then
   log "REPLY DETECTED: $REPLY"
   log "VERDICT: chain works — watcher woke the agent and he answered"
 else
-  log "VERDICT: NO REPLY in 45s — watcher or agent is not working"
+  log "VERDICT: NO REPLY in 90s — watcher or agent is not working"
 fi

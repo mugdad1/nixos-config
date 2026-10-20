@@ -141,7 +141,14 @@ fi
 # pgrep -c prints its count AND exits 1 when the count is 0 — appending an
 # echo on failure produced "0\n0" and a test error (2026-10-16: the script
 # then reported "TWO ARMS" with a count of zero — the exact lie he called out)
-ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || true)
+# ANCHORED ON THE FULL PATH. The old pattern '[w]a-armsup\.sh' matched any
+# process with those characters anywhere in argv — and on 2026-10-20 it counted
+# an agent's own MESSAGE TEXT containing "wa-armsup.sh 1800" as two extra arms,
+# so a box with exactly one arm reported "3 — TWO ARMS STARVE EACH OTHER".
+# argv of the real supervisor always carries the installed path (the unit's
+# ExecStart and the env-bash shebang both resolve there), prose about the script
+# does not.
+ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/wa-armsup\.sh' 2>/dev/null || true)
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
