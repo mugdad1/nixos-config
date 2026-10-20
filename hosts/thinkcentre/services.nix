@@ -24,6 +24,16 @@
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
+  # The dedicated WhatsApp session -- one session for that duty and nothing
+  # else, minted by `opencode mini` (inside OpenCode) because the free tier
+  # refuses headless-minted ones: `opencode run -s <new id>` creates the row
+  # but then gets "free tier can only be used from within OpenCode" (403) on
+  # every call, while a session the app created takes CLI runs fine (proved
+  # both ways 2026-10-20 12:40, 17 s apart, same agent, same model).
+  # One binding, two consumers: the TUI opens it, the watcher wakes it -- if
+  # they ever disagreed the wake would land in an empty session nobody reads.
+  waSession = "ses_waDuty20261020Fresh000001";
+
   # The donor's 90 s readiness wait, verbatim in behaviour. It exists because
   # After= only guarantees opencode was SPAWNED, not that its API port answers — and
   # on 2026-10-04 the bot came up ~1 min early, logged "reason=startup", and
@@ -370,6 +380,13 @@ in {
         "USER=${username}"
         "LOGNAME=${username}"
         "PATH=/home/${username}/.nix-profile/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin"
+        # No webhook consumer exists on this box: the bridge POSTs every
+        # message to localhost:8769, where nothing ever listened, and logged
+        # "connection refused" for each one all day (12:14-12:19 rows prove
+        # the POST never woke anything either). The wake belongs to
+        # wa-armsup.sh now, so the outbound webhook is off at the source
+        # instead of failing forever into store/bridge.log.
+        "WEBHOOK_ENABLED=false"
       ];
       # bash -c carries the `>> store/bridge.log` redirect itself: systemd's
       # own StandardOutput=append: opens the file from PID 1 as root, which is
@@ -426,6 +443,11 @@ in {
         # wa-armsup calls watch-whatsapp.py, whose shebang is `/usr/bin/env
         # python3` — without this PATH the unit cannot even find its own child.
         "PATH=/run/current-system/sw/bin"
+        # The wake target: wa-armsup runs `opencode run -s $WA_SESSION` the
+        # moment the watcher exits on a hit. Without this the wake is logged
+        # as "WA_SESSION unset" and he hears nothing -- the exact hole this
+        # morning's silence came from.
+        "WA_SESSION=${waSession}"
       ];
       ExecStart = "/run/current-system/sw/bin/wa-armsup.sh 1800";
       Restart = "always";
@@ -462,7 +484,7 @@ in {
         "TERM=screen-256color"
         "PATH=${ocPath}:/run/current-system/sw/bin"
       ];
-      ExecStart = ''${pkgs.tmux}/bin/tmux new-session -d -s server-agent -c /home/${username} "${pkgs.opencode}/bin/opencode mini --agent server -s ses_ea7b8efa2ffekVkrXOe8NEF8Kj"'';
+      ExecStart = ''${pkgs.tmux}/bin/tmux new-session -d -s server-agent -c /home/${username} "${pkgs.opencode}/bin/opencode mini --agent server -s ${waSession}"'';
       ExecStopPost = "${pkgs.tmux}/bin/tmux kill-session -t server-agent";
     };
   };
