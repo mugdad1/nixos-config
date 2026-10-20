@@ -37,10 +37,10 @@ for u in whatsapp-bridge whatsapp-watcher server-agent; do
   else log "unit $u: NOT ACTIVE — chain cannot work"; fi
 done
 
-# anchored on the installed path — see the same note in scripts/checkup.sh:
-# a bare '[w]a-armsup\.sh' matched prose in a message and reported 3 arms on a
-# box that had exactly one.
-ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/wa-armsup\.sh' 2>/dev/null || true)
+# anchored on the poller itself (see the long note in scripts/checkup.sh):
+# counting wa-armsup.sh names counts FORKS — the hit-capture and the wake both
+# fork the script and keep its argv, so one arm showed up as 2-3 processes.
+ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/watch-whatsapp\.py' 2>/dev/null || true)
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   1) log "arms: 1 (one arm one writer holds)" ;;

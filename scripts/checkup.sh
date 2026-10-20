@@ -138,17 +138,21 @@ if [ -e "$STATE/wa-stop" ]; then
 else
   ok "guard lifted (wa-stop absent)"
 fi
-# pgrep -c prints its count AND exits 1 when the count is 0 — appending an
-# echo on failure produced "0\n0" and a test error (2026-10-16: the script
-# then reported "TWO ARMS" with a count of zero — the exact lie he called out)
-# ANCHORED ON THE FULL PATH. The old pattern '[w]a-armsup\.sh' matched any
-# process with those characters anywhere in argv — and on 2026-10-20 it counted
-# an agent's own MESSAGE TEXT containing "wa-armsup.sh 1800" as two extra arms,
-# so a box with exactly one arm reported "3 — TWO ARMS STARVE EACH OTHER".
-# argv of the real supervisor always carries the installed path (the unit's
-# ExecStart and the env-bash shebang both resolve there), prose about the script
-# does not.
-ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/wa-armsup\.sh' 2>/dev/null || true)
+# ARMS ARE COUNTED AS watch-whatsapp.py PROCESSES — the poller that actually
+# holds the rowid cursor, never the supervisor's name. Two lies stood here
+# before, both real, both on 2026-10-20:
+#  1) '[w]a-armsup\.sh' matched the WORDS "wa-armsup.sh 1800" inside an
+#     agent's message text → "3 — TWO ARMS STARVE EACH OTHER" on a one-arm
+#     box.
+#  2) the path-anchored fix still lied: the hit-capture `out=$(...)` and the
+#     background wake both FORK the script, and a fork keeps argv — so main +
+#     capture wrapper + wake subshell = three processes named wa-armsup.sh
+#     while exactly ONE cursor holder existed. Name-counting cannot tell
+#     copies of one arm from a second arm; only the poller can.
+# pgrep -c prints its count AND exits 1 when the count is 0 — the `|| true`
+# then head keeps one clean number either way (2026-10-16: a "0\n0" made the
+# script report TWO ARMS with a count of zero).
+ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/watch-whatsapp\.py' 2>/dev/null || true)
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;

@@ -61,24 +61,35 @@ wake() {
       "$(date '+%F %T')" >>"$WATCHLOG"
     return 0
   fi
-  # flock serialises: a second hit arriving while the first turn is still
-  # running queues behind it instead of racing into the same session. The
-  # whole wake runs in the background so the re-arm never waits on a model.
-  (
-    flock 9 || exit 1
-    # shellcheck disable=SC2129  # single printf, single redirect; SC2129 fires
-    # only because a redirect to a DIFFERENT file (wa-watch.log) sits a few
-    # lines above in the unset-target branch
-    printf '%s wake -> %s\n%s\n' "$(date '+%F %T')" "$WA_SESSION" "$rows" >>"$WAKELOG"
-    opencode run --agent server -s "$WA_SESSION" "WA WAKE $(date '+%F %T') - the background watcher just exited on these rows (allow-list scoped, our own sends already filtered out). Answer them now in WhatsApp with wa-send: [AI] prefix, log-first, short first reply, investigating after. This is the wake prompt, not text typed by him in this session.
+  # LOG-FIRST, same rule wa-send has: the intent is written before anything
+  # is spawned, so a box that dies mid-wake still shows a wake was issued and
+  # which rows it carried.
+  printf '%s wake -> %s\n%s\n' "$(date '+%F %T')" "$WA_SESSION" "$rows" >>"$WAKELOG"
+  # NOT a subshell of this script, deliberately: a fork keeps this script's
+  # argv, so the arm counter (and anyone reading ps) would see a second
+  # "wa-armsup.sh" that is only a wake. `bash -c` overwrites argv on exec --
+  # same reason the hit-capture below execs python instead of forking a
+  # wrapper. flock serialises: two hits queue behind each other rather than
+  # racing into one session.
+  # shellcheck disable=SC2094  # WAKELOCK is passed as env AND opened for
+  # flock; nothing reads it as data — it is an inter-process lock file
+  WA_SESSION="$WA_SESSION" WAKELOG="$WAKELOG" WAKELOCK="$WAKELOCK" WA_ROWS="$rows" \
+    bash -c '
+      set -u
+      flock 9 || exit 1
+      opencode run --agent server -s "$WA_SESSION" "WA WAKE $(date "+%F %T") - the background watcher just exited on these rows (allow-list scoped, our own sends already filtered out). Answer them now in WhatsApp with wa-send: [AI] prefix, log-first, short first reply, investigating after. This is the wake prompt, not text typed by him in this session.
 
-$rows" >>"$WAKELOG" 2>&1
-    printf '%s wake done rc=%s\n' "$(date '+%F %T')" "$?" >>"$WAKELOG"
-  ) 9>>"$WAKELOCK" &
+$WA_ROWS" >>"$WAKELOG" 2>&1
+      printf "%s wake done rc=%s\n" "$(date "+%F %T")" "$?" >>"$WAKELOG"
+    ' 9>>"$WAKELOCK" &
 }
 
 while :; do
-  out="$(watch-whatsapp.py "$CAP" 2>&1)"
+  # exec, not a plain $( ... ): a plain capture forks a copy of THIS script
+  # (fork keeps argv) that lives as long as the poll — one arm then looks
+  # like two wa-armsup.sh processes in every count. The subshell becomes the
+  # poller itself; its stdout is what we capture.
+  out="$(exec watch-whatsapp.py "$CAP" 2>&1)"
   rc=$?
   printf 'armsup: watcher exited rc=%s %s\n' "$rc" "$(date '+%F %T')" >>"$WATCHLOG"
   if [ "$rc" = 3 ] || [ -e "$STOP" ]; then
