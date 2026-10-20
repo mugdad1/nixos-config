@@ -24,15 +24,23 @@
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
-  # The dedicated WhatsApp session -- one session for that duty and nothing
-  # else, minted by `opencode mini` (inside OpenCode) because the free tier
-  # refuses headless-minted ones: `opencode run -s <new id>` creates the row
-  # but then gets "free tier can only be used from within OpenCode" (403) on
-  # every call, while a session the app created takes CLI runs fine (proved
-  # both ways 2026-10-20 12:40, 17 s apart, same agent, same model).
-  # One binding, two consumers: the TUI opens it, the watcher wakes it -- if
-  # they ever disagreed the wake would land in an empty session nobody reads.
-  waSession = "ses_waDuty20261020Fresh000001";
+  # The dedicated WhatsApp session.
+  #
+  # ROTATION IS BLOCKED UPSTREAM (2026-10-20 ~12:46): his order was "delete
+  # the mini server and create a new session" and the old one IS bloated --
+  # but every brand-new session now gets 403 "free tier can only be used
+  # from within OpenCode" on its FIRST turn, through all four paths:
+  #   opencode run (headless), opencode mini -s (TUI), opencode -s (full
+  #   TUI), run --standalone -- while every pre-existing session created
+  #   before ~12:00 today still answers (proved side by side: old duty
+  #   session, an old general/deepseek, an old general/glm all "ok"; all
+  #   three new probes failed). That is opencode's anti-abuse check for the
+  #   free tier, shipped today -- public issues (#49433, #49595) report the
+  #   same wall inside their own Desktop app.
+  # So the wake targets the session that can still call the model. Deleting
+  # it would leave the duty with NOTHING that can reply. Revisit rotation
+  # when new sessions stop 403ing: change this one binding, rebuild.
+  waSession = "ses_ea7b8efa2ffekVkrXOe8NEF8Kj";
 
   # The donor's 90 s readiness wait, verbatim in behaviour. It exists because
   # After= only guarantees opencode was SPAWNED, not that its API port answers — and
