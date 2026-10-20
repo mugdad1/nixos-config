@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """Send one WhatsApp message through the bridge, log-first.
 
-    wa-send <chat_jid> <message> <why> [mentions]
+    wa-send <chat_jid> <message> <why> [mentions] [--media <path>]
+
+The optional 4th argument is a comma-separated list of mentions. The
+message text must carry a matching @<number> token or the mention will not
+render. The optional --media argument sends an attachment with the message
+as its caption; the file MUST live in the outbox
+(~/.local/share/whatsapp-mcp/outbox) -- media from anywhere else is
+refused.
 
 Every rule in here is Mugdad's, learned the hard way, not a style choice:
 
@@ -155,6 +162,40 @@ def main() -> int:
     jid, message, why = sys.argv[1], sys.argv[2], sys.argv[3]
     mentions = [m for m in sys.argv[4].split(",") if m] if len(sys.argv) > 4 else []
 
+    # --media <path>: send an attachment with the message as its caption.
+    #
+    # Media only ever comes from the outbox. The bridge has its own guard
+    # (allowedMediaRoots, resolved from WHATSAPP_MEDIA_ROOTS and logged at
+    # startup), but this checks the same thing locally FIRST so a path
+    # outside the outbox is refused before it is even logged, and so the
+    # refusal reads like every other refusal here.
+    media = None
+    if "--media" in sys.argv:
+        idx = sys.argv.index("--media")
+        if idx + 1 >= len(sys.argv):
+            print("--media needs a path")
+            return 2
+        media = Path(sys.argv[idx + 1]).expanduser()
+        try:
+            resolved = media.resolve(strict=True)
+        except OSError as exc:
+            print(f"media not found: {exc}")
+            return 1
+        # The outbox is the ONLY source of outbound media. Nothing else.
+        outbox = Path.home() / ".local/share/whatsapp-mcp/outbox"
+        try:
+            resolved.relative_to(outbox.resolve())
+        except ValueError:
+            print(
+                f"{resolved} is not in the outbox ({outbox}) -- refusing to send "
+                "media from anywhere else"
+            )
+            return 1
+        if not resolved.is_file():
+            print(f"not a regular file: {resolved}")
+            return 1
+        media = resolved
+
     if STOP.exists():
         print(f"STOP flag present ({STOP}) -- refusing to send")
         return 1
@@ -185,6 +226,12 @@ def main() -> int:
                 "(his order 2026-10-20: send 313 only, never respond to anything)"
             )
             return 1
+        if media is not None:
+            print(
+                f"{jid} is a 313-ritual group -- the bare number only, "
+                "refusing an attachment"
+            )
+            return 1
         if jid not in once:
             print(
                 f"{jid} is a 313-ritual group -- the number only goes out "
@@ -203,7 +250,13 @@ def main() -> int:
         return 1
 
     flat = message.replace("\n", "\\n")
-    append(LOG, f"{stamp()} | {jid} | {flat} | {why}\n")
+    # The log records the media too, so a send that carried a picture is
+    # visible as a picture in the log -- the same "[img name]" marker the
+    # earlier renders used, so the log reads the same for every send.
+    shown = flat
+    if media is not None:
+        shown = f"[img {media.name}] {flat}"
+    append(LOG, f"{stamp()} | {jid} | {shown} | {why}\n")
 
     try:
         token = (BRIDGE / "store" / ".bridge-token").read_text().strip()
@@ -213,6 +266,8 @@ def main() -> int:
         return 1
 
     payload = {"recipient": jid, "message": message}
+    if media is not None:
+        payload["media_path"] = str(media)
     if mentions:
         payload["mentions"] = mentions
     req = urllib.request.Request(
