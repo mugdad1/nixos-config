@@ -29,7 +29,7 @@ note() { printf '  ...   %s\n' "$*"; }
 FAILED_UNITS=$(systemctl list-units --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
 if [ -n "$FAILED_UNITS" ]; then bad "failed units: $FAILED_UNITS"; else ok "no failed units"; fi
 
-for u in tailscaled blocky; do
+for u in whatsapp-bridge tailscaled blocky; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
   else bad "unit $u not active"; fi
 done
@@ -126,6 +126,28 @@ if [ -d /sys/class/net/tailscale0 ]; then
   esac
 else
   bad "tailscale0 missing — node is DOWN (sudo tailscale up --accept-dns=false)"
+fi
+
+# ── whatsapp duty ───────────────────────────────────────────────────────────
+STATE="${WA_STATE:-$HOME/.local/state/opencode}"
+if [ -e "$STATE/wa-stop" ]; then
+  note "wa-stop PRESENT — sends and watcher are (deliberately) down"
+else
+  ok "guard lifted (wa-stop absent)"
+fi
+# pgrep -c prints its count AND exits 1 when the count is 0 — appending an
+# echo on failure produced "0\n0" and a test error (2026-10-16: the script
+# then reported "TWO ARMS" with a count of zero — the exact lie he called out)
+ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || true)
+ARMS=$(printf '%s' "$ARMS" | head -n 1)
+case "$ARMS" in
+  ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
+  0) bad "watcher NOT armed — run wa-armsup.sh 1800" ;;
+  1) ok "watcher arms: 1" ;;
+  *) bad "watcher arms: $ARMS — TWO ARMS STARVE EACH OTHER, kill one" ;;
+esac
+if [ "$ARMS" -ge 1 ] && [ -f "$STATE/wa-watch.log" ]; then
+  ok "last arm: $(grep '=== ARM' "$STATE/wa-watch.log" | tail -1 | sed 's/^=== //')"
 fi
 
 # ── repos (two hosts share them: pull before push, always) ──────────────────
