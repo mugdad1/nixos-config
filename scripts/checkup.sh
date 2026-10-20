@@ -29,7 +29,10 @@ note() { printf '  ...   %s\n' "$*"; }
 FAILED_UNITS=$(systemctl list-units --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
 if [ -n "$FAILED_UNITS" ]; then bad "failed units: $FAILED_UNITS"; else ok "no failed units"; fi
 
-for u in whatsapp-bridge tailscaled blocky; do
+# The watcher is here because it became a unit on 2026-10-20 (services.nix):
+# before that a hand-run supervisor's death was invisible to this loop and
+# only the arm count below could catch it.
+for u in whatsapp-bridge whatsapp-watcher tailscaled blocky; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
   else bad "unit $u not active"; fi
 done
@@ -142,7 +145,7 @@ ARMS=$(pgrep -fc '[w]a-armsup\.sh' 2>/dev/null || true)
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
-  0) bad "watcher NOT armed — run wa-armsup.sh 1800" ;;
+  0) bad "watcher NOT armed — since 2026-10-20 that is \`systemctl restart whatsapp-watcher\`, never a second wa-armsup.sh" ;;
   1) ok "watcher arms: 1" ;;
   *) bad "watcher arms: $ARMS — TWO ARMS STARVE EACH OTHER, kill one" ;;
 esac

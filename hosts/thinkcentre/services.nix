@@ -397,6 +397,76 @@ in {
   # otherwise matches an empty port.
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8877];
 
+  # ── WhatsApp watcher: one arm, and the unit holds it (2026-10-20) ─────────
+  # wa-armsup.sh IS the supervisor — it re-arms watch-whatsapp.py forever over
+  # one shared rowid cursor, so exactly ONE process may ever hold it (the
+  # wiki's one-arm-one-writer guard: a second arm starves the first instead of
+  # double-reporting). Until now that one was a hand-typed `setsid -f
+  # wa-armsup.sh` in someone's terminal, which is why the restart this morning
+  # left checkup reading "watcher NOT armed" while the bridge — a real unit —
+  # came back and kept queueing messages. His word: *"Relaunch him ur self +
+  # why he xant survice reboot?"* → *"Ur the boss here add what ever u want"*.
+  # So the arm belongs to systemd now, and the hand-typed arm becomes the bug.
+  #
+  # Exit 3 is the script's documented "stop flag present" refusal. Restart
+  # would respawn a supervisor that immediately refuses again — a live-looking
+  # refuse loop — so RestartPreventExitStatus=3 pins it down instead. Lifting
+  # the flag then takes `systemctl restart whatsapp-watcher`, which the agent
+  # is told about rather than left to rediscover.
+  systemd.services.whatsapp-watcher = {
+    description = "WhatsApp watcher supervisor (one arm, one writer)";
+    wantedBy = ["multi-user.target"];
+    after = ["whatsapp-bridge.service"];
+    serviceConfig = {
+      User = username;
+      Environment = [
+        "HOME=/home/${username}"
+        "USER=${username}"
+        "LOGNAME=${username}"
+        # wa-armsup calls watch-whatsapp.py, whose shebang is `/usr/bin/env
+        # python3` — without this PATH the unit cannot even find its own child.
+        "PATH=/run/current-system/sw/bin"
+      ];
+      ExecStart = "/run/current-system/sw/bin/wa-armsup.sh 1800";
+      Restart = "always";
+      RestartSec = "10";
+      RestartPreventExitStatus = "3";
+    };
+  };
+
+  # ── the server agent himself, in tmux (2026-10-20) ─────────────────────────
+  # `opencode mini --agent server` (MiniMax) took the WhatsApp duty this
+  # morning (decisions row 136b) started by hand from a fish prompt — and died
+  # with the restart: session gone from the process table, sessions count 0,
+  # while the bridge went on storing rows for an agent nobody had brought back.
+  # A TUI cannot run as a foreground unit (it wants a pty and a reader), so the
+  # unit's job is only the screen: it detaches a tmux session holding the
+  # agent, and `tmux attach -t server-agent` is where the reader sits. oneshot
+  # + RemainAfterExit because tmux daemonizes — what it starts outlives the
+  # unit either way, and ExecStopPost reaps the session on stop.
+  systemd.services.server-agent = {
+    description = "server agent (opencode mini, WhatsApp duty) in tmux";
+    wantedBy = ["multi-user.target"];
+    # wants, not requires: a bridge whose ConditionPathExists fails (fresh box,
+    # clone not yet there) must not take this unit down with it.
+    wants = ["whatsapp-bridge.service"];
+    after = ["whatsapp-bridge.service" "opencode-serve.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = username;
+      Environment = [
+        "HOME=/home/${username}"
+        "USER=${username}"
+        "LOGNAME=${username}"
+        "TERM=screen-256color"
+        "PATH=${ocPath}:/run/current-system/sw/bin"
+      ];
+      ExecStart = ''${pkgs.tmux}/bin/tmux new-session -d -s server-agent -c /home/${username} "${pkgs.opencode}/bin/opencode mini --agent server -s ses_ea7b8efa2ffekVkrXOe8NEF8Kj"'';
+      ExecStopPost = "${pkgs.tmux}/bin/tmux kill-session -t server-agent";
+    };
+  };
+
   # The unit half of the launcher defined above.
   #
   # Ordering: Requires/After docker.service (a launcher that runs before the
