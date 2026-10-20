@@ -29,6 +29,20 @@
     # which the dialout group in default.nix unlocks.
     arduino-cli
 
+    # The AC itself, one command (his word 2026-10-20: *"i will consitntly ask
+    # u so u must know how to do it easly / in same seconf"*). `ac` / `ac off` /
+    # `ac 24` / `ac up 2` / `ac swing off` / `ac` for status. The HA token is
+    # NOT in this repo — it lives in ~/.local/state/opencode/ha-token (600),
+    # read at call time, so a reinstall brings the command back and only the
+    # token needs re-dropping. writeShellApplication rather than
+    # writeShellScriptBin so runtimeInputs are pinned and shellcheck gates the
+    # build.
+    (writeShellApplication {
+      name = "ac";
+      runtimeInputs = with pkgs; [curl python3 coreutils];
+      text = builtins.readFile ../../scripts/thinkcentre/ac.sh;
+    })
+
     # ── health sweep, added 2026-10-16 on his word ("check between times") ──
     # Plain tracked file scripts/checkup.sh, installed verbatim (same
     # writeShellScriptBin shape as mcli): units, containers, disk use, the
