@@ -467,6 +467,37 @@ in {
     };
   };
 
+  # ── post-boot proof that the chain works (2026-10-20) ──────────────────────
+  # His question after this morning's restart: *"check if server is app and he
+  # responds to whatsapp"*. `systemctl is-active` answers the first half only.
+  # So a timer 90 s after boot runs scripts/thinkcentre/postboot-verify.sh,
+  # which checks all three units + the one-arm rule, then pushes one clearly
+  # labelled test row through the real path (store -> watcher -> agent) and
+  # records whether a reply came back, into
+  # ~/.local/state/opencode/postboot-verify.md.
+  #
+  # A timer, not a plain WantedBy=multi-user.target service: a oneshot that
+  # takes ~2 min would hold the boot target open for 2 min, and the whole point
+  # is that boot must finish and be judged afterwards.
+  systemd.services.postboot-verify = {
+    description = "WhatsApp chain end-to-end check after boot";
+    serviceConfig = {
+      Type = "oneshot";
+      User = username;
+      ExecStart = "/run/current-system/sw/bin/bash /home/${username}/nixos-config/scripts/thinkcentre/postboot-verify.sh";
+      RemainAfterExit = true;
+    };
+  };
+
+  systemd.timers.postboot-verify = {
+    description = "Fire the chain check 90 s after every boot";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "90s";
+      Unit = "postboot-verify.service";
+    };
+  };
+
   # The unit half of the launcher defined above.
   #
   # Ordering: Requires/After docker.service (a launcher that runs before the
