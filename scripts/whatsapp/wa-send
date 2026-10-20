@@ -104,6 +104,38 @@ ALLOW = frozenset(
 )
 
 
+# THE 313 RITUAL GROUPS -- "313 and nothing else", enforced here.
+#
+# His words 2026-10-20: *"send 313 only to both groups nothing else is
+# requried"* → *"u can add them to the allow list but u must!!!! not respond
+# to anything anything this is a strong rule u must follow uu just type 313
+# and thats it never repsond or find other way"*.
+#
+# So these two chats are NOT ordinary allow-list entries: they are a ritual
+# slot, and the ONLY thing that may ever appear in them is the bare number
+# 313 -- the same thing the members themselves post, and the same thing his
+# own manual send was (rowid 203). No greeting, no reply, no reaction, no
+# "[AI] " prefix.
+#
+# A reply to these groups is refused MECHANICALLY, not left to care: the
+# same shape as the MUTE rule for hassan and mohannad, and for the same
+# reason. "Never respond" that lives only in a prompt is one distracted
+# turn away from breaking, and this one is a strong rule he repeated twice.
+#
+# The number reaches them through wa-313.sh, which sets WA_ALLOW_ONCE for
+# exactly these two JIDs -- so the escape hatch that permits the ritual
+# cannot be used to smuggle any other text in.
+RITUAL = frozenset(
+    {
+        "120363143658966777@g.us",  # فريق غير جو
+        "120363428386151315@g.us",  # رحلة الأخوان في الله 2
+    }
+)
+
+# The one text these groups ever accept, exactly.
+RITUAL_TEXT = "313"
+
+
 def stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -142,6 +174,23 @@ def main() -> int:
     # The allow-list guard. Everything else about a send is a judgement; this
     # one is a brake on a typo reaching a stranger (see the note on ALLOW).
     once = {j.strip() for j in os.environ.get("WA_ALLOW_ONCE", "").split(",") if j.strip()}
+    # THE 313 RITUAL GROUPS. The check comes BEFORE the allow-list check, so
+    # it cannot be bypassed by a ticket: a ticket permits the JID, it never
+    # permits a different text. Only the bare number goes, ever.
+    if jid in RITUAL:
+        if message != RITUAL_TEXT:
+            print(
+                f"{jid} is a 313-ritual group -- only the bare number "
+                f"{RITUAL_TEXT!r} is allowed there, refusing this text "
+                "(his order 2026-10-20: send 313 only, never respond to anything)"
+            )
+            return 1
+        if jid not in once:
+            print(
+                f"{jid} is a 313-ritual group -- the number only goes out "
+                "through wa-313.sh (WA_ALLOW_ONCE), refusing a bare hand send"
+            )
+            return 1
     if jid not in ALLOW and jid not in once:
         print(
             f"{jid} is not on the send allow-list -- refusing "

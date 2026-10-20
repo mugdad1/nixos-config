@@ -462,6 +462,57 @@ in {
     };
   };
 
+  # ── the 313 ritual (2026-10-20) ───────────────────────────────────────────
+  # "we have in both groups we send 313 at that specific time it means
+  # something to us so 3:13am and pm send 313 only to both groups nothing
+  # else is requried" -- and "u can add them to the allow list but u must!!!!
+  # not respond to anything anything this is a strong rule u must follow uu
+  # just type 313 and thats it never repsond or find other way".
+  #
+  # So: a timer at 3:13am and 3:13pm that posts the bare number 313 to two
+  # groups, and nothing else. The never-respond half is mechanical, in
+  # wa-send (RITUAL): those two JIDs accept ONLY the exact text "313", and
+  # only with the one-time ticket wa-313.sh sets. A reply there cannot be
+  # sent by accident, by a distracted turn, or by a ticket smuggled in.
+  #
+  # OnCalendar, not an interval: the point is the TIME, not the cadence.
+  # "03,15:13:00" is 3:13am and 3:13pm on the same day -- one timer, two
+  # fires, no duplicate units to keep in step. systemd-analyze calendar
+  # confirms the next elapse is 03:13:00.
+  #
+  # Persistent = true: a missed fire (the box was off at 3:13) is sent on the
+  # next boot rather than silently skipped. The ritual is a habit, and a habit
+  # that skips a day because the machine was asleep is not a habit.
+  #
+  # AccuracySec = 1s: the default (1 min) would smear the fire across
+  # 3:13:00-3:14:00, and the whole point is the minute.
+  systemd.services.wa-313 = {
+    description = "Post the bare number 313 to the two ritual groups";
+    after = ["whatsapp-bridge.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      User = username;
+      Environment = [
+        "HOME=/home/${username}"
+        "USER=${username}"
+        "LOGNAME=${username}"
+        "PATH=/run/current-system/sw/bin"
+      ];
+      ExecStart = "/run/current-system/sw/bin/wa-313.sh";
+    };
+  };
+
+  systemd.timers.wa-313 = {
+    description = "The 313 ritual: 3:13am and 3:13pm";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "*-*-* 03,15:13:00";
+      AccuracySec = "1s";
+      Persistent = true;
+      Unit = "wa-313.service";
+    };
+  };
+
   # ── the server agent himself, in tmux (2026-10-20) ─────────────────────────
   # `opencode mini --agent server` (MiniMax) took the WhatsApp duty this
   # morning (decisions row 136b) started by hand from a fish prompt — and died

@@ -165,6 +165,18 @@
       executable = true;
       text = builtins.readFile ../../scripts/whatsapp/qr-serve.py;
     })
+    # The 313 ritual -- one script, one job: put the bare number 313 into two
+    # groups at 3:13am and 3:13pm. His order 2026-10-20: "send 313 only to
+    # both groups nothing else is requried" / "u must!!!! not respond to
+    # anything anything this is a strong rule". The never-respond half is
+    # enforced in wa-send (RITUAL), not here: only the bare number passes,
+    # and only with this script's one-time ticket.
+    (writeTextFile {
+      name = "wa-313";
+      destination = "/bin/wa-313.sh";
+      executable = true;
+      text = builtins.readFile ../../scripts/whatsapp/wa-313.sh;
+    })
     # Pairing page for the next re-pair: re-reads the freshest QR out of
     # store/bridge.log (a ~20 s code is dead the moment it is captured) and
     # serves it on the Tailscale IP, --print for a terminal with no browser.
