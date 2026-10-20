@@ -56,7 +56,7 @@ fi
 while read -r USE MNT; do
   if [ "${USE%\%}" -ge 90 ]; then bad "disk $MNT at $USE"
   else ok "disk $MNT at $USE"; fi
-done < <(df -h --output=pcent,target -x tmpfs -x devtmpfs -x overlay 2>/dev/null \
+done < <(df -h --output=pcent,target -x tmpfs -x devtmpfs -x overlay -x efivarfs 2>/dev/null \
          | tail -n +2 | awk '{gsub(/^ +/,"",$1); print $1, $2}')
 
 # SMART of the BACKUP disk — found by what it IS (the fs mounted on
