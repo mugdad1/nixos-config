@@ -22,7 +22,6 @@
     };
   };
 
-
   security.protectKernelImage = true;
 
   boot.kernelModules = ["tcp_bbr"];

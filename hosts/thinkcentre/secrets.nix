@@ -35,7 +35,11 @@
 #      file to edit it in place — sops decrypts to your editor and re-encrypts)
 #   3. declare it in `sops.secrets` below, then reference
 #      `config.sops.placeholder."<name>"` from a template or a service
-{config, username, ...}: {
+{
+  config,
+  username,
+  ...
+}: {
   sops = {
     # The file itself and this pointer are ALSO defaulted fleet-wide in
     # modules/core/monitoring.nix (mkDefault, same value). Stated here as well

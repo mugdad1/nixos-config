@@ -29,7 +29,12 @@
 # interface notify-telegram implements (it ignores `-i`; the chat id is the
 # secret). `wall` also stays on - the journal copy is what you find when you
 # eventually look, and on a headless box it costs nothing.
-{pkgs, config, lib, ...}: let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
   notify = pkgs.callPackage ../../pkgs/notify-telegram.nix {};
 in {
   environment.systemPackages = [notify];

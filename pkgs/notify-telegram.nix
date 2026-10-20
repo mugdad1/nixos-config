@@ -9,11 +9,12 @@
 #
 # It is a `callPackage` file like pkgs/filen-cli.nix because modules/core is
 # scanned by lib/default.nix and cannot see a `let` binding inside a host file.
-{ writeShellApplication
-, coreutils
-, curl
-, inetutils # hostname
-, gnused # the Subject: pick-out
+{
+  writeShellApplication,
+  coreutils,
+  curl,
+  inetutils, # hostname
+  gnused, # the Subject: pick-out
 }:
 writeShellApplication {
   name = "notify-telegram";
