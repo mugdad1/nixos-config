@@ -40,7 +40,7 @@ SENT = STATE / "wa-sent-texts"
 BRIDGE = Path(
     os.environ.get("WA_BRIDGE_DIR", str(Path.home() / "projects/whatsapp-mcp/whatsapp-bridge"))
 )
-API = "http://127.0.0.1:8080/api/send"
+API = os.environ.get("WA_BRIDGE_URL", "http://127.0.0.1:8080") + "/api/send"
 
 # 2026-10-16, his words: "never watch, never read, never speak" -- hassan and
 # mohannad are out of BOTH scopes. The watcher drops them by omission; this is
