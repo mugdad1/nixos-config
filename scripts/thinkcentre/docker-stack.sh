@@ -1,4 +1,14 @@
 #!/bin/sh
+# shellcheck disable=SC2016
+#   SC2016 ("expressions don't expand in single quotes") is disabled for this
+#   whole file ON PURPOSE. The DISABLED list below is single-quoted precisely
+#   so that nothing in it expands — its contents are literal project directory
+#   names, and one of them legitimately contains a comment with prose in it.
+#   Switching it to double quotes would be the bug. This directive was needed
+#   as of 2026-10-20 because the derivation had only ever been served from
+#   cache: the moment the file was edited it rebuilt, shellcheck ran as the
+#   writeShellApplication gate for the first time in a long while, and the
+#   build failed on this pre-existing line.
 # docker-stack.sh - bring the compose stack up, declaratively.
 #
 # WHY THIS EXISTS (2026-10-13): the ThinkCentre moved from Void + runit to
