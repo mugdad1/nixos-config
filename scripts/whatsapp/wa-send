@@ -30,10 +30,18 @@ Every rule in here is Mugdad's, learned the hard way, not a style choice:
 * MUTE is a refusal, not a preference: 2026-10-16, "never watch, never read,
   never speak" -- hassan and mohannad. The watch half is enforced by their
   absence from the watcher's scope; this is the speaking half.
+* the Arabic gate: before a message is sent it is checked by the trained
+  linter in ~/projects/hasawi-lm. A message with Cyrillic or CJK
+  characters in it, a foreign Latin word, or a token that mixes scripts is
+  REFUSED -- that is the shape of the message that went out on 2026-10-20
+  with "Buildings", "Garf" and a CJK fragment inside one Hasawi sentence.
+  The gate is fail-open: if the linter is missing or broken the send goes
+  through, because a missing tool must not stop the duty.
 """
 
 import json
 import os
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -48,6 +56,21 @@ BRIDGE = Path(
     os.environ.get("WA_BRIDGE_DIR", str(Path.home() / "projects/whatsapp-mcp/whatsapp-bridge"))
 )
 API = os.environ.get("WA_BRIDGE_URL", "http://127.0.0.1:8080") + "/api/send"
+
+# The Arabic lint gate. It lives in its own repo (hasawi-lm) because it
+# is a trained model with a corpus behind it, and it is called as a
+# subprocess so wa-send keeps no Python dependency on it.
+#
+# It is a GATE, and it is deliberately fail-open: if the linter is not
+# there, or it crashes, or the model file is missing, the send proceeds.
+# The duty is answering his family; a missing tool must not silence it.
+# What the gate catches is the shape of a defect, not a style opinion.
+LINT = Path(
+    os.environ.get(
+        "WA_LINT",
+        str(Path.home() / "projects/hasawi-lm/src/lint.py"),
+    )
+)
 
 # 2026-10-16, his words: "never watch, never read, never speak" -- hassan and
 # mohannad are out of BOTH scopes. The watcher drops them by omission; this is
@@ -155,6 +178,44 @@ def append(path: Path, text: str) -> None:
         fh.write(text.encode("utf-8", "surrogateescape"))
 
 
+def lint_message(message: str) -> tuple[bool, list[str], list[str]]:
+    """Ask the Arabic gate about this message.
+
+    Returns (blocked, hard_findings, soft_notes).
+
+    FAIL-OPEN. If the linter is missing, unreadable, or errors, the send
+    proceeds: the duty is answering his family, and a missing tool must
+    not silence it. Only an explicit REFUSAL from a working linter blocks
+    a send.
+
+    What blocks is a deterministic defect -- Cyrillic or CJK characters
+    inside an Arabic message, a foreign Latin word, a token mixing
+    scripts. The one that shipped on 2026-10-20 had "Buildings", "Гарф"
+    and "还没有нет" inside a single Hasawi sentence, and it went out
+    because nothing checked. The soft notes (this reads more like
+    polished Arabic) are logged and never block: a style opinion is not a
+    reason to refuse a message to his family.
+    """
+    if not LINT.exists():
+        return False, [], ["lint gate not present -- sending unchecked"]
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(LINT), "--json", message],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return False, [], [f"lint gate unavailable ({exc}) -- sending unchecked"]
+    try:
+        verdict = json.loads(proc.stdout)
+    except ValueError:
+        return False, [], ["lint gate unparseable -- sending unchecked"]
+    hard = verdict.get("hard", [])
+    soft = verdict.get("soft", [])
+    return (not verdict.get("ok", True)), hard, soft
+
+
 def main() -> int:
     if len(sys.argv) < 4:
         print(__doc__)
@@ -247,6 +308,18 @@ def main() -> int:
         return 1
     if "|" in why:
         print("refusing: a why containing '|' shreds the pipe-delimited log")
+        return 1
+
+    # THE ARABIC GATE. Before the log line and before the send: a message
+    # that would be corrupted on the wire does not deserve a log entry
+    # claiming it went out.
+    blocked, hard, soft = lint_message(message)
+    for note in soft:
+        append(LOG, f"{stamp()} | LINT | {jid} | note: {note}\n")
+    if blocked:
+        detail = "; ".join(hard)
+        append(LOG, f"FAILED - (NOT SENT) lint gate refused {jid}: {detail}\n")
+        print(f"lint gate refused this message: {detail}")
         return 1
 
     flat = message.replace("\n", "\\n")
