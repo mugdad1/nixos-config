@@ -165,7 +165,26 @@ fi
 # pgrep -c prints its count AND exits 1 when the count is 0 — the `|| true`
 # then head keeps one clean number either way (2026-10-16: a "0\n0" made the
 # script report TWO ARMS with a count of zero).
-ARMS=$(pgrep -fc '(^|[[:space:]])(bash )?/run/current-system/sw/bin/watch-whatsapp\.py' 2>/dev/null || true)
+# Count ARMS, not ARGV MENTIONS. pgrep -f matches the whole command line, so
+# any process that merely NAMES the poller counts as one -- and on 2026-10-20
+# 13:08 an agent shell running a command that mentioned the path made this
+# read "2 — TWO ARMS STARVE EACH OTHER" while exactly one poller existed
+# (pid 7731, under whatsapp-watcher.service). That is the same class of lie
+# as the 3-arms artifact before it: the pattern has to match the poller as
+# an ARGUMENT, not as text anywhere on the line.
+#
+# An arm is a process whose argv holds the poller path as an ARGUMENT (argv[1]
+# for `python3 /path/watch-whatsapp.py 1800`, argv[0] if it is exec'd
+# directly). Anything else is a shell that happened to talk about it.
+ARMS=0
+for pid in $(pgrep -f 'watch-whatsapp' 2>/dev/null); do
+  [ -r "/proc/$pid/cmdline" ] || continue
+  a0=""; a1=""
+  { IFS= read -r -d '' a0 || true; IFS= read -r -d '' a1 || true; } \
+    < "/proc/$pid/cmdline" 2>/dev/null
+  case "$a0" in */watch-whatsapp.py) ARMS=$((ARMS + 1)); continue ;; esac
+  case "$a1" in */watch-whatsapp.py) ARMS=$((ARMS + 1)) ;; esac
+done
 ARMS=$(printf '%s' "$ARMS" | head -n 1)
 case "$ARMS" in
   ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
