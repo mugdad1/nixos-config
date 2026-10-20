@@ -67,18 +67,31 @@ done < <(df -h --output=pcent,target -x tmpfs -x devtmpfs -x overlay -x efivarfs
 # names swapped (ADATA went sdb→sda, the system disk took sdb), and the old
 # "/dev/sdb" check silently started watching the SYSTEM drive — visible only
 # as attr5 mysteriously "dropping" 45→0, which no SMART counter ever does.
-# sudo -n: this box's sudo is passwordless.
+# sudo -n: this box's sudo is passwordless. But WHICH sudo matters: after the
+# 2026-10-20 13:01 rebuild the bare `sudo` on PATH resolved to
+# /run/current-system/sw/bin/sudo, a plain store symlink WITHOUT the setuid
+# bit, and every privileged call died with "must be owned by uid 0 and have
+# the setuid bit set". The setuid binary is /run/wrappers/bin/sudo (the wiki
+# gotcha from row 132, hit again). The check then read the disk's SMART
+# verdict as "unreadable" on a perfectly healthy ADATA -- a FAIL on a healthy
+# box, the same class of lie as the efivarfs one (row 143). So: prefer the
+# wrapper, fall back to bare sudo.
+SUDO=""
+for s_cand in /run/wrappers/bin/sudo "$(command -v sudo 2>/dev/null)"; do
+  if [ -n "$s_cand" ] && [ -x "$s_cand" ]; then SUDO="$s_cand"; break; fi
+done
+[ -n "$SUDO" ] || SUDO="sudo"
 BKPART=$(findmnt -no SOURCE /srv/backup 2>/dev/null | head -1)
 if [ -n "$BKPART" ] && [ -b "$BKPART" ]; then
   PK=$(lsblk -no pkname "$BKPART" 2>/dev/null | head -1)
   if [ -n "$PK" ]; then BKDISK="/dev/$PK"; else BKDISK="$BKPART"; fi
   IDENT=$(lsblk -ndo MODEL,SERIAL "$BKDISK" 2>/dev/null | xargs)
-  H=$(sudo -n smartctl -H "$BKDISK" 2>/dev/null | awk -F: '/result/{print $2}')
+  H=$("$SUDO" -n smartctl -H "$BKDISK" 2>/dev/null | awk -F: '/result/{print $2}')
   if echo "$H" | grep -qi PASSED; then ok "backup disk $BKDISK ($IDENT): SMART PASSED"
   else bad "backup disk $BKDISK ($IDENT): SMART verdict:${H:- unreadable}"; fi
   # attr 5 / 1 / 160 raw — trend is the story. Baseline 2026-10-16 (ADATA
   # SP550, serial 2G3020002085): 5=45, 1=0, 160=0
-  read -r A1 A5 A160 <<<"$(sudo -n smartctl -A "$BKDISK" 2>/dev/null \
+  read -r A1 A5 A160 <<<"$("$SUDO" -n smartctl -A "$BKDISK" 2>/dev/null \
     | awk '/^ *1 /{r1=$NF} /^ *5 /{r5=$NF} /^ *160 /{r160=$NF} END{print r1+0, r5+0, r160+0}')"
   if [ "${A1:-0}" -gt 0 ] || [ "${A160:-0}" -gt 0 ]; then
     bad "backup disk read errors creeping: attr1=$A1 attr160=$A160 (baseline 0/0)"

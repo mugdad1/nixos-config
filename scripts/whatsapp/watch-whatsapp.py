@@ -101,7 +101,6 @@ def main() -> int:
 
     STATE.mkdir(parents=True, exist_ok=True)
     cursor = read_cursor()
-    sent = read_sent()
     log(f"=== ARM {datetime.now():%Y-%m-%d %H:%M:%S} cap={cap} cursor={cursor} scope={len(WATCH)}")
 
     placeholders = ",".join("?" for _ in WATCH)
@@ -125,6 +124,16 @@ def main() -> int:
             log(f"db error: {exc}")
             print(f"db error: {exc}")
             return 2
+
+        # Re-read our sent-texts on EVERY poll, not once per arm. The arm can
+        # live for the whole cap (30 min), and the snapshot taken when it
+        # started does not contain a send made seconds later -- so our own
+        # reply came back as a hit, woke the agent, and the answer to that
+        # wake was another send, and the arm saw THAT as a hit too: a loop
+        # that spends a model minute per turn on our own voice (2026-10-20
+        # 12:53, the wake fired on our own "[AI] ok"). Re-reading here is
+        # cheap (a small text file) and closes the race by construction.
+        sent = read_sent()
 
         hits = []
         for row in rows:
