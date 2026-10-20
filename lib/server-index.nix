@@ -128,22 +128,36 @@
     # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
     # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
     # dead, so it came off this list too or the index ships a dead link.
-    {
-      name = "stirling pdf";
-      port = "8090";
-      desc = "merge / split / OCR pdfs locally";
-    }
-    {
-      name = "paperless";
-      port = "8000";
-      desc = "document archive, arabic + english ocr search";
-    }
-    {
-      name = "syncthing";
-      port = "8384";
-      desc = "laptop / phone &harr; box file sync";
-      note = ":22000";
-    }
+    # stirling pdf · paperless · syncthing — all three dropped 2026-10-20, his
+    # word: *"stirling and paperless i never used them u may remove them / im
+    # not sure how will they be usefull / even syncting"*. Containers stopped
+    # and removed; the compose files and ./data stay on disk untouched (the
+    # mounts are bind mounts, so `docker compose down -v` only dropped scratch
+    # volumes). Nothing was lost, and any of the three comes back by `up` in
+    # its own directory.
+    #   stirling pdf :8090 — never opened.
+    #   paperless    :8000 — never opened; ./data/pg was empty (4K), i.e. the
+    #                        document DB never held anything.
+    #   syncthing    :8384 :22000 :21027 — configured but had NO folders at all,
+    #                        so it never synced a single byte; and its web UI
+    #                        had no auth on a LAN-exposed port. Study and wiki
+    #                        sync by git over ssh, so nothing depended on it.
+    # {
+    #   name = "stirling pdf";
+    #   port = "8090";
+    #   desc = "merge / split / OCR pdfs locally";
+    # }
+    # {
+    #   name = "paperless";
+    #   port = "8000";
+    #   desc = "document archive, arabic + english ocr search";
+    # }
+    # {
+    #   name = "syncthing";
+    #   port = "8384";
+    #   desc = "laptop / phone &harr; box file sync";
+    #   note = ":22000";
+    # }
     # ntfy dropped 2026-10-12 — wiki row 75, container removed together with ALL
     # alert delivery (its own stats showed subscribers=0 for its whole life).
     # :8085 answered 000 and the live index was still advertising it, i.e. the
@@ -160,10 +174,16 @@
       port = "8888";
       desc = "private metasearch, json api enabled — zen's search engine";
     }
+    # metube moved thinkcentre -> grandpa 2026-10-20 (his "mv metube to
+    # grandpa"). Downloads go to grandpa's ~/media/videos now, not the
+    # thinkcentre's; the old dir on the thinkcentre was empty (12K), so
+    # nothing had to be carried over. `machine = grandpa` switches the link
+    # base to grandpa's tailnet IP.
     {
       name = "metube";
       port = "8081";
       desc = "yt-dlp web ui, downloads to the box";
+      machine = "grandpa";
     }
     # gitea mirror dropped 2026-10-18 — took it down with gitea ("it mirror cuz
     # its bad"). Its db held only job configs, no data of its own.
