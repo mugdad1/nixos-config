@@ -66,10 +66,10 @@ wake() {
   # whole wake runs in the background so the re-arm never waits on a model.
   (
     flock 9 || exit 1
-    {
-      printf '%s wake -> %s\n' "$(date '+%F %T')" "$WA_SESSION"
-      printf '%s\n' "$rows"
-    } >>"$WAKELOG"
+    # shellcheck disable=SC2129  # single printf, single redirect; SC2129 fires
+    # only because a redirect to a DIFFERENT file (wa-watch.log) sits a few
+    # lines above in the unset-target branch
+    printf '%s wake -> %s\n%s\n' "$(date '+%F %T')" "$WA_SESSION" "$rows" >>"$WAKELOG"
     opencode run --agent server -s "$WA_SESSION" "WA WAKE $(date '+%F %T') - the background watcher just exited on these rows (allow-list scoped, our own sends already filtered out). Answer them now in WhatsApp with wa-send: [AI] prefix, log-first, short first reply, investigating after. This is the wake prompt, not text typed by him in this session.
 
 $rows" >>"$WAKELOG" 2>&1
