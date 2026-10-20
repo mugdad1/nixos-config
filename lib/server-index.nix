@@ -81,6 +81,19 @@
       url = "https://thinkcentre.tailbc99bb.ts.net";
       note = "tailnet https";
     }
+    # vikunja, added 2026-10-20 with the task store's close (decisions.md row
+    # 152). Same shape as vaultwarden: HTTPS-only, because his phone refused
+    # cleartext to the tailnet IP ("err cleartext comm to ts ip not permiitted
+    # by securtity policy"). Served by tailscale serve on :444, NOT :443 —
+    # Caddy holds 0.0.0.0:443 and tailscaled's listener cannot bind over it
+    # (row 158).
+    {
+      name = "vikunja";
+      port = "3456";
+      desc = "task store — caldav + web ui, synced from the phone";
+      url = "https://thinkcentre.tailbc99bb.ts.net:444/";
+      note = "tailnet https";
+    }
     # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
     # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
     # grandpa's services, added the same day gitea died (2026-10-18). The
