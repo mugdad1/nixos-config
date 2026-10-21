@@ -10,12 +10,25 @@ The live code on screen is therefore always a scannable one.
 Run by hand while pairing only -- it is not a service.
 """
 
+import os
 import sys
 from html import escape
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-LOG = Path(__file__).resolve().parent / "store" / "bridge.log"
+# The log lives in the BRIDGE's store, not next to this script. Resolving it
+# as __file__/store/bridge.log pointed at /run/current-system/sw/bin/store/
+# (installed) and ~/nixos-config/scripts/whatsapp/store/ (source) -- neither
+# of which exists -- so the page always said "No QR in store/bridge.log yet"
+# and --print said the same. That is why the web pairing page never worked.
+# Same resolution wa-send uses, so the two cannot disagree.
+BRIDGE = Path(
+    os.environ.get(
+        "WA_BRIDGE_DIR",
+        str(Path.home() / "projects/whatsapp-mcp/whatsapp-bridge"),
+    )
+)
+LOG = BRIDGE / "store" / "bridge.log"
 # The Tailscale IP, not 0.0.0.0: binding the LAN-wide address would make the
 # pairing code readable from the house wifi as well, and this code links a
 # device to his WhatsApp account. Pinning the tailnet address keeps it off the
