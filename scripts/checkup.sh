@@ -36,6 +36,31 @@ for u in whatsapp-bridge whatsapp-watcher tailscaled blocky; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
   else bad "unit $u not active"; fi
 done
+
+# The bridge unit being active is NOT the bridge being connected. On
+# 2026-10-21 11:59:57 WhatsApp sent "401 device_removed", whatsmeow deleted
+# the session, and the bridge sat there RUNNING with no WhatsApp behind it
+# for eleven minutes -- so this sweep would have said "all clean" while the
+# whole duty was dead: no sends (they came back "Not connected to WhatsApp")
+# and no inbound. Same class as the tailscaled line above: a green systemctl
+# means nothing, the INTERFACE state is the truth.
+#
+# The health route is behind the same bearer auth as everything else, so the
+# probe MUST carry the token -- an unauthenticated probe gets 401 and
+# `curl -f` turns that into a failure, which is the same trap that made the
+# 3:13am 313 fire report a false "bridge did not answer" and skip the ritual.
+BRIDGE_TOKEN_FILE="${WA_BRIDGE_DIR:-$HOME/projects/whatsapp-mcp/whatsapp-bridge}/store/.bridge-token"
+if [ -r "$BRIDGE_TOKEN_FILE" ]; then
+  BRIDGE_TOKEN="$(cat "$BRIDGE_TOKEN_FILE" 2>/dev/null)"
+  BRIDGE_HEALTH="$(curl -fsS --max-time 5 -H "Authorization: Bearer $BRIDGE_TOKEN" \
+      http://127.0.0.1:8080/api/health 2>/dev/null)"
+  case "$BRIDGE_HEALTH" in
+    *'"connected":true'*) ok "bridge connected (whatsapp session live)" ;;
+    *) bad "bridge NOT connected -- the unit may be active with no whatsapp session behind it (health: ${BRIDGE_HEALTH:-no answer})" ;;
+  esac
+else
+  bad "bridge token not readable at $BRIDGE_TOKEN_FILE -- cannot tell whether whatsapp is connected"
+fi
 # Timers — only ones this host actually INSTALLED. backup-daily.timer left with
 # the 240GB on 2026-10-16 (row 106); demanding it here made checkup FAIL by
 # design on a healthy box.
