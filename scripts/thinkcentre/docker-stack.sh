@@ -142,10 +142,15 @@ for d in "$STACK_DIR"/*/; do
     fi
 
     # Host-scoped holds: same "disabled, skipped" outcome, but only on the box
-    # named on the line. Matched against `hostname`, which is the flake's host
-    # key on both machines (thinkcentre / grandpa).
-    if printf '%s\n' "$DISABLED_HOST" | grep -qx "$(hostname):$name"; then
-        echo "$(date '+%F %T') docker-stack: $name is disabled on $(hostname), skipped"
+    # named on the line. Matched against `uname -n`, which is coreutils — the
+    # flake's host key on both machines (thinkcentre / grandpa).
+    #
+    # NOT `hostname`: that is inetutils and is NOT in writeShellApplication's
+    # PATH, so the first version of this line died with "hostname: command not
+    # found" on grandpa's 2026-10-21 rebuild and the hold silently did nothing.
+    # `date` below is coreutils, which is why uname is safe here.
+    if printf '%s\n' "$DISABLED_HOST" | grep -qx "$(uname -n):$name"; then
+        echo "$(date '+%F %T') docker-stack: $name is disabled on $(uname -n), skipped"
         held=$((held + 1))
         continue
     fi
