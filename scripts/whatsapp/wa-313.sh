@@ -36,6 +36,8 @@ GROUP1="120363143658966777@g.us"
 GROUP2="120363428386151315@g.us"
 
 BRIDGE_URL="${WA_BRIDGE_URL:-http://127.0.0.1:8080}"
+BRIDGE_DIR="${WA_BRIDGE_DIR:-$HOME/projects/whatsapp-mcp/whatsapp-bridge}"
+TOKEN_FILE="$BRIDGE_DIR/store/.bridge-token"
 
 mkdir -p "$STATE"
 
@@ -45,10 +47,26 @@ log() {
 
 # Wait for the bridge to answer, up to ~90 s. A restart can land the timer
 # right on top of a bridge that is not listening yet.
+#
+# THE TOKEN IS NOT OPTIONAL. /api/health is behind the same auth as every
+# other route, so a plain probe gets 401 and `curl -f` turns that into a
+# failure -- which is exactly what happened on 2026-10-21 03:13: the bridge
+# was up and healthy the whole time, the probe never succeeded, and after
+# 90 s the ritual was skipped with a "bridge did not answer" that was
+# completely false. With the token the same probe returns 200.
 wait_for_bridge() {
-  i=0
+  local token
+  if [ ! -f "$TOKEN_FILE" ]; then
+    return 1
+  fi
+  token="$(cat "$TOKEN_FILE" 2>/dev/null)"
+  if [ -z "$token" ]; then
+    return 1
+  fi
+  local i=0
   while [ "$i" -lt 90 ]; do
-    if curl -fsS --max-time 3 "$BRIDGE_URL/api/health" >/dev/null 2>&1; then
+    if curl -fsS --max-time 3 -H "Authorization: Bearer $token" \
+         "$BRIDGE_URL/api/health" >/dev/null 2>&1; then
       return 0
     fi
     sleep 1
