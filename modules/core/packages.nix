@@ -87,6 +87,17 @@ in {
     # flutter
     # heimdall
     usbutils
+    # lm-sensors: DECLARED, NOT INHERITED. It has no NixOS module in current
+    # nixpkgs at all (neither services.lm_sensors nor hardware.temperatures
+    # exists - checked against this flake's nixpkgs 2026-10-21), so this
+    # systemPackages line IS the configuration. On 2026-10-21 the t480s was
+    # the only host of the three missing the sensors binary, and the reason
+    # was that the other two had it only TRANSITIVELY: nix-store -q --tree on
+    # the thinkcentre showed lm-sensors-3.6.2-bin in the system path with
+    # nothing in the repo naming it, so a package-set change on any host could
+    # have dropped it silently. Here, every host says so on purpose.
+    # wiki decisions.md row 184.
+    lm_sensors
     aria2
     lz4
     ninja
