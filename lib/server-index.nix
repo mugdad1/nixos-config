@@ -74,11 +74,30 @@
     # (web vault needs a secure context, decisions.md row 86) and reachable
     # only through tailscale serve, so its plain :8082 link would just throw
     # the Subtle Crypto error again.
+    #
+    # FIXED 2026-10-21: this url was `https://thinkcentre.tailbc99bb.ts.net`
+    # with NO port, which means :443 — and Caddy owns 0.0.0.0:443 with
+    # `auto_https off`, i.e. that listener speaks plain HTTP, not TLS. So the
+    # link returned 000 forever, a dead password-manager link on the front
+    # page. The comment above it was also a lie: it said the vault was
+    # "reachable only through tailscale serve" when no such serve had ever
+    # been configured — only vikunja had one (on :444, same reason).
+    # Fixed by adding the missing serve, `tailscale serve --bg --https=8443
+    # http://100.88.29.31:8082`, and pointing this row at :8443. Chose 8443
+    # because :443 is Caddy's and :444 is vikunja's — tailscaled's listener
+    # cannot bind over Caddy's (row 158). Verified live: :8443 returns 200
+    # and serves "Vaultwarden", /api/config 200, while the old no-port link
+    # still returns 000.
+    #
+    # GAP worth knowing: like vikunja's, this serve is set through the CLI and
+    # lives in tailscaled's state, not in this repo — so it survives reboots
+    # but NOT a fresh install, which is the one thing his "the same system
+    # comes back" rule is for. Noted, not yet fixed.
     {
       name = "vaultwarden";
       port = "8082";
       desc = "password manager";
-      url = "https://thinkcentre.tailbc99bb.ts.net";
+      url = "https://thinkcentre.tailbc99bb.ts.net:8443/";
       note = "tailnet https";
     }
     # vikunja, added 2026-10-20 with the task store's close (decisions.md row
