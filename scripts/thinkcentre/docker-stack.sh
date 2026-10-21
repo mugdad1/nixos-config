@@ -84,6 +84,18 @@ stirling-pdf
 paperless
 syncthing
 metube
+# ─── ntfy: parked here 2026-10-21 ────────────────────────────────────────────
+# His 2026-10-12 `just rm notify` (wiki row 75) removed the CONTAINER but not
+# ~/projects/servers/ntfy/docker-compose.yml — correct under comment-out,
+# never delete. So the next boot of this unit re-created the container at
+# 2026-10-15T13:10:15Z and it ran unnoticed for six days until he spotted it in
+# `docker ps` on 2026-10-21 and said "i dont host such stuff".
+#
+# This is the same hole row 170 describes — it simply opened BEFORE that
+# comment was written, so the 2026-10-20 fix for stirling/paperless/syncthing/
+# metube never covered it. A removal is only real when the name is on this
+# list. Compose file and data/ stay on disk; this line is the removal.
+ntfy
 '
 
 have_compose() {
