@@ -98,6 +98,27 @@ metube
 ntfy
 '
 
+# ─── host-scoped holds ────────────────────────────────────────────────────────
+#
+# WHY THIS EXISTS (2026-10-21): DISABLED above is shared verbatim by BOTH
+# machines — hosts/thinkcentre/services.nix:171 and hosts/grandpa/default.nix:51
+# readFile this same file. That is fine while every hold means "removed
+# everywhere" (ntfy, paperless). It breaks the moment a service MOVES: jellyfin
+# went thinkcentre -> grandpa on his "mv jellyfin", and one shared list cannot
+# say "off here, on there" — the launcher has no way to tell the boxes apart.
+#
+# The first design mistake this file already recorded (2026-10-20) was thinking
+# `docker compose down` was a removal; the second would have been parking
+# jellyfin in DISABLED, which would have disabled it on the box it was MOVED TO.
+# Same rule as above — comment out, don't delete — but keyed by hostname, and
+# the format is literally `<hostname>:<project-dir>`.
+#
+# The directive must sit here for the same reason it sits above DISABLED.
+# shellcheck disable=SC2016
+DISABLED_HOST='
+thinkcentre:jellyfin
+'
+
 have_compose() {
     [ -f "$1/docker-compose.yml" ] || [ -f "$1/compose.yml" ] ||
     [ -f "$1/docker-compose.yaml" ] || [ -f "$1/compose.yaml" ]
@@ -116,6 +137,15 @@ for d in "$STACK_DIR"/*/; do
 
     if printf '%s\n' "$DISABLED" | grep -qx "$name"; then
         echo "$(date '+%F %T') docker-stack: $name is disabled, skipped"
+        held=$((held + 1))
+        continue
+    fi
+
+    # Host-scoped holds: same "disabled, skipped" outcome, but only on the box
+    # named on the line. Matched against `hostname`, which is the flake's host
+    # key on both machines (thinkcentre / grandpa).
+    if printf '%s\n' "$DISABLED_HOST" | grep -qx "$(hostname):$name"; then
+        echo "$(date '+%F %T') docker-stack: $name is disabled on $(hostname), skipped"
         held=$((held + 1))
         continue
     fi

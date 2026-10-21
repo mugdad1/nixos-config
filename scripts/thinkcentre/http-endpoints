@@ -22,7 +22,11 @@ http://127.0.0.1:8000/     # paperless
 http://127.0.0.1:8081/     # metube
 http://127.0.0.1:8082/     # vaultwarden
 http://127.0.0.1:8090/     # stirling-pdf
-http://127.0.0.1:8096/     # jellyfin
+# jellyfin moved thinkcentre -> grandpa 2026-10-21 ("mv jellyfin"). It is
+# health-checked by grandpa's own stack now, not this box's — leaving the line
+# active would page for a :8096 that this machine deliberately no longer
+# serves, which is the exact drift this file exists to prevent.
+# http://127.0.0.1:8096/     # jellyfin
 http://127.0.0.1:8384/     # syncthing
 http://127.0.0.1:8888/     # searxng
 http://127.0.0.1:8091/     # study pwa

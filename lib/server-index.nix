@@ -65,10 +65,27 @@
       port = "2283";
       desc = "photos &amp; video backup";
     }
+    # jellyfin moved thinkcentre -> grandpa 2026-10-21 (his "mv jellyfin"), the
+    # same move metube made the day before. There was nothing to carry: the
+    # config was 900K, the cache 12K and /home/mugdad/media was empty (8K) on
+    # both boxes, so this was a config move, not a data migration — his word
+    # "there is no account nor data so just clean and mv the nixfile u dont
+    # haveto backup".
+    #
+    # WHAT WAS LOST, and it is worth writing down because it is silent: the
+    # thinkcentre is a Skylake i7-6700T and its compose file passed
+    # /dev/dri/card0 + /dev/dri/renderD128 through for VAAPI transcoding. Grandpa
+    # is a Sandy Bridge i3-2120: it has card0 but NO renderD128, and Intel
+    # dropped the i965 driver that Sandy Bridge needs, so there is no hardware
+    # transcoding path on that box at all. Direct play still works; anything
+    # that needs transcoding now falls to software on a 2011 CPU, which means
+    # 1080p will not survive it. `machine = grandpa` switches the link base to
+    # grandpa's tailnet IP.
     {
       name = "jellyfin";
       port = "8096";
       desc = "media server";
+      machine = "grandpa";
     }
     # `url` overrides the generated host:port link — the vault is HTTPS-only
     # (web vault needs a secure context, decisions.md row 86) and reachable
