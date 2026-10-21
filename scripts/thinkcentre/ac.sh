@@ -17,6 +17,17 @@
 # Entities are plain switch/number, not climate — row 114: his rule *"name it
 # on not cool"*, and the fan never shipped (row 113, no fan codes in the 17
 # captures).
+#
+# Why every action compares last_updated before and after: a 200 from HA only
+# means HA accepted the call, and HA is optimistic — it stores what was
+# *commanded*, not what the unit took (row 164). Worse, when the entity
+# already holds the target value the call registers NOTHING at all, so the old
+# script printed "temp 24" three times in a row while the unit sat still,
+# because HA had been reading 24.0 since an hour earlier. He had to change it
+# in the app himself. So: send, then look, then say which happened. And when
+# nothing registered, force it — nudging the temperature off its value and
+# back, because the AC's IR word carries the whole state (power, temp, swing)
+# so any real change re-transmits it.
 set -euo pipefail
 
 TOKEN_FILE="${AC_TOKEN_FILE:-$HOME/.local/state/opencode/ha-token}"
@@ -44,46 +55,124 @@ state() { # state <entity> -> just the state string
     | python3 -c 'import json,sys; print(json.load(sys.stdin).get("state","?"))'
 }
 
+snap() { # snap <entity> -> HA last_updated, "" if it cannot be read
+  curl -s -m 10 -H "Authorization: Bearer $TK" "$HA/api/states/$1" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("last_updated",""))' \
+    2>/dev/null || true
+}
+
+send() { # send <entity> <service> <json> -> "changed" | "unchanged"
+  local ent="$1" before after i=0
+  before=$(snap "$ent")
+  api "$2" "$3"
+  after="$before"
+  while [ "$i" -lt 6 ] && [ "$after" = "$before" ]; do
+    sleep 0.3
+    after=$(snap "$ent")
+    i=$((i + 1))
+  done
+  if [ -n "$after" ] && [ "$after" != "$before" ]; then
+    echo changed
+  else
+    echo unchanged
+  fi
+}
+
+# The set_* wrappers exist so the JSON payload is built in one place. Trying to
+# write {"entity_id":"...","value":...} inline inside a $(...) nested in a [
+# ] test is what shellcheck chokes on (SC1073); keeping it out of the call site
+# is both parseable and readable.
+
+set_power() { # set_power <on|off> -> "changed" | "unchanged"
+  local body="{\"entity_id\":\"$POWER\"}"
+  send "$POWER" "switch/turn_$1" "$body"
+}
+
+set_swing() { # set_swing <on|off> -> "changed" | "unchanged"
+  local body="{\"entity_id\":\"$SWING\"}"
+  send "$SWING" "switch/turn_$1" "$body"
+}
+
+set_temp() { # set_temp <value> -> "changed" | "unchanged"
+  local body="{\"entity_id\":\"$TEMP\",\"value\":$1}"
+  send "$TEMP" number/set_value "$body"
+}
+
+force() { # force — nothing registered, so re-send for real
+  local t n
+  t=$(state "$TEMP")
+  case "$t" in ''|'?') return 0 ;; esac
+  n=$(python3 -c "t=float('$t'); print(int(t-1) if t > 16 else int(t+1))")
+  set_temp "$n" >/dev/null || true
+  set_temp "$t" >/dev/null || true
+}
+
 cmd="${1:-status}"
 case "$cmd" in
   status)
-    printf 'power: %s\n'  "$(state "$POWER")"
-    printf 'temp:  %s\n'  "$(state "$TEMP")"
-    printf 'swing: %s\n'  "$(state "$SWING")"
+    printf 'power: %s\n' "$(state "$POWER")"
+    printf 'temp:  %s\n' "$(state "$TEMP")"
+    printf 'swing: %s\n' "$(state "$SWING")"
     ;;
   on)
-    api switch/turn_on "{\"entity_id\":\"$POWER\"}"
-    echo "ac on"
+    if [ "$(set_power on)" = changed ]; then
+      echo "ac on"
+    else
+      force
+      echo "ac on (HA already read on — nudged and re-sent so a frame actually went out)"
+    fi
     ;;
   off)
-    api switch/turn_off "{\"entity_id\":\"$POWER\"}"
-    echo "ac off"
+    if [ "$(set_power off)" = changed ]; then
+      echo "ac off"
+    else
+      force
+      echo "ac off (HA already read off — nudged and re-sent so a frame actually went out)"
+    fi
     ;;
   swing)
     case "${2:-}" in
-      on)  api switch/turn_on  "{\"entity_id\":\"$SWING\"}"; echo "swing on" ;;
-      off) api switch/turn_off "{\"entity_id\":\"$SWING\"}"; echo "swing off" ;;
-      *)   die "usage: ac swing on|off" ;;
+      on|off)
+        action="$2"
+        if [ "$(set_swing "$action")" = changed ]; then
+          echo "swing $action"
+        else
+          force
+          echo "swing $action (HA already read $action — nudged and re-sent so a frame actually went out)"
+        fi
+        ;;
+      *) die "usage: ac swing on|off" ;;
     esac
     ;;
   up|down|+|-)
     n="${2:-1}"
-    case "$cmd" in up|+)  dir=1 ;; *) dir=-1 ;; esac
+    case "$cmd" in up|+) dir=1 ;; *) dir=-1 ;; esac
+    case "$n" in
+      ''|*[!0-9]*) die "nudge must be a whole number, got '$n'" ;;
+    esac
     cur=$(state "$TEMP")
     tgt=$(python3 -c "
 c, d, n = float('$cur'), $dir, int('$n')
 t = c + d * n
 print(int(min(30, max(16, t))))")
-    api number/set_value "{\"entity_id\":\"$TEMP\",\"value\":$tgt}"
-    echo "temp $tgt"
+    if [ "$(set_temp "$tgt")" = changed ]; then
+      echo "temp $tgt"
+    else
+      force
+      echo "temp $tgt (clamped — HA already read $tgt, nudged and re-sent so a frame actually went out)"
+    fi
     ;;
   [0-9]*)
     case "$cmd" in
       1[6-9]|2[0-9]|30) ;;
       *) die "temp must be 16..30 (the protocol's real span)" ;;
     esac
-    api number/set_value "{\"entity_id\":\"$TEMP\",\"value\":$cmd}"
-    echo "temp $cmd"
+    if [ "$(set_temp "$cmd")" = changed ]; then
+      echo "temp $cmd"
+    else
+      force
+      echo "temp $cmd (HA already read $cmd — nudged and re-sent so a frame actually went out)"
+    fi
     ;;
   *)
     die "usage: ac [status|on|off|<16-30>|up [n]|down [n]|swing on|off]"
