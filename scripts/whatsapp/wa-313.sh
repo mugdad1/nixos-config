@@ -35,6 +35,22 @@ LOG="$STATE/wa-313.log"
 GROUP1="120363143658966777@g.us"
 GROUP2="120363428386151315@g.us"
 
+# Overrides, so the chain can be tested WITHOUT posting to the real groups.
+#
+# This exists because of the 2026-10-21 03:13 failure: the script could not
+# be tested at all, because testing it meant posting to two groups that have
+# a time-sensitive ritual in them. A script with no test path is a script
+# whose bugs are found by the ritual breaking. Defaults are unchanged, so
+# the timer still does exactly what it did.
+#
+#   WA_313_TARGETS  comma-separated JIDs to send to (default: the two groups)
+#   WA_313_TEXT     the text to send        (default: 313)
+#
+# The RITUAL guard in wa-send still applies: to the two groups the only
+# permitted text is exactly "313", whatever these say.
+TARGETS="${WA_313_TARGETS:-$GROUP1,$GROUP2}"
+TEXT="${WA_313_TEXT:-313}"
+
 BRIDGE_URL="${WA_BRIDGE_URL:-http://127.0.0.1:8080}"
 BRIDGE_DIR="${WA_BRIDGE_DIR:-$HOME/projects/whatsapp-mcp/whatsapp-bridge}"
 TOKEN_FILE="$BRIDGE_DIR/store/.bridge-token"
@@ -76,9 +92,9 @@ wait_for_bridge() {
 }
 
 # The one-time ticket: wa-send's allow-list guard refuses a JID that is not
-# on the send list, and the ticket permits exactly these two, for exactly
-# this invocation. Nothing else in the tree can reach these groups.
-TICKET="$GROUP1,$GROUP2"
+# on the send list, and the ticket permits exactly these, for exactly this
+# invocation. Nothing else in the tree can reach these groups.
+TICKET="$TARGETS"
 WHY="the 313 ritual: the bare number at 3:13am and 3:13pm, his groups habit, nothing else"
 
 if [ -e "$STATE/wa-stop" ]; then
@@ -92,13 +108,23 @@ if ! wait_for_bridge; then
 fi
 
 rc=0
-for jid in "$GROUP1" "$GROUP2"; do
-  if out="$(WA_ALLOW_ONCE="$TICKET" wa-send "$jid" "313" "$WHY" 2>&1)"; then
-    log "sent 313 to $jid"
+OLDIFS="$IFS"
+IFS=','
+for jid in $TARGETS; do
+  IFS="$OLDIFS"
+  jid="$(echo "$jid" | tr -d '[:space:]')"
+  if [ -z "$jid" ]; then
+    IFS=','
+    continue
+  fi
+  if out="$(WA_ALLOW_ONCE="$TICKET" wa-send "$jid" "$TEXT" "$WHY" 2>&1)"; then
+    log "sent $TEXT to $jid"
   else
-    log "FAILED 313 to $jid: $out"
+    log "FAILED $TEXT to $jid: $out"
     rc=1
   fi
+  IFS=','
 done
+IFS="$OLDIFS"
 
 exit "$rc"
