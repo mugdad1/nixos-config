@@ -165,6 +165,34 @@ RITUAL = frozenset(
 # The one text these groups ever accept, exactly.
 RITUAL_TEXT = "313"
 
+# THE TIME GATE -- the ritual is 3:13, and only 3:13.
+#
+# His words 2026-10-21, after the 3:13am fire was missed: *"this isnt
+# accepted u mustnot fire outside that time"*. The 3:13am half is his
+# alone, into two groups that are asleep (there is not one message in the
+# whole store between 03:00 and 03:30, ever) -- so a post at 3:31 is
+# not a late 3:13, it is a different thing, and it was sent.
+#
+# So the time is enforced HERE, at the choke point every send goes
+# through, rather than left to the timer being well behaved: a manual
+# send, a replay, a catch-up run, anything -- all of them are refused
+# outside the window. **A missed 3:13 stays missed.** There is no
+# catch-up, and that is the point.
+#
+# The window is a minute either side of 3:13 (03:12-03:14 and
+# 15:12-15:14, LOCAL time, +03) because the timer carries a second of
+# jitter and the bridge probe can take a moment. The group members'
+# own posts on 2026-10-20 ran 15:13:02 to 15:13:45.
+RITUAL_HOURS = (3, 15)
+RITUAL_MINUTES = (12, 13, 14)
+
+
+def in_ritual_window(now=None) -> bool:
+    """Is the local time inside the 3:13 window?"""
+    if now is None:
+        now = datetime.now()
+    return now.hour in RITUAL_HOURS and now.minute in RITUAL_MINUTES
+
 
 def stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -297,6 +325,15 @@ def main() -> int:
             print(
                 f"{jid} is a 313-ritual group -- the number only goes out "
                 "through wa-313.sh (WA_ALLOW_ONCE), refusing a bare hand send"
+            )
+            return 1
+        if not in_ritual_window():
+            now = datetime.now()
+            print(
+                f"{jid} is a 313-ritual group -- it is {now.hour:02d}:{now.minute:02d} "
+                "and the ritual is 3:13 and 3:13pm ONLY, refusing to fire "
+                "outside that time (his order 2026-10-21: 'you must not fire "
+                "outside that time'). A missed 3:13 stays missed."
             )
             return 1
     if jid not in ALLOW and jid not in once:

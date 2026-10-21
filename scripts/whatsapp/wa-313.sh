@@ -102,6 +102,24 @@ if [ -e "$STATE/wa-stop" ]; then
   exit 1
 fi
 
+# THE TIME GATE, in the script as well as in wa-send.
+#
+# The ritual is 3:13, and only 3:13: *"u mustnot fire outside that
+# time"*. A 3:13 that is missed stays missed -- there is no catch-up,
+# because a 3:31 post is not a 3:13 post. (One was sent on 2026-10-21
+# and it was wrong.) wa-send enforces the same rule for every other
+# path; this check is here so the log says WHY in one line instead of
+# reporting a failed unit, and so a manual run is a clean no-op.
+now_h="$(date +%-H)"
+now_m="$(date +%-M)"
+if { [ "$now_h" = 3 ] || [ "$now_h" = 15 ]; } &&
+   [ "$now_m" -ge 12 ] && [ "$now_m" -le 14 ]; then
+  : # inside the 3:13 window
+else
+  log "refusing to send: it is ${now_h}:${now_m} and the ritual is 3:13 and 3:13pm only -- a missed 3:13 stays missed"
+  exit 0
+fi
+
 if ! wait_for_bridge; then
   log "bridge did not answer within 90s -- NOT sending 313"
   exit 1
