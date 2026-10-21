@@ -47,6 +47,12 @@
   environment.systemPackages = [
     pkgs.powertop
     pkgs.tmux
+    # lm-sensors has no module in current nixpkgs (neither services.lm_sensors
+    # nor hardware.temperatures exists any more), so it is a plain package.
+    # The laptop was the only host of the three where the sensors binary was
+    # missing, which meant temperatures on it could only be read out of
+    # /sys/class/hwmon. His order 2026-10-21, "add but when im bacl home".
+    pkgs.lm_sensors
   ];
 
   systemd.services.battery-threshold = {
