@@ -71,6 +71,8 @@ in {
   # Open kernel modules (Ampere is supported; he picked open over proprietary).
   # PRIME offload, not sync: the panel is wired to the iGPU on this chassis, so
   # "sync" would just burn power. `nvidia-offload` comes from enableOffloadCmd.
+  # If the BIOS ever offers a graphics/MUX mode, leave it on Hybrid — the
+  # gpu-mode switch assumes both GPUs are visible to the OS.
   #
   # BUS IDs ARE ASSUMED and are the one thing to check on real hardware if the
   # driver fails to attach: `lspci | grep -E 'VGA|3D'` should give 00:02.0 for
