@@ -117,11 +117,12 @@ ntfy
 # shellcheck disable=SC2016
 DISABLED_HOST='
 thinkcentre:jellyfin
-# immich / vaultwarden / vikunja moved thinkcentre -> grandpa 2026-10-22 (his
-# "mv immich and vault and vik"). Same shape as jellyfin above: the compose
-# dirs stay on the ThinkCentre disk (comment out, never delete), this list
-# only stops the returned box from bringing them up again. They are NOT in
-# DISABLED because they are live on grandpa.
+# ─── everything below is INERT since 2026-10-22 ──────────────────────────────
+# The thinkcentre host was removed from the flake that day ("rm thinkcentre
+# host"), so nothing reads DISABLED_HOST as `thinkcentre` any more. The lines
+# are kept (comment out, never delete) because they are the written record of
+# what the returned box was told to stop bringing up, and because a future
+# second box would want the same shape back.
 thinkcentre:immich
 thinkcentre:vaultwarden
 thinkcentre:vikunja
