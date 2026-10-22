@@ -40,26 +40,40 @@ fi
 #--- Detect host + GPU ---#
 # product_name alone is NOT enough on every box: the returned ThinkCentre
 # reported 10LYS02F00 there, a bare machine-type string, so product_family is
-# consulted too. The Victus reports "Victus by HP 15-fa1xxx" in product_name
-# and sometimes "Victus" in product_family; either match is enough.
+# consulted too. The Victus reports "Victus by HP 15-fa1xxx" (sometimes just
+# "HP Victus"), so "hp" counts as a hit as well.
+#
+# Override anything: HOST=grandpa ./install.sh — the DMI cannot identify a
+# custom desktop and must not be trusted for a reinstall.
 DMI_NAME="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
 DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 
-if grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
+gpu_for() {
+    case "$1" in
+        victus) echo "nvidia" ;;
+        t480s) echo "intel" ;;
+        *) echo "none" ;;
+    esac
+}
+
+if [ -n "${HOST:-}" ]; then
+    GPU="$(gpu_for "$HOST")"
+    echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
+elif grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
     HOST="t480s"
     GPU="intel"
-elif grep -qi 'victus' <<<"$DMI_NAME$DMI_FAMILY"; then
+elif grep -qi 'victus\|hp' <<<"$DMI_NAME$DMI_FAMILY"; then
     HOST="victus"
     GPU="nvidia"
 else
-    # His call, 2026-10-16: "if thinkcenter or thinkpad else grandpa". With the
-    # ThinkCentre gone (2026-10-22) this fallback is the only other box in the
-    # house, so if the DMI is neither the ThinkPad nor the Victus it IS grandpa.
-    HOST="grandpa"
-    # No GPU. The box is headless and its GeForce GT 210 has no supported
-    # driver left in nixpkgs (340.x is gone), so the card is blacklisted
-    # rather than driven. Reported for confirmation only.
-    GPU="none"
+    # His call, 2026-10-22: the fleet is grandpa + victus and grandpa is already
+    # installed, so a machine the DMI cannot name is the one being installed
+    # now — the Victus. Deliberately NOT grandpa: a miss here used to hand the
+    # laptop the headless server's config. Reinstalling the server or the old
+    # laptop takes the HOST= override above.
+    HOST="victus"
+    GPU="nvidia"
+    echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
 fi
 
 SUMMARY="\
@@ -78,9 +92,9 @@ echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
 # variables.nix is the single source of truth; no repo-wide sed needed.
 sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${HOST}/variables.nix"
 
-# GPU is fixed, not templated: hardware.graphics in hosts/t480s/default.nix only
-# ever adds Intel media/compute packages, and there is no `gpu` key in
-# variables.nix. Detection is reported for confirmation only.
+# GPU is fixed per host, not templated: the Intel media/compute packages and
+# the NVIDIA stack are declared in the host's default.nix, and there is no `gpu`
+# key in variables.nix. Detection above is only used to fill this summary.
 
 #--- Prepare environment ---#
 

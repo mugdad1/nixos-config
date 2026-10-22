@@ -188,7 +188,9 @@ nix flake check      # evaluate all outputs
 
 `install.sh` is a whiptail-guided installer for a fresh machine. It detects the
 host from DMI (`product_name`/`product_family`: `victus`/`HP` → `victus`,
-`thinkpad`/`t480s`/`20L8` → `t480s`, anything else → `grandpa`), rewrites
+`thinkpad`/`t480s`/`20L8` → `t480s`, anything unrecognised → `victus`, since
+that is the only machine in the house being installed; `HOST=grandpa
+./install.sh` overrides), rewrites
 `username` in `hosts/<host>/variables.nix`, installs the sops age key from
 `age-key.txt` if it is lying around, copies
 `/etc/nixos/hardware-configuration.nix` into the host directory, links
