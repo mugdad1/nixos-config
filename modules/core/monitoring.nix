@@ -33,6 +33,7 @@
   pkgs,
   config,
   lib,
+  host,
   ...
 }: let
   notify = pkgs.callPackage ../../pkgs/notify-telegram.nix {};
@@ -58,7 +59,15 @@ in {
   # Nothing re-encrypted — the file name is not in the ciphertext, and
   # .sops.yaml's `path_regex` is generic (`secrets/[^/]+\.sops\.yaml$`), so it
   # keeps covering the new name.
-  sops = {
+  #
+  # NOT ON victus (2026-10-22, "can we skip on it"): that host is set up without
+  # the age key, and sops-install-secrets fails the whole activation when a
+  # declared secret cannot be decrypted — so declaring the token there would
+  # block its very first switch. The gate is by hostname, not by key presence,
+  # because activation is exactly where the absence would bite. Consequence:
+  # no Telegram alerts FROM the Victus. To turn them on, copy the key to
+  # /var/lib/sops-nix/key.txt and delete the `host != "victus"` condition.
+  sops = lib.mkIf (host != "victus") {
     defaultSopsFile = lib.mkDefault ../../secrets/fleet.sops.yaml;
 
     # The private key, at the one path every host uses now:
