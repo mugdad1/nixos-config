@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║ THE SERVICE LAYER MOVED 2026-10-22 — see hosts/grandpa/services.nix.      ║
+# ║ Almost everything below `in {` is commented out for that reason. Only     ║
+# ║ docker-stack still runs from this file (grandpa has its own copy).        ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
 # The four hand-written runit units that have no NixOS module, ported to
 # systemd. They live HERE and not in modules/core on purpose: core is
 # auto-imported into every host by scanPaths, so anything host-specific placed
@@ -171,436 +176,445 @@
     text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
   };
 in {
-  # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
-  # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
-  # already held the opencode API port (127.0.0.1:13420 since opencode v2; it
-  # was :49374 under v1). Under runit the holder was usually a
-  # hand-started instance, and the unit waited in an ss loop (134 logged waits).
-  # There is no unit edge to model that — Requires=/BindsTo= relate units, and
-  # the conflicting process is manual. systemd's restart loop IS the retry
-  # construct: it exits, we back off, we take over within RestartSec of the
-  # manual instance dying. `always` rather than `on-failure` because the exit
-  # code when the port is held is not guaranteed nonzero.
-  systemd.services.opencode-serve = {
-    description = "OpenCode V2 serve (singleton the Telegram bot attaches to)";
-    wantedBy = ["multi-user.target"];
-    after = ["network.target"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # NO `Group =` here, on purpose. It used to be `Group = username`, which
-      # crashed the unit at every start: NixOS gives a normal user the primary
-      # group `users` and does NOT create a group matching the username, so
-      # `Group = "mugdad"` resolved to nothing — journal showed
-      # "Failed to determine credentials for group 'mugdad': Unknown group",
-      # exit 216/GROUP, and because a unit was failing, switch-to-configuration
-      # exited 4 and the whole `nixos-rebuild switch` reported failure.
-      # With Group= omitted, systemd uses the user's primary group (`users`),
-      # which always exists. HOME matters: opencode resolves its state under it,
-      # and running as root would look in /root instead (the donor used chpst -u
-      # void for this).
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "PATH=${ocPath}"
-      ];
-      ExecStart = "${pkgs.opencode}/bin/opencode serve --service";
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
+  # ═══════════════ MOVED 2026-10-22 → hosts/grandpa/services.nix ═══════════════
+  # His order: "move the services from thinkcentre to grandpa … nix work only".
+  # The ThinkCentre is being returned to its owner. Commented out, NOT deleted:
+  # this is the record of what lived here and why each unit was shaped the way
+  # it was, and it returns unchanged if the box ever does. Below, between the
+  # two commented regions, docker-stack alone stays LIVE — grandpa declares its
+  # own copy in its ./default.nix, so moving this one too would be a duplicate
+  # option, not a migration.
+  # ═══════════════════════════════════════════════════════════════════════════
+  #   # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
+  #   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
+  #   # already held the opencode API port (127.0.0.1:13420 since opencode v2; it
+  #   # was :49374 under v1). Under runit the holder was usually a
+  #   # hand-started instance, and the unit waited in an ss loop (134 logged waits).
+  #   # There is no unit edge to model that — Requires=/BindsTo= relate units, and
+  #   # the conflicting process is manual. systemd's restart loop IS the retry
+  #   # construct: it exits, we back off, we take over within RestartSec of the
+  #   # manual instance dying. `always` rather than `on-failure` because the exit
+  #   # code when the port is held is not guaranteed nonzero.
+  #   systemd.services.opencode-serve = {
+  #     description = "OpenCode V2 serve (singleton the Telegram bot attaches to)";
+  #     wantedBy = ["multi-user.target"];
+  #     after = ["network.target"];
+  #     serviceConfig = {
+  #       Type = "simple";
+  #       User = username;
+  #       # NO `Group =` here, on purpose. It used to be `Group = username`, which
+  #       # crashed the unit at every start: NixOS gives a normal user the primary
+  #       # group `users` and does NOT create a group matching the username, so
+  #       # `Group = "mugdad"` resolved to nothing — journal showed
+  #       # "Failed to determine credentials for group 'mugdad': Unknown group",
+  #       # exit 216/GROUP, and because a unit was failing, switch-to-configuration
+  #       # exited 4 and the whole `nixos-rebuild switch` reported failure.
+  #       # With Group= omitted, systemd uses the user's primary group (`users`),
+  #       # which always exists. HOME matters: opencode resolves its state under it,
+  #       # and running as root would look in /root instead (the donor used chpst -u
+  #       # void for this).
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         "PATH=${ocPath}"
+  #       ];
+  #       ExecStart = "${pkgs.opencode}/bin/opencode serve --service";
+  #       Restart = "always";
+  #       RestartSec = "10s";
+  #     };
+  #   };
 
-  # ─── Telegram bot ──────────────────────────────────────────────────────────
-  # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word ("also run study
-  # and telegram"). What blocked the re-enable before was not this file: the
-  # wrapper ~/.local/bin/opencode-telegram-start and the opencode state under
-  # ~/.local/state/opencode lived on the Void install that was replaced, so both
-  # were simply absent. They came back off the backup disk today (snapshots/
-  # daily-1, the last Void snapshot).
-  # Wants=/After= on opencode-serve — deliberately NOT Requires=. Requires
-  # propagates STOP, so every opencode restart would take the bot down with it;
-  # the donor kept the bot up and re-attaching, and that is the behaviour worth
-  # preserving. After= only orders; the ExecStartPre covers readiness.
-  systemd.services.opencode-telegram = {
-    description = "opencode-telegram bot (waits for the OpenCode API)";
-    # Until sops-nix has rendered the config the bot cannot run: with no config
-    # it launches an interactive wizard and dies with
-    #   "CLI error: Interactive wizard requires a TTY terminal"
-    # (exit 1), and Restart=always turns that into a crash loop every 10 s that
-    # also leaves the unit in `systemctl --failed`.
-    #
-    # CHANGED 2026-10-13. This used to guard
-    # ~/.config/opencode-telegram-bot/.env, and that path was the blocker for
-    # days: the token existed but was in no snapshot, because backup-run.sh's
-    # SOURCES never included .config, so it had to be re-issued from @BotFather
-    # and written by hand. Two things made that the wrong home for it. It is
-    # outside the flake, so a reinstall would not restore it — the exact failure
-    # the whole migration is about. And the repo is public, so a hand-written
-    # .env sits one careless `git add -A` or `git add .` away from being
-    # published. The config is now a sops template (./secrets.nix), encrypted in
-    # the repo and rendered at activation; see that file for the full reasoning.
-    #
-    # The condition is retained, and still means the same thing: until the file
-    # exists the unit is skipped cleanly rather than failed — status reads
-    # "condition failed", it stays out of --failed, and it starts by itself the
-    # moment the file lands. Ordering on sops-install-secrets matters: that unit
-    # runs before sysinit.target, and without an explicit `after` there is no
-    # guarantee the render happened before this condition is evaluated.
-    unitConfig.ConditionPathExists =
-      config.sops.templates."opencode-telegram.env".path;
-    wantedBy = ["multi-user.target"];
-    wants = ["opencode-serve.service"];
-    after = [
-      "opencode-serve.service"
-      "sops-install-secrets.service"
-    ];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # The rendered config. EnvironmentFile, not Environment: the values are
-      # secrets, so they belong in a file owned by `username` at 0400 that
-      # systemd reads directly, rather than being expanded into the unit's
-      # Environment= list where `systemctl show` would print them back.
-      EnvironmentFile = [config.sops.templates."opencode-telegram.env".path];
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        # bash FIRST: npm runs install scripts with `spawn sh`, and sh was in
-        # none of these directories — the bot died every start with
-        # "npm error enoent spawn sh ENOENT" (exit 254). pkgs.bash/bin carries
-        # both bash and sh. Without it npx resolves fine (nodejs/bin) but the
-        # package it fetches cannot run its own lifecycle script.
-        "PATH=${pkgs.bash}/bin:${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
-      ];
-      ExecStartPre = waitOpencode;
-      # NIXIFIED 2026-10-15. This was the imperative
-      # /home/${username}/.local/bin/opencode-telegram-start — a file outside
-      # the flake, so a reinstall could not recreate it, which is exactly how
-      # it came back missing and took the whole rebuild down with a 203/EXEC.
-      # The store path replaces it; the wrapper's own comment still records
-      # that `npx ... @latest` is an impure fetch at every start, and that
-      # pinning the bot version remains an open, separate decision.
-      ExecStart = "${opencodeTelegramStart}/bin/opencode-telegram-start";
-      # The 90 s readiness wait would otherwise hit the 90 s default start
-      # timeout and get SIGKILLed mid-wait.
-      TimeoutStartSec = "5min";
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
+  #   # ─── Telegram bot ──────────────────────────────────────────────────────────
+  #   # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word ("also run study
+  #   # and telegram"). What blocked the re-enable before was not this file: the
+  #   # wrapper ~/.local/bin/opencode-telegram-start and the opencode state under
+  #   # ~/.local/state/opencode lived on the Void install that was replaced, so both
+  #   # were simply absent. They came back off the backup disk today (snapshots/
+  #   # daily-1, the last Void snapshot).
+  #   # Wants=/After= on opencode-serve — deliberately NOT Requires=. Requires
+  #   # propagates STOP, so every opencode restart would take the bot down with it;
+  #   # the donor kept the bot up and re-attaching, and that is the behaviour worth
+  #   # preserving. After= only orders; the ExecStartPre covers readiness.
+  #   systemd.services.opencode-telegram = {
+  #     description = "opencode-telegram bot (waits for the OpenCode API)";
+  #     # Until sops-nix has rendered the config the bot cannot run: with no config
+  #     # it launches an interactive wizard and dies with
+  #     #   "CLI error: Interactive wizard requires a TTY terminal"
+  #     # (exit 1), and Restart=always turns that into a crash loop every 10 s that
+  #     # also leaves the unit in `systemctl --failed`.
+  #     #
+  #     # CHANGED 2026-10-13. This used to guard
+  #     # ~/.config/opencode-telegram-bot/.env, and that path was the blocker for
+  #     # days: the token existed but was in no snapshot, because backup-run.sh's
+  #     # SOURCES never included .config, so it had to be re-issued from @BotFather
+  #     # and written by hand. Two things made that the wrong home for it. It is
+  #     # outside the flake, so a reinstall would not restore it — the exact failure
+  #     # the whole migration is about. And the repo is public, so a hand-written
+  #     # .env sits one careless `git add -A` or `git add .` away from being
+  #     # published. The config is now a sops template (./secrets.nix), encrypted in
+  #     # the repo and rendered at activation; see that file for the full reasoning.
+  #     #
+  #     # The condition is retained, and still means the same thing: until the file
+  #     # exists the unit is skipped cleanly rather than failed — status reads
+  #     # "condition failed", it stays out of --failed, and it starts by itself the
+  #     # moment the file lands. Ordering on sops-install-secrets matters: that unit
+  #     # runs before sysinit.target, and without an explicit `after` there is no
+  #     # guarantee the render happened before this condition is evaluated.
+  #     unitConfig.ConditionPathExists =
+  #       config.sops.templates."opencode-telegram.env".path;
+  #     wantedBy = ["multi-user.target"];
+  #     wants = ["opencode-serve.service"];
+  #     after = [
+  #       "opencode-serve.service"
+  #       "sops-install-secrets.service"
+  #     ];
+  #     serviceConfig = {
+  #       Type = "simple";
+  #       User = username;
+  #       # The rendered config. EnvironmentFile, not Environment: the values are
+  #       # secrets, so they belong in a file owned by `username` at 0400 that
+  #       # systemd reads directly, rather than being expanded into the unit's
+  #       # Environment= list where `systemctl show` would print them back.
+  #       EnvironmentFile = [config.sops.templates."opencode-telegram.env".path];
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         # bash FIRST: npm runs install scripts with `spawn sh`, and sh was in
+  #         # none of these directories — the bot died every start with
+  #         # "npm error enoent spawn sh ENOENT" (exit 254). pkgs.bash/bin carries
+  #         # both bash and sh. Without it npx resolves fine (nodejs/bin) but the
+  #         # package it fetches cannot run its own lifecycle script.
+  #         "PATH=${pkgs.bash}/bin:${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
+  #       ];
+  #       ExecStartPre = waitOpencode;
+  #       # NIXIFIED 2026-10-15. This was the imperative
+  #       # /home/${username}/.local/bin/opencode-telegram-start — a file outside
+  #       # the flake, so a reinstall could not recreate it, which is exactly how
+  #       # it came back missing and took the whole rebuild down with a 203/EXEC.
+  #       # The store path replaces it; the wrapper's own comment still records
+  #       # that `npx ... @latest` is an impure fetch at every start, and that
+  #       # pinning the bot version remains an open, separate decision.
+  #       ExecStart = "${opencodeTelegramStart}/bin/opencode-telegram-start";
+  #       # The 90 s readiness wait would otherwise hit the 90 s default start
+  #       # timeout and get SIGKILLed mid-wait.
+  #       TimeoutStartSec = "5min";
+  #       Restart = "always";
+  #       RestartSec = "10s";
+  #     };
+  #   };
 
-  # ─── study PWA ─────────────────────────────────────────────────────────────
-  # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word. Blocked on the same
-  # thing as the bot: ~/Projects/study was on the Void install and did not
-  # exist on this box until it was restored from snapshots/daily-1 today.
-  # serve.py is present at that path now.
-  #
-  # The reason it runs in place still holds: serve.py computes
-  # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would
-  # make it serve an empty store directory. Also a behaviour change worth
-  # knowing: under runit this ran as ROOT (the run script had no chpst -u).
-  #
-  # CASE, 2026-10-15. This read /home/${username}/Projects/study — capital P —
-  # and the 2026-10-15 reinstall restored everything to ~/projects (lowercase).
-  # ext4 is case-sensitive, so the path simply did not exist: the unit failed at
-  # step CHDIR, `Restart=always` turned that into a 5 s loop (63 restarts by the
-  # time it was caught), and — the part that actually costs — a unit stuck
-  # failing makes switch-to-configuration exit 4, which fails the WHOLE
-  # `nixos-rebuild switch` even though every package built fine. AGENTS.md
-  # item 9 records the lowercase layout as the live one; the wiki's
-  # `~/Projects/...` spellings are history.
-  systemd.services.study = {
-    description = "Study PWA no-cache static server";
-    # Skip cleanly instead of crash-looping when the repo has not been restored
-    # yet — the same guard docker-stack already carries, and the reason that
-    # unit stayed quiet through this reinstall while these two did not.
-    unitConfig.ConditionPathExists = "/home/${username}/projects/study/scripts/serve.py";
-    wantedBy = ["multi-user.target"];
-    after = ["network.target"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      WorkingDirectory = "/home/${username}/projects/study";
-      ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/projects/study/scripts/serve.py 8091 0.0.0.0";
-      Restart = "always";
-      RestartSec = "5s";
-    };
-  };
+  #   # ─── study PWA ─────────────────────────────────────────────────────────────
+  #   # DISABLED 2026-10-12, RE-ENABLED 2026-10-13 on his word. Blocked on the same
+  #   # thing as the bot: ~/Projects/study was on the Void install and did not
+  #   # exist on this box until it was restored from snapshots/daily-1 today.
+  #   # serve.py is present at that path now.
+  #   #
+  #   # The reason it runs in place still holds: serve.py computes
+  #   # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would
+  #   # make it serve an empty store directory. Also a behaviour change worth
+  #   # knowing: under runit this ran as ROOT (the run script had no chpst -u).
+  #   #
+  #   # CASE, 2026-10-15. This read /home/${username}/Projects/study — capital P —
+  #   # and the 2026-10-15 reinstall restored everything to ~/projects (lowercase).
+  #   # ext4 is case-sensitive, so the path simply did not exist: the unit failed at
+  #   # step CHDIR, `Restart=always` turned that into a 5 s loop (63 restarts by the
+  #   # time it was caught), and — the part that actually costs — a unit stuck
+  #   # failing makes switch-to-configuration exit 4, which fails the WHOLE
+  #   # `nixos-rebuild switch` even though every package built fine. AGENTS.md
+  #   # item 9 records the lowercase layout as the live one; the wiki's
+  #   # `~/Projects/...` spellings are history.
+  #   systemd.services.study = {
+  #     description = "Study PWA no-cache static server";
+  #     # Skip cleanly instead of crash-looping when the repo has not been restored
+  #     # yet — the same guard docker-stack already carries, and the reason that
+  #     # unit stayed quiet through this reinstall while these two did not.
+  #     unitConfig.ConditionPathExists = "/home/${username}/projects/study/scripts/serve.py";
+  #     wantedBy = ["multi-user.target"];
+  #     after = ["network.target"];
+  #     serviceConfig = {
+  #       Type = "simple";
+  #       User = username;
+  #       WorkingDirectory = "/home/${username}/projects/study";
+  #       ExecStart = "${pkgs.python3}/bin/python3 /home/${username}/projects/study/scripts/serve.py 8091 0.0.0.0";
+  #       Restart = "always";
+  #       RestartSec = "5s";
+  #     };
+  #   };
 
-  # ─── WhatsApp bridge (whatsapp-mcp) ───────────────────────────────────────
-  # RESTORED AGAIN 2026-10-20 on his *"OK bring WhatsApp bAck"* / *"I decided
-  # to bring it back"* — decisions row 136 repeals the row-107 refusal. It was
-  # removed 2026-10-16 and the 2026-10-14 restore below is the state this
-  # revert returns to; the whatsapp-mcp clone (and with it the paired session
-  # and message history) was deleted 2026-10-17, so pairing starts from zero.
-  #
-  # RESTORED 2026-10-14 on his *"also bring me back whatsapp watcher"* — this
-  # reverses the 2026-10-08 removal (wiki decisions rows 57 / 82) by his word
-  # today; the fork is gone, so the code is a fresh clone of upstream
-  # verygoodplugins/whatsapp-mcp at v0.7.0 (wiki projects/whatsapp-mcp.md).
-  #
-  # The run shape is the old runit run script, ported exactly like the three
-  # units above (decisions.md row 41): the login user, HOME exported, and the
-  # log opened by a shell ALREADY running as that user, so store/bridge.log is
-  # never root-owned and downloaded media lands readable — row 38 is what a
-  # root run does: 12 dirs / 30 files of root:root 0600 media that every tool
-  # then failed to open. No `Group =` (row 78: NixOS has no group named after
-  # the user, and a unit that fails there takes switch-to-configuration down
-  # with it). Restart=always + RestartSec=3 is the donor's tmux
-  # `while true … sleep 3` loop, which is what offers a fresh QR when the old
-  # one expires (~20 s per code) instead of dying unpaired.
-  #
-  # One instance only, ever: a second bridge means two QR channels and two
-  # REST servers, and health answers `connected: true` from one while the
-  # other cycles QR codes forever (wiki whatsapp-mcp.md § Reinstall restore).
-  # ffmpeg for media rendering is in the user profile (`nix profile install
-  # nixpkgs#ffmpeg`, on PATH as ~/.nix-profile/bin), not in this unit.
-  #
-  # CASE + GUARD, 2026-10-15. Two separate things were wrong here. The
-  # WorkingDirectory spelled ~/Projects (capital) while the reinstall restored
-  # to ~/projects (lowercase) — ext4 is case-sensitive, so the CHDIR failed.
-  # But the repo is absent under EITHER spelling on this box (only ~/projects
-  # {study,wiki,servers} came back), so fixing the case alone would not have
-  # helped: it would still fail every 3 s. Hence the condition, which is the
-  # shape docker-stack already used and which is why that unit stayed silent
-  # through the same reinstall. Until the repo is re-cloned upstream at v0.7.0
-  # (wiki whatsapp-mcp.md) this stays skipped-cleanly rather than failing, so
-  # it can never again hold `nixos-rebuild switch` hostage at exit 4.
-  systemd.services.whatsapp-bridge = {
-    description = "WhatsApp bridge (whatsapp-mcp whatsmeow) on 127.0.0.1:8080";
-    unitConfig.ConditionPathExists = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
-    wantedBy = ["multi-user.target"];
-    after = ["network-online.target"];
-    wants = ["network-online.target"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # The repo is a plain clone in the home directory, not a store path —
-      # it holds the paired session (store/whatsapp.db), so it must run in
-      # place or pairing would be lost on every rebuild.
-      WorkingDirectory = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "PATH=/home/${username}/.nix-profile/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin"
-        # No webhook consumer exists on this box: the bridge POSTs every
-        # message to localhost:8769, where nothing ever listened, and logged
-        # "connection refused" for each one all day (12:14-12:19 rows prove
-        # the POST never woke anything either). The wake belongs to
-        # wa-armsup.sh now, so the outbound webhook is off at the source
-        # instead of failing forever into store/bridge.log.
-        "WEBHOOK_ENABLED=false"
-      ];
-      # bash -c carries the `>> store/bridge.log` redirect itself: systemd's
-      # own StandardOutput=append: opens the file from PID 1 as root, which is
-      # the row-38 trap in a different costume. The `mkdir -p store` is there
-      # because the redirect is evaluated BEFORE the bridge would create the
-      # directory itself — on a fresh clone (no store/ yet) the unit fails with
-      # "store/bridge.log: No such file or directory" and crash-loops.
-      ExecStart = "${pkgs.bash}/bin/bash -c 'mkdir -p store && exec ./whatsapp-bridge >> store/bridge.log 2>&1'";
-      Restart = "always";
-      RestartSec = "3";
-    };
-  };
+  #   # ─── WhatsApp bridge (whatsapp-mcp) ───────────────────────────────────────
+  #   # RESTORED AGAIN 2026-10-20 on his *"OK bring WhatsApp bAck"* / *"I decided
+  #   # to bring it back"* — decisions row 136 repeals the row-107 refusal. It was
+  #   # removed 2026-10-16 and the 2026-10-14 restore below is the state this
+  #   # revert returns to; the whatsapp-mcp clone (and with it the paired session
+  #   # and message history) was deleted 2026-10-17, so pairing starts from zero.
+  #   #
+  #   # RESTORED 2026-10-14 on his *"also bring me back whatsapp watcher"* — this
+  #   # reverses the 2026-10-08 removal (wiki decisions rows 57 / 82) by his word
+  #   # today; the fork is gone, so the code is a fresh clone of upstream
+  #   # verygoodplugins/whatsapp-mcp at v0.7.0 (wiki projects/whatsapp-mcp.md).
+  #   #
+  #   # The run shape is the old runit run script, ported exactly like the three
+  #   # units above (decisions.md row 41): the login user, HOME exported, and the
+  #   # log opened by a shell ALREADY running as that user, so store/bridge.log is
+  #   # never root-owned and downloaded media lands readable — row 38 is what a
+  #   # root run does: 12 dirs / 30 files of root:root 0600 media that every tool
+  #   # then failed to open. No `Group =` (row 78: NixOS has no group named after
+  #   # the user, and a unit that fails there takes switch-to-configuration down
+  #   # with it). Restart=always + RestartSec=3 is the donor's tmux
+  #   # `while true … sleep 3` loop, which is what offers a fresh QR when the old
+  #   # one expires (~20 s per code) instead of dying unpaired.
+  #   #
+  #   # One instance only, ever: a second bridge means two QR channels and two
+  #   # REST servers, and health answers `connected: true` from one while the
+  #   # other cycles QR codes forever (wiki whatsapp-mcp.md § Reinstall restore).
+  #   # ffmpeg for media rendering is in the user profile (`nix profile install
+  #   # nixpkgs#ffmpeg`, on PATH as ~/.nix-profile/bin), not in this unit.
+  #   #
+  #   # CASE + GUARD, 2026-10-15. Two separate things were wrong here. The
+  #   # WorkingDirectory spelled ~/Projects (capital) while the reinstall restored
+  #   # to ~/projects (lowercase) — ext4 is case-sensitive, so the CHDIR failed.
+  #   # But the repo is absent under EITHER spelling on this box (only ~/projects
+  #   # {study,wiki,servers} came back), so fixing the case alone would not have
+  #   # helped: it would still fail every 3 s. Hence the condition, which is the
+  #   # shape docker-stack already used and which is why that unit stayed silent
+  #   # through the same reinstall. Until the repo is re-cloned upstream at v0.7.0
+  #   # (wiki whatsapp-mcp.md) this stays skipped-cleanly rather than failing, so
+  #   # it can never again hold `nixos-rebuild switch` hostage at exit 4.
+  #   systemd.services.whatsapp-bridge = {
+  #     description = "WhatsApp bridge (whatsapp-mcp whatsmeow) on 127.0.0.1:8080";
+  #     unitConfig.ConditionPathExists = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
+  #     wantedBy = ["multi-user.target"];
+  #     after = ["network-online.target"];
+  #     wants = ["network-online.target"];
+  #     serviceConfig = {
+  #       Type = "simple";
+  #       User = username;
+  #       # The repo is a plain clone in the home directory, not a store path —
+  #       # it holds the paired session (store/whatsapp.db), so it must run in
+  #       # place or pairing would be lost on every rebuild.
+  #       WorkingDirectory = "/home/${username}/projects/whatsapp-mcp/whatsapp-bridge";
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         "PATH=/home/${username}/.nix-profile/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin"
+  #         # No webhook consumer exists on this box: the bridge POSTs every
+  #         # message to localhost:8769, where nothing ever listened, and logged
+  #         # "connection refused" for each one all day (12:14-12:19 rows prove
+  #         # the POST never woke anything either). The wake belongs to
+  #         # wa-armsup.sh now, so the outbound webhook is off at the source
+  #         # instead of failing forever into store/bridge.log.
+  #         "WEBHOOK_ENABLED=false"
+  #       ];
+  #       # bash -c carries the `>> store/bridge.log` redirect itself: systemd's
+  #       # own StandardOutput=append: opens the file from PID 1 as root, which is
+  #       # the row-38 trap in a different costume. The `mkdir -p store` is there
+  #       # because the redirect is evaluated BEFORE the bridge would create the
+  #       # directory itself — on a fresh clone (no store/ yet) the unit fails with
+  #       # "store/bridge.log: No such file or directory" and crash-loops.
+  #       ExecStart = "${pkgs.bash}/bin/bash -c 'mkdir -p store && exec ./whatsapp-bridge >> store/bridge.log 2>&1'";
+  #       Restart = "always";
+  #       RestartSec = "3";
+  #     };
+  #   };
 
-  # ── QR pairing page over Tailscale (2026-10-15) ────────────────────────────
-  # qr-serve.py (bridge dir, run by hand while pairing) serves the freshest QR
-  # on :8877 so the code can be read from the laptop: the phone doing the
-  # scanning cannot display its own code, and this box has no screen either —
-  # 127.0.0.1:8877 in the wiki's method history was reachability, not a
-  # deliberate bind.
-  #
-  # Scoped to tailscale0 rather than networking.firewall.allowedTCPPorts: a
-  # QR links a device to his WhatsApp account, so it must not be readable from
-  # the LAN, and qr-serve.py binds the tailnet address for the same reason.
-  # Outside an actual pairing attempt nothing listens on the port, so the rule
-  # otherwise matches an empty port.
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8877];
+  #   # ── QR pairing page over Tailscale (2026-10-15) ────────────────────────────
+  #   # qr-serve.py (bridge dir, run by hand while pairing) serves the freshest QR
+  #   # on :8877 so the code can be read from the laptop: the phone doing the
+  #   # scanning cannot display its own code, and this box has no screen either —
+  #   # 127.0.0.1:8877 in the wiki's method history was reachability, not a
+  #   # deliberate bind.
+  #   #
+  #   # Scoped to tailscale0 rather than networking.firewall.allowedTCPPorts: a
+  #   # QR links a device to his WhatsApp account, so it must not be readable from
+  #   # the LAN, and qr-serve.py binds the tailnet address for the same reason.
+  #   # Outside an actual pairing attempt nothing listens on the port, so the rule
+  #   # otherwise matches an empty port.
+  #   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8877];
 
-  # ── WhatsApp watcher: one arm, and the unit holds it (2026-10-20) ─────────
-  # wa-armsup.sh IS the supervisor — it re-arms watch-whatsapp.py forever over
-  # one shared rowid cursor, so exactly ONE process may ever hold it (the
-  # wiki's one-arm-one-writer guard: a second arm starves the first instead of
-  # double-reporting). Until now that one was a hand-typed `setsid -f
-  # wa-armsup.sh` in someone's terminal, which is why the restart this morning
-  # left checkup reading "watcher NOT armed" while the bridge — a real unit —
-  # came back and kept queueing messages. His word: *"Relaunch him ur self +
-  # why he xant survice reboot?"* → *"Ur the boss here add what ever u want"*.
-  # So the arm belongs to systemd now, and the hand-typed arm becomes the bug.
-  #
-  # Exit 3 is the script's documented "stop flag present" refusal. Restart
-  # would respawn a supervisor that immediately refuses again — a live-looking
-  # refuse loop — so RestartPreventExitStatus=3 pins it down instead. Lifting
-  # the flag then takes `systemctl restart whatsapp-watcher`, which the agent
-  # is told about rather than left to rediscover.
-  systemd.services.whatsapp-watcher = {
-    description = "WhatsApp watcher supervisor (one arm, one writer)";
-    wantedBy = ["multi-user.target"];
-    after = ["whatsapp-bridge.service"];
-    serviceConfig = {
-      User = username;
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        # wa-armsup calls watch-whatsapp.py, whose shebang is `/usr/bin/env
-        # python3` — without this PATH the unit cannot even find its own child.
-        "PATH=/run/current-system/sw/bin"
-        # The wake target: wa-armsup runs `opencode run -s $WA_SESSION` the
-        # moment the watcher exits on a hit. Without this the wake is logged
-        # as "WA_SESSION unset" and he hears nothing -- the exact hole this
-        # morning's silence came from.
-        "WA_SESSION=${waSession}"
-      ];
-      ExecStart = "/run/current-system/sw/bin/wa-armsup.sh 1800";
-      Restart = "always";
-      RestartSec = "10";
-      RestartPreventExitStatus = "3";
-    };
-  };
+  #   # ── WhatsApp watcher: one arm, and the unit holds it (2026-10-20) ─────────
+  #   # wa-armsup.sh IS the supervisor — it re-arms watch-whatsapp.py forever over
+  #   # one shared rowid cursor, so exactly ONE process may ever hold it (the
+  #   # wiki's one-arm-one-writer guard: a second arm starves the first instead of
+  #   # double-reporting). Until now that one was a hand-typed `setsid -f
+  #   # wa-armsup.sh` in someone's terminal, which is why the restart this morning
+  #   # left checkup reading "watcher NOT armed" while the bridge — a real unit —
+  #   # came back and kept queueing messages. His word: *"Relaunch him ur self +
+  #   # why he xant survice reboot?"* → *"Ur the boss here add what ever u want"*.
+  #   # So the arm belongs to systemd now, and the hand-typed arm becomes the bug.
+  #   #
+  #   # Exit 3 is the script's documented "stop flag present" refusal. Restart
+  #   # would respawn a supervisor that immediately refuses again — a live-looking
+  #   # refuse loop — so RestartPreventExitStatus=3 pins it down instead. Lifting
+  #   # the flag then takes `systemctl restart whatsapp-watcher`, which the agent
+  #   # is told about rather than left to rediscover.
+  #   systemd.services.whatsapp-watcher = {
+  #     description = "WhatsApp watcher supervisor (one arm, one writer)";
+  #     wantedBy = ["multi-user.target"];
+  #     after = ["whatsapp-bridge.service"];
+  #     serviceConfig = {
+  #       User = username;
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         # wa-armsup calls watch-whatsapp.py, whose shebang is `/usr/bin/env
+  #         # python3` — without this PATH the unit cannot even find its own child.
+  #         "PATH=/run/current-system/sw/bin"
+  #         # The wake target: wa-armsup runs `opencode run -s $WA_SESSION` the
+  #         # moment the watcher exits on a hit. Without this the wake is logged
+  #         # as "WA_SESSION unset" and he hears nothing -- the exact hole this
+  #         # morning's silence came from.
+  #         "WA_SESSION=${waSession}"
+  #       ];
+  #       ExecStart = "/run/current-system/sw/bin/wa-armsup.sh 1800";
+  #       Restart = "always";
+  #       RestartSec = "10";
+  #       RestartPreventExitStatus = "3";
+  #     };
+  #   };
 
-  # ── the 313 ritual (2026-10-20) ───────────────────────────────────────────
-  # "we have in both groups we send 313 at that specific time it means
-  # something to us so 3:13am and pm send 313 only to both groups nothing
-  # else is requried" -- and "u can add them to the allow list but u must!!!!
-  # not respond to anything anything this is a strong rule u must follow uu
-  # just type 313 and thats it never repsond or find other way".
-  #
-  # So: a timer at 3:13am and 3:13pm that posts the bare number 313 to two
-  # groups, and nothing else. The never-respond half is mechanical, in
-  # wa-send (RITUAL): those two JIDs accept ONLY the exact text "313", and
-  # only with the one-time ticket wa-313.sh sets. A reply there cannot be
-  # sent by accident, by a distracted turn, or by a ticket smuggled in.
-  #
-  # OnCalendar, not an interval: the point is the TIME, not the cadence.
-  # "03,15:13:00" is 3:13am and 3:13pm on the same day -- one timer, two
-  # fires, no duplicate units to keep in step. systemd-analyze calendar
-  # confirms the next elapse is 03:13:00.
-  #
-  # Persistent = true: a missed fire (the box was off at 3:13) is sent on the
-  # next boot rather than silently skipped. The ritual is a habit, and a habit
-  # that skips a day because the machine was asleep is not a habit.
-  #
-  # AccuracySec = 1s: the default (1 min) would smear the fire across
-  # 3:13:00-3:14:00, and the whole point is the minute.
-  systemd.services.wa-313 = {
-    description = "Post the bare number 313 to the two ritual groups";
-    after = ["whatsapp-bridge.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      User = username;
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "PATH=/run/current-system/sw/bin"
-      ];
-      ExecStart = "/run/current-system/sw/bin/wa-313.sh";
-    };
-  };
+  #   # ── the 313 ritual (2026-10-20) ───────────────────────────────────────────
+  #   # "we have in both groups we send 313 at that specific time it means
+  #   # something to us so 3:13am and pm send 313 only to both groups nothing
+  #   # else is requried" -- and "u can add them to the allow list but u must!!!!
+  #   # not respond to anything anything this is a strong rule u must follow uu
+  #   # just type 313 and thats it never repsond or find other way".
+  #   #
+  #   # So: a timer at 3:13am and 3:13pm that posts the bare number 313 to two
+  #   # groups, and nothing else. The never-respond half is mechanical, in
+  #   # wa-send (RITUAL): those two JIDs accept ONLY the exact text "313", and
+  #   # only with the one-time ticket wa-313.sh sets. A reply there cannot be
+  #   # sent by accident, by a distracted turn, or by a ticket smuggled in.
+  #   #
+  #   # OnCalendar, not an interval: the point is the TIME, not the cadence.
+  #   # "03,15:13:00" is 3:13am and 3:13pm on the same day -- one timer, two
+  #   # fires, no duplicate units to keep in step. systemd-analyze calendar
+  #   # confirms the next elapse is 03:13:00.
+  #   #
+  #   # Persistent = true: a missed fire (the box was off at 3:13) is sent on the
+  #   # next boot rather than silently skipped. The ritual is a habit, and a habit
+  #   # that skips a day because the machine was asleep is not a habit.
+  #   #
+  #   # AccuracySec = 1s: the default (1 min) would smear the fire across
+  #   # 3:13:00-3:14:00, and the whole point is the minute.
+  #   systemd.services.wa-313 = {
+  #     description = "Post the bare number 313 to the two ritual groups";
+  #     after = ["whatsapp-bridge.service"];
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       User = username;
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         "PATH=/run/current-system/sw/bin"
+  #       ];
+  #       ExecStart = "/run/current-system/sw/bin/wa-313.sh";
+  #     };
+  #   };
 
-  systemd.timers.wa-313 = {
-    description = "The 313 ritual: 3:13am and 3:13pm";
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnCalendar = "*-*-* 03,15:13:00";
-      AccuracySec = "1s";
-      Persistent = true;
-      Unit = "wa-313.service";
-    };
-  };
+  #   systemd.timers.wa-313 = {
+  #     description = "The 313 ritual: 3:13am and 3:13pm";
+  #     wantedBy = ["timers.target"];
+  #     timerConfig = {
+  #       OnCalendar = "*-*-* 03,15:13:00";
+  #       AccuracySec = "1s";
+  #       Persistent = true;
+  #       Unit = "wa-313.service";
+  #     };
+  #   };
 
-  # ── the server agent himself, in tmux (2026-10-20) ─────────────────────────
-  # `opencode mini --agent server` (MiniMax) took the WhatsApp duty this
-  # morning (decisions row 136b) started by hand from a fish prompt — and died
-  # with the restart: session gone from the process table, sessions count 0,
-  # while the bridge went on storing rows for an agent nobody had brought back.
-  # A TUI cannot run as a foreground unit (it wants a pty and a reader), so the
-  # unit's job is only the screen: it detaches a tmux session holding the
-  # agent, and `tmux attach -t server-agent` is where the reader sits. oneshot
-  # + RemainAfterExit because tmux daemonizes — what it starts outlives the
-  # unit either way, and ExecStopPost reaps the session on stop.
-  # ── server agent — REMOVED by his order, 2026-10-20 ────────────────────────
-  # *"stop the server agent rm iit"* → *"cuz i will just use normal session"*
-  # → *"i started a new session calledwhatsapp"*. The unit only ever held a
-  # tmux screen for `opencode mini --agent server`; the wake never needed it —
-  # `opencode run --agent server -s $WA_SESSION` reaches the same session
-  # headless, and he talks to that session directly from his own client. So
-  # the screen goes, the wake stays, and the duty is one session plus one
-  # watcher.
-  #
-  # Left in place as a comment, not deleted: if he ever wants the screen
-  # back, uncomment this block and rebuild (it starts a tmux session named
-  # server-agent holding `opencode mini --agent server -s ${waSession}`).
-  /*
-  systemd.services.server-agent = {
-    description = "server agent (opencode mini, WhatsApp duty) in tmux";
-    wantedBy = ["multi-user.target"];
-    # wants, not requires: a bridge whose ConditionPathExists fails (fresh box,
-    # clone not yet there) must not take this unit down with it.
-    wants = ["whatsapp-bridge.service"];
-    after = ["whatsapp-bridge.service" "opencode-serve.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = username;
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "TERM=screen-256color"
-        "PATH=${ocPath}:/run/current-system/sw/bin"
-      ];
-      ExecStart = ''${pkgs.tmux}/bin/tmux new-session -d -s server-agent -c /home/${username} "${pkgs.opencode}/bin/opencode mini --agent server -s ${waSession}"'';
-      ExecStopPost = "${pkgs.tmux}/bin/tmux kill-session -t server-agent";
-    };
-  };
-  */
+  #   # ── the server agent himself, in tmux (2026-10-20) ─────────────────────────
+  #   # `opencode mini --agent server` (MiniMax) took the WhatsApp duty this
+  #   # morning (decisions row 136b) started by hand from a fish prompt — and died
+  #   # with the restart: session gone from the process table, sessions count 0,
+  #   # while the bridge went on storing rows for an agent nobody had brought back.
+  #   # A TUI cannot run as a foreground unit (it wants a pty and a reader), so the
+  #   # unit's job is only the screen: it detaches a tmux session holding the
+  #   # agent, and `tmux attach -t server-agent` is where the reader sits. oneshot
+  #   # + RemainAfterExit because tmux daemonizes — what it starts outlives the
+  #   # unit either way, and ExecStopPost reaps the session on stop.
+  #   # ── server agent — REMOVED by his order, 2026-10-20 ────────────────────────
+  #   # *"stop the server agent rm iit"* → *"cuz i will just use normal session"*
+  #   # → *"i started a new session calledwhatsapp"*. The unit only ever held a
+  #   # tmux screen for `opencode mini --agent server`; the wake never needed it —
+  #   # `opencode run --agent server -s $WA_SESSION` reaches the same session
+  #   # headless, and he talks to that session directly from his own client. So
+  #   # the screen goes, the wake stays, and the duty is one session plus one
+  #   # watcher.
+  #   #
+  #   # Left in place as a comment, not deleted: if he ever wants the screen
+  #   # back, uncomment this block and rebuild (it starts a tmux session named
+  #   # server-agent holding `opencode mini --agent server -s ${waSession}`).
+  #   /*
+  #   systemd.services.server-agent = {
+  #     description = "server agent (opencode mini, WhatsApp duty) in tmux";
+  #     wantedBy = ["multi-user.target"];
+  #     # wants, not requires: a bridge whose ConditionPathExists fails (fresh box,
+  #     # clone not yet there) must not take this unit down with it.
+  #     wants = ["whatsapp-bridge.service"];
+  #     after = ["whatsapp-bridge.service" "opencode-serve.service"];
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       RemainAfterExit = true;
+  #       User = username;
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #         "TERM=screen-256color"
+  #         "PATH=${ocPath}:/run/current-system/sw/bin"
+  #       ];
+  #       ExecStart = ''${pkgs.tmux}/bin/tmux new-session -d -s server-agent -c /home/${username} "${pkgs.opencode}/bin/opencode mini --agent server -s ${waSession}"'';
+  #       ExecStopPost = "${pkgs.tmux}/bin/tmux kill-session -t server-agent";
+  #     };
+  #   };
+  #   */
 
-  # ── post-boot proof that the chain works (2026-10-20) ──────────────────────
-  # His question after this morning's restart: *"check if server is app and he
-  # responds to whatsapp"*. `systemctl is-active` answers the first half only.
-  # So a timer 90 s after boot runs scripts/thinkcentre/postboot-verify.sh,
-  # which checks all three units + the one-arm rule, then pushes one clearly
-  # labelled test row through the real path (store -> watcher -> agent) and
-  # records whether a reply came back, into
-  # ~/.local/state/opencode/postboot-verify.md.
-  #
-  # A timer, not a plain WantedBy=multi-user.target service: a oneshot that
-  # takes ~2 min would hold the boot target open for 2 min, and the whole point
-  # is that boot must finish and be judged afterwards.
-  # ── post-boot verifier — REMOVED by his order, 2026-10-20 ──────────────────
-  # *"i dont need post reboot cuz a normal session wakes him self like u"*.
-  # The timer existed to prove a chain that had no wake: every boot it
-  # injected a labelled row into the self-chat and waited for the reply. The
-  # wake is real now (wa-armsup -> `opencode run -s $WA_SESSION`), the duty
-  # sits in a normal session that comes up on its own the way this admin
-  # session does, and the inject only ever put test rows in his chat. So the
-  # timer goes, the script stays in the repo as history — re-enable by
-  # uncommenting if a boot ever needs proving again.
-  /*
-  systemd.services.postboot-verify = {
-    description = "WhatsApp chain end-to-end check after boot";
-    serviceConfig = {
-      Type = "oneshot";
-      User = username;
-      ExecStart = "/run/current-system/sw/bin/bash /home/${username}/nixos-config/scripts/thinkcentre/postboot-verify.sh";
-      RemainAfterExit = true;
-    };
-  };
+  #   # ── post-boot proof that the chain works (2026-10-20) ──────────────────────
+  #   # His question after this morning's restart: *"check if server is app and he
+  #   # responds to whatsapp"*. `systemctl is-active` answers the first half only.
+  #   # So a timer 90 s after boot runs scripts/thinkcentre/postboot-verify.sh,
+  #   # which checks all three units + the one-arm rule, then pushes one clearly
+  #   # labelled test row through the real path (store -> watcher -> agent) and
+  #   # records whether a reply came back, into
+  #   # ~/.local/state/opencode/postboot-verify.md.
+  #   #
+  #   # A timer, not a plain WantedBy=multi-user.target service: a oneshot that
+  #   # takes ~2 min would hold the boot target open for 2 min, and the whole point
+  #   # is that boot must finish and be judged afterwards.
+  #   # ── post-boot verifier — REMOVED by his order, 2026-10-20 ──────────────────
+  #   # *"i dont need post reboot cuz a normal session wakes him self like u"*.
+  #   # The timer existed to prove a chain that had no wake: every boot it
+  #   # injected a labelled row into the self-chat and waited for the reply. The
+  #   # wake is real now (wa-armsup -> `opencode run -s $WA_SESSION`), the duty
+  #   # sits in a normal session that comes up on its own the way this admin
+  #   # session does, and the inject only ever put test rows in his chat. So the
+  #   # timer goes, the script stays in the repo as history — re-enable by
+  #   # uncommenting if a boot ever needs proving again.
+  #   /*
+  #   systemd.services.postboot-verify = {
+  #     description = "WhatsApp chain end-to-end check after boot";
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       User = username;
+  #       ExecStart = "/run/current-system/sw/bin/bash /home/${username}/nixos-config/scripts/thinkcentre/postboot-verify.sh";
+  #       RemainAfterExit = true;
+  #     };
+  #   };
 
-  systemd.timers.postboot-verify = {
-    description = "Fire the chain check 90 s after every boot";
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnBootSec = "90s";
-      Unit = "postboot-verify.service";
-    };
-  };
-  */
+  #   systemd.timers.postboot-verify = {
+  #     description = "Fire the chain check 90 s after every boot";
+  #     wantedBy = ["timers.target"];
+  #     timerConfig = {
+  #       OnBootSec = "90s";
+  #       Unit = "postboot-verify.service";
+  #     };
+  #   };
+  #   */
 
   # The unit half of the launcher defined above.
   #
@@ -643,108 +657,112 @@ in {
     };
   };
 
-  # ─── sv-watch — the health sweep ───────────────────────────────────────────
-  # The donor looped `sv-watch.sh; sleep 60` inside its run script so the
-  # script stayed a testable single shot. A timer is that shape natively, and
-  # OnUnitActiveSec reproduces the cadence exactly. If a sweep runs long (13
-  # curls + a dig, up to ~68 s), systemd simply refuses to start a second
-  # instance of an active service — the same serialization the sleep gave.
-  # AccuracySec matters: the default is 1 min, which would smear/alias a 60 s
-  # cadence into something erratic.
-  environment.etc."sv-watch/http-endpoints".text = builtins.readFile ../../scripts/thinkcentre/http-endpoints;
+  # ═══════════════ MOVED 2026-10-22 → hosts/grandpa/services.nix (cont.) ═══════
+  # sv-watch, its endpoint list (now scripts/grandpa/http-endpoints there),
+  # filen-sync, and journald persistent. Same rule as above: commented, kept.
+  # ═══════════════════════════════════════════════════════════════════════════
+  #   # ─── sv-watch — the health sweep ───────────────────────────────────────────
+  #   # The donor looped `sv-watch.sh; sleep 60` inside its run script so the
+  #   # script stayed a testable single shot. A timer is that shape natively, and
+  #   # OnUnitActiveSec reproduces the cadence exactly. If a sweep runs long (13
+  #   # curls + a dig, up to ~68 s), systemd simply refuses to start a second
+  #   # instance of an active service — the same serialization the sleep gave.
+  #   # AccuracySec matters: the default is 1 min, which would smear/alias a 60 s
+  #   # cadence into something erratic.
+  #   environment.etc."sv-watch/http-endpoints".text = builtins.readFile ../../scripts/thinkcentre/http-endpoints;
 
-  systemd.services.sv-watch = {
-    description = "Health sweep: units, containers, HTTP endpoints, DNS";
-    # Ordering only, never Requires: the sweep must still run (and report) when
-    # docker or blocky are down — that is the entire point of the unit.
-    after = ["docker.service" "blocky.service" "network-online.target"];
-    wants = ["network-online.target"];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "root"; # needs the docker CLI and systemctl
-      RuntimeDirectory = "sv-watch"; # /run/sv-watch — state + pending, wiped on boot
-      StateDirectory = "sv-watch"; # /var/lib/sv-watch — the outbox, must survive
-      ExecStart = "${svWatch}/bin/sv-watch";
-    };
-    environment = {
-      STATE = "/run/sv-watch/state";
-      PENDING = "/run/sv-watch/http-pending";
-      ENDPOINTS = "/etc/sv-watch/http-endpoints";
-      OUTBOX = "/var/lib/sv-watch/outbox";
-    };
-  };
+  #   systemd.services.sv-watch = {
+  #     description = "Health sweep: units, containers, HTTP endpoints, DNS";
+  #     # Ordering only, never Requires: the sweep must still run (and report) when
+  #     # docker or blocky are down — that is the entire point of the unit.
+  #     after = ["docker.service" "blocky.service" "network-online.target"];
+  #     wants = ["network-online.target"];
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       User = "root"; # needs the docker CLI and systemctl
+  #       RuntimeDirectory = "sv-watch"; # /run/sv-watch — state + pending, wiped on boot
+  #       StateDirectory = "sv-watch"; # /var/lib/sv-watch — the outbox, must survive
+  #       ExecStart = "${svWatch}/bin/sv-watch";
+  #     };
+  #     environment = {
+  #       STATE = "/run/sv-watch/state";
+  #       PENDING = "/run/sv-watch/http-pending";
+  #       ENDPOINTS = "/etc/sv-watch/http-endpoints";
+  #       OUTBOX = "/var/lib/sv-watch/outbox";
+  #     };
+  #   };
 
-  systemd.timers.sv-watch = {
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "60s";
-      AccuracySec = "1s";
-      Unit = "sv-watch.service";
-    };
-  };
+  #   systemd.timers.sv-watch = {
+  #     wantedBy = ["timers.target"];
+  #     timerConfig = {
+  #       OnBootSec = "1min";
+  #       OnUnitActiveSec = "60s";
+  #       AccuracySec = "1s";
+  #       Unit = "sv-watch.service";
+  #     };
+  #   };
 
-  # ─── filen-sync — the 2-way drive mirror ───────────────────────────────────
-  # Periodic bidirectional sync of the Filen drive root into ~/filen, so the
-  # local copy (all KFU material, cv, obsidian, projects, wiki-private) tracks
-  # changes made from the phone/web and vice versa.
-  #
-  # Runs as `username`, not root: it writes into ~/filen, which belongs to that
-  # user, and a root run would stamp root-owned files into a directory the user
-  # then cannot edit — a permission bug that only shows up on the next hand
-  # write. HOME is set explicitly rather than assumed: the bisync baseline and
-  # rclone's own cache/config both resolve under it, and a wrong HOME makes
-  # every run look like a first run.
-  systemd.services.filen-sync = {
-    description = "Two-way bisync: Filen drive root <-> ~/filen";
-    # Ordering only. Needs network (it talks to api.filen.io) and the secrets
-    # rendered, otherwise the EnvironmentFile below is absent and the unit fails
-    # instead of skipping.
-    after = ["network-online.target" "sops-install-secrets.service"];
-    wants = ["network-online.target"];
-    unitConfig = {
-      # Skip cleanly when ~/filen has not been created/restored yet, rather than
-      # landing in --failed — the same guard study, docker-stack and
-      # opencode-telegram already carry. It will start on its own the moment the
-      # directory exists.
-      ConditionPathExists = "/home/${username}/filen";
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      User = username;
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-      ];
-      # Filen credentials, rendered from sops at activation (./secrets.nix).
-      # A file, not Environment=: these are secrets, and Environment= would put
-      # them in the unit definition where `systemctl show` reads them back.
-      EnvironmentFile = [config.sops.templates."filen-sync.env".path];
-      ExecStart = "${filenSync}/bin/filen-sync";
-      # Generous but bounded: the very first run pulled 2.1 GiB. Bounded so a
-      # hung connection fails the unit instead of wedging it forever.
-      TimeoutStartSec = "60min";
-    };
-  };
+  #   # ─── filen-sync — the 2-way drive mirror ───────────────────────────────────
+  #   # Periodic bidirectional sync of the Filen drive root into ~/filen, so the
+  #   # local copy (all KFU material, cv, obsidian, projects, wiki-private) tracks
+  #   # changes made from the phone/web and vice versa.
+  #   #
+  #   # Runs as `username`, not root: it writes into ~/filen, which belongs to that
+  #   # user, and a root run would stamp root-owned files into a directory the user
+  #   # then cannot edit — a permission bug that only shows up on the next hand
+  #   # write. HOME is set explicitly rather than assumed: the bisync baseline and
+  #   # rclone's own cache/config both resolve under it, and a wrong HOME makes
+  #   # every run look like a first run.
+  #   systemd.services.filen-sync = {
+  #     description = "Two-way bisync: Filen drive root <-> ~/filen";
+  #     # Ordering only. Needs network (it talks to api.filen.io) and the secrets
+  #     # rendered, otherwise the EnvironmentFile below is absent and the unit fails
+  #     # instead of skipping.
+  #     after = ["network-online.target" "sops-install-secrets.service"];
+  #     wants = ["network-online.target"];
+  #     unitConfig = {
+  #       # Skip cleanly when ~/filen has not been created/restored yet, rather than
+  #       # landing in --failed — the same guard study, docker-stack and
+  #       # opencode-telegram already carry. It will start on its own the moment the
+  #       # directory exists.
+  #       ConditionPathExists = "/home/${username}/filen";
+  #     };
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       User = username;
+  #       Environment = [
+  #         "HOME=/home/${username}"
+  #         "USER=${username}"
+  #         "LOGNAME=${username}"
+  #       ];
+  #       # Filen credentials, rendered from sops at activation (./secrets.nix).
+  #       # A file, not Environment=: these are secrets, and Environment= would put
+  #       # them in the unit definition where `systemctl show` reads them back.
+  #       EnvironmentFile = [config.sops.templates."filen-sync.env".path];
+  #       ExecStart = "${filenSync}/bin/filen-sync";
+  #       # Generous but bounded: the very first run pulled 2.1 GiB. Bounded so a
+  #       # hung connection fails the unit instead of wedging it forever.
+  #       TimeoutStartSec = "60min";
+  #     };
+  #   };
 
-  systemd.timers.filen-sync = {
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      # Wait out boot: tailscale/network come up first, and an immediate sync
-      # would just fail and burn a retry.
-      OnBootSec = "10min";
-      # Cadence for an idle box. AccuracySec matters — the default of 1 min
-      # would smear a 30 min cadence into something erratic.
-      OnUnitActiveSec = "30min";
-      AccuracySec = "1min";
-      # NOT Persistent=: that only applies to OnCalendar timers. Missed runs
-      # while the box was off are recovered by OnBootSec instead.
-    };
-  };
+  #   systemd.timers.filen-sync = {
+  #     wantedBy = ["timers.target"];
+  #     timerConfig = {
+  #       # Wait out boot: tailscale/network come up first, and an immediate sync
+  #       # would just fail and burn a retry.
+  #       OnBootSec = "10min";
+  #       # Cadence for an idle box. AccuracySec matters — the default of 1 min
+  #       # would smear a 30 min cadence into something erratic.
+  #       OnUnitActiveSec = "30min";
+  #       AccuracySec = "1min";
+  #       # NOT Persistent=: that only applies to OnCalendar timers. Missed runs
+  #       # while the box was off are recovered by OnBootSec instead.
+  #     };
+  #   };
 
-  # journald defaults to `auto` — volatile unless /var/log/journal exists — so
-  # without this the logs those runit units wrote to /var/log/*.log would not
-  # survive a reboot at all.
-  services.journald.settings.Journal.Storage = "persistent";
+  #   # journald defaults to `auto` — volatile unless /var/log/journal exists — so
+  #   # without this the logs those runit units wrote to /var/log/*.log would not
+  #   # survive a reboot at all.
+  #   services.journald.settings.Journal.Storage = "persistent";
 }

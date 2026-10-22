@@ -36,9 +36,17 @@
 # that part is a decision, not a placeholder. It runs the core set (sshd,
 # tailscaled, blocky, systemd-networkd, systemd-timesyncd, zram) plus what he
 # has chosen since: Forgejo + gitea-mirror, and since 2026-10-19 docker as the
-# engine under them (see the block below). Still nothing pre-wired — no backup,
-# no WhatsApp, no extra blocky upstreams. Adding a service here is his call,
-# not an improvement to file.
+# engine under them (see the block below).
+#
+# SINCE 2026-10-22 it is also the box the fleet's services live on: the
+# ThinkCentre is being returned to its owner, so Home Assistant, the WhatsApp
+# bridge/watcher/313 timer, the Telegram bot, opencode-serve, study, sv-watch
+# and filen-sync all moved here ("move the services from thinkcentre to
+# grandpa … nix work only"). The import list below names them; each file
+# explains what it carries. Still absent by choice: no backup (the /srv/backup
+# disk is physical and stays with the ThinkCentre — see hosts/thinkcentre/
+# backup.nix), and adding anything further is his call, not an improvement to
+# file.
 {
   pkgs,
   username,
@@ -67,6 +75,31 @@ in {
     # GLANCES (2026-10-19, his "can we have glances for grandpa") — NixOS-native
     # service on :61208, unlike thinkcentre's docker container. See glances.nix.
     ./glances.nix
+
+    # ── THE SERVICE LAYER, MOVED FROM hosts/thinkcentre 2026-10-22 ──────────
+    # His order: "move the services from thinkcentre to grandpa … nix work
+    # only". The ThinkCentre is being returned to its owner, so what it was the
+    # server of lives here now. Each file carries its own rationale for the
+    # move; hosts/thinkcentre keeps its copies commented out as the record of
+    # where this came from.
+    #   home-assistant.nix  the AC hub (HA + ESPHome + avahi + :8123) — the
+    #                       one thing that cannot simply be reinstalled, since
+    #                       its state is paired hardware
+    #   services.nix        opencode-serve/telegram, study, the WhatsApp
+    #                       bridge + watcher + 313 timer, sv-watch, filen-sync,
+    #                       journald persistent
+    #   secrets.nix         the two host-local TEMPLATES those units read; the
+    #                       secret values themselves stay fleet-scope in
+    #                       modules/core/monitoring.nix
+    #   searxng.nix         the house search engine — declared NIX-NATIVE the
+    #                       same day ("Declare it inside grandpa") instead of
+    #                       staying a ThinkCentre-only compose project that
+    #                       would have died with the box
+    ./home-assistant.nix
+    ./services.nix
+    ./secrets.nix
+    ./searxng.nix
+
     # THE MD SERVICE (2026-10-18, removed same day on his "u can rm the md one
     # idont care that much"): mkdocs-material rendered ~/projects/wiki, nginx
     # served it, a timer pulled git. wiki.nix kept on disk with its rationale;

@@ -79,4 +79,31 @@
     "tcp-tls:cbf8aa.dns.nextdns.io:853"
     "quic:2b44bd66.d.adguard-dns.com"
   ];
+
+  # ── blocky: reachable from the tailnet, plain DNS only ──────────────────────
+  # MOVED HERE 2026-10-22 with the rest of the service layer: the ThinkCentre
+  # is being returned to its owner, and it has held this since 2026-10-21
+  # (decisions row 177). Same posture, new address.
+  #
+  # His word, 2026-10-21: "i just want to set the tailscale ip as dns / inside
+  # tailsclae / cuz on phone i must allow tailsclae dns", then "i will not use
+  # dot / just plain tailscaleip as dns". So: no DoT, no 853, no cert, no
+  # Private DNS — the phone points at **100.106.116.60** and the query travels
+  # inside the tailnet. The ThinkCentre's 100.88.29.31 stops being an answer
+  # the day the box leaves; anything (phone Private DNS, a router, a second
+  # box) still pointed there must be repointed to this one.
+  #
+  # Why 0.0.0.0 rather than the tailnet address alone: core/network.nix points
+  # /etc/resolv.conf at 127.0.0.1, because blocky IS this box's resolver, so
+  # binding only the tailnet IP would take DNS away from the box itself. All
+  # interfaces keeps loopback answering; what makes it tailnet-only is the
+  # firewall rule below, which never opens the LAN.
+  services.blocky.settings.ports.dns = lib.mkForce "0.0.0.0:53";
+
+  # tailscale0 only, the pattern home-assistant.nix (8123) already uses. BOTH
+  # transports: tcp is what a resolver falls back to when the answer is too big
+  # for one UDP packet — any large or DNSSEC-signed response — so opening udp
+  # alone breaks the big answers and only then.
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [53];
+  networking.firewall.interfaces."tailscale0".allowedUDPPorts = [53];
 }

@@ -144,11 +144,16 @@ in {
       # runs --accept-dns=false (modules/core/tailscale.nix), so a tailnet
       # hostname would need blocky's conditional to resolve — one more
       # moving part for the thing that has to answer the moment you type.
-      # Plain http on purpose: the container is http-only, same as the
+      # Plain http on purpose: searxng answers http-only, same as the
       # homepage above.
       #
+      # HOST 100.106.116.60 since 2026-10-22: searxng was declared Nix-native on
+      # grandpa ("Declare it inside grandpa") when the ThinkCentre started back
+      # to its owner. Port 8888 unchanged — only the host part moved, so every
+      # old bookmark works after one edit.
+      #
       # `ddg` stays in the list as a FALLBACK (app-provided, not default)
-      # so the bar still answers if the ThinkCentre or the tailnet is down.
+      # so the bar still answers if grandpa or the tailnet is down.
       # Delete `ddg.metaData = {}` to make it searxng-only.
       search = {
         force = true;
@@ -158,7 +163,7 @@ in {
             name = "SearXNG";
             urls = [
               {
-                template = "http://100.88.29.31:8888/search";
+                template = "http://100.106.116.60:8888/search";
                 params = [
                   {
                     name = "q";
@@ -167,7 +172,7 @@ in {
                 ];
               }
             ];
-            icon = "http://100.88.29.31:8888/favicon.ico";
+            icon = "http://100.106.116.60:8888/favicon.ico";
             definedAliases = ["@sx"];
           };
           # app-provided entry: listed in the dropdown, NOT the default

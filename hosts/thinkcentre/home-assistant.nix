@@ -10,34 +10,41 @@
 # remote's codes, so no protocol guessing. First flash is USB from this box,
 # OTA after that.
 {pkgs, ...}: {
-  # The hub. The native NixOS module — NO docker (his rule for this house).
-  # UI on :8123; config lives in /var/lib/hass, so first-run setup (create
-  # the account, add the ESPHome device) happens in the browser as usual.
-  services.home-assistant = {
-    enable = true;
-    # Pull the ESPHome integration's python deps into the environment so the
-    # device can be added without a component-missing surprise.
-    extraComponents = ["esphome"];
-  };
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║ MOVED 2026-10-22 — this whole module now lives at                       ║
+  # ║ hosts/grandpa/home-assistant.nix (his "move the services" order). The    ║
+  # ║ declarations below are commented out, NOT deleted: the rationale and the ║
+  # ║ row-111 history above are the record of the project, and the file comes   ║
+  # ║ back whole if this box ever returns.                                     ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  #   # The hub. The native NixOS module — NO docker (his rule for this house).
+  #   # UI on :8123; config lives in /var/lib/hass, so first-run setup (create
+  #   # the account, add the ESPHome device) happens in the browser as usual.
+  #   services.home-assistant = {
+  #     enable = true;
+  #     # Pull the ESPHome integration's python deps into the environment so the
+  #     # device can be added without a component-missing surprise.
+  #     extraComponents = ["esphome"];
+  #   };
 
-  # Builds and flashes the ESP32 firmware. Same YAML either way: the IR
-  # transmitter, the receiver, and the `climate` block with the captured
-  # remote codes.
-  environment.systemPackages = [pkgs.esphome];
+  #   # Builds and flashes the ESP32 firmware. Same YAML either way: the IR
+  #   # transmitter, the receiver, and the `climate` block with the captured
+  #   # remote codes.
+  #   environment.systemPackages = [pkgs.esphome];
 
-  # mDNS/zeroconf — how HA discovers the ESPHome node on the LAN (and how
-  # things find each other generally). HA's discovery leans on it; without
-  # avahi on a NixOS host it simply never shows up.
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    settings.publish."disable-publishing" = false;
-  };
+  #   # mDNS/zeroconf — how HA discovers the ESPHome node on the LAN (and how
+  #   # things find each other generally). HA's discovery leans on it; without
+  #   # avahi on a NixOS host it simply never shows up.
+  #   services.avahi = {
+  #     enable = true;
+  #     nssmdns4 = true;
+  #     settings.publish."disable-publishing" = false;
+  #   };
 
-  # 8123, twice: LAN (setup while at home — his own network, and the first
-  # visit creates the account) and tailnet (dad's phone anywhere, via the
-  # Tailscale already on this box — the Blynk-cloud hole in one less place).
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8123];
-  networking.firewall.allowedTCPPorts = [8123]; # LAN — say the word and it
-  # comes off, tailscale0-only is one delete away.
+  #   # 8123, twice: LAN (setup while at home — his own network, and the first
+  #   # visit creates the account) and tailnet (dad's phone anywhere, via the
+  #   # Tailscale already on this box — the Blynk-cloud hole in one less place).
+  #   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8123];
+  #   networking.firewall.allowedTCPPorts = [8123]; # LAN — say the word and it
+  #   # comes off, tailscale0-only is one delete away.
 }
