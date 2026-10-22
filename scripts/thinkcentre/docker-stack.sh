@@ -117,6 +117,14 @@ ntfy
 # shellcheck disable=SC2016
 DISABLED_HOST='
 thinkcentre:jellyfin
+# immich / vaultwarden / vikunja moved thinkcentre -> grandpa 2026-10-22 (his
+# "mv immich and vault and vik"). Same shape as jellyfin above: the compose
+# dirs stay on the ThinkCentre disk (comment out, never delete), this list
+# only stops the returned box from bringing them up again. They are NOT in
+# DISABLED because they are live on grandpa.
+thinkcentre:immich
+thinkcentre:vaultwarden
+thinkcentre:vikunja
 '
 
 have_compose() {

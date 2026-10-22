@@ -1,12 +1,15 @@
 # The fleet's service list, declared ONCE and rendered to an HTML index.
 #
-# RETURNED-BOX CLEANUP 2026-10-22: the ThinkCentre left the fleet, so every
-# row that pointed at 100.88.29.31 is either moved to grandpa (study, home
-# assistant, searxng — the nix-native layer that migrated) or commented out
-# (immich, vaultwarden, vikunja, caddy — compose services that ship back with
-# the box, per comment-out-don't-delete). One table now, headed by grandpa.
-# If any of the commented services gets a decision to migrate, move its row to
-# grandpa rather than reviving the thinkcentre base.
+# RETURNED-BOX CLEANUP 2026-10-22: the ThinkCentre left the fleet. The
+# nix-native layer (study, home assistant, searxng) moved to grandpa the same
+# day; the compose trio that had merely been commented out (immich,
+# vaultwarden, vikunja) was then MOVED too — his order "mv immich and vault
+# and vik and index page chnage it to new stuff also rebuild" — so their rows
+# point at grandpa now and only caddy still has no home. One table, headed by
+# grandpa.
+#
+# immich carried no data ("immich got 0 data" — his word), so its move was
+# config only; vaultwarden and vikunja carried their ./data and ./db dirs.
 #
 # Why this lives here and not on the server: Mugdad's rule, 2026-10-11 —
 # *"i dont want thing that goes after i re install nix ok? this is the main
@@ -72,14 +75,17 @@
       desc = "local home automation — the ac, dashboards, sensors";
       machine = "grandpa";
     }
-    # immich commented out 2026-10-22 — its compose dir + data stayed on the
-    # ThinkCentre's disk and the box went back to its owner (comment-out, never
-    # delete). No grandpa copy exists; a restore needs his word.
-    # {
-    #   name = "immich";
-    #   port = "2283";
-    #   desc = "photos &amp; video backup";
-    # }
+    # immich moved thinkcentre -> grandpa 2026-10-22 with the compose trio
+    # (his "mv immich and vault and vik"). It carried NO data — "immich got 0
+    # data" — so this was a config move: the compose dir + .env were rsynced
+    # and the database/media paths repointed at grandpa's tree. Plain http
+    # :2283, tailnet-reachable like it was on the old box.
+    {
+      name = "immich";
+      port = "2283";
+      desc = "photos &amp; video backup";
+      machine = "grandpa";
+    }
     # jellyfin moved thinkcentre -> grandpa 2026-10-21 (his "mv jellyfin"), the
     # same move metube made the day before. There was nothing to carry: the
     # config was 900K, the cache 12K and /home/mugdad/media was empty (8K) on
@@ -126,32 +132,33 @@
     # but NOT a fresh install, which is the one thing his "the same system
     # comes back" rule is for. Noted, not yet fixed.
     #
-    # COMMENTED OUT 2026-10-22 — the box was returned to its owner: the vault
-    # (and its tailscale serve on :8443) lived on the ThinkCentre and its
-    # compose data stayed on that disk. No grandpa copy exists; restoring it
-    # is his decision.
-    # {
-    #   name = "vaultwarden";
-    #   port = "8082";
-    #   desc = "password manager";
-    #   url = "https://thinkcentre.tailbc99bb.ts.net:8443/";
-    #   note = "tailnet https";
-    # }
+    # MOVED thinkcentre -> grandpa 2026-10-22 with the compose trio. The serve
+    # above was re-created on grandpa too: `tailscale serve --bg --https=8443
+    # http://100.106.116.60:8082`, same port (:443 is free there now, but :8443
+    # was kept so only the hostname in his saved links changes).
+    {
+      name = "vaultwarden";
+      port = "8082";
+      desc = "password manager";
+      url = "https://grandpa.tailbc99bb.ts.net:8443/";
+      note = "tailnet https";
+    }
     # vikunja, added 2026-10-20 with the task store's close (decisions.md row
     # 152). Same shape as vaultwarden: HTTPS-only, because his phone refused
     # cleartext to the tailnet IP ("err cleartext comm to ts ip not permiitted
     # by securtity policy"). Served by tailscale serve on :444, NOT :443 —
     # Caddy holds 0.0.0.0:443 and tailscaled's listener cannot bind over it
     # (row 158).
-    # **COMMENTED OUT 2026-10-22** — same reason as vaultwarden above: the
-    # task store's data lived on the ThinkCentre and the box was returned.
-    # {
-    #   name = "vikunja";
-    #   port = "3456";
-    #   desc = "task store — caldav + web ui, synced from the phone";
-    #   url = "https://thinkcentre.tailbc99bb.ts.net:444/";
-    #   note = "tailnet https";
-    # }
+    # MOVED thinkcentre -> grandpa 2026-10-22 with the same serve shape:
+    # `tailscale serve --bg --https=444 http://100.106.116.60:3456`. The phone's
+    # saved URL changes host only, thinkcentre.* -> grandpa.*.
+    {
+      name = "vikunja";
+      port = "3456";
+      desc = "task store — caldav + web ui, synced from the phone";
+      url = "https://grandpa.tailbc99bb.ts.net:444/";
+      note = "tailnet https";
+    }
     # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
     # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
     # grandpa's services, added the same day gitea died (2026-10-18). Every
@@ -297,7 +304,7 @@ in ''
    hr{border:0;border-top:1px solid #${c.bg2};margin:26px 0}
   </style>
   <h1>mugdad &mdash; servers</h1>
-  <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand, run <b>push-server-index</b> instead.</p>
+  <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand; nginx on grandpa serves this page (a rebuild is the publish).</p>
   <h2>grandpa &mdash; 100.106.116.60</h2>
   <table>
   ${table sorted}
