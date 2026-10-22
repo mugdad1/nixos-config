@@ -2,12 +2,15 @@
 # hosts/thinkcentre/secrets.nix with the service layer, because the ThinkCentre
 # is being returned to its owner.
 #
-# WHAT IS AND IS NOT IN THIS FILE. The secret VALUES are fleet-scope and live
-# in modules/core/monitoring.nix against secrets/fleet.sops.yaml (decisions
-# rows 121–122) — every host already declares `telegram/*`, `filen/*` and
-# `opencode/server_password` there, so this file does NOT touch sops.secrets.
-# All it adds is the two *rendered templates* whose shapes are a property of
-# the units that read them:
+# WHAT IS IN THIS FILE: the sops.secrets declarations for the keys this host
+# renders, plus the *templates* whose shapes are a property of the units that
+# read them. The secret VALUES are ciphertext in secrets/fleet.sops.yaml
+# (fleet-scope, decisions rows 121–122; monitoring.nix declares the `telegram/*`
+# pair from there). The keys below used to be declared in
+# hosts/thinkcentre/secrets.nix — that file is commented out with the rest of
+# the box, so the declarations moved with the templates that consume them
+# (a placeholder errors out at eval until its secret is declared, which is how
+# this was caught: the grandpa rebuild failed on exactly that).
 #
 #   opencode-telegram.env   EnvironmentFile for systemd.services.opencode-telegram
 #   filen-sync.env          EnvironmentFile for the filen-sync bisync unit
@@ -33,6 +36,16 @@
     # here for the same reason thinkcentre's file states it, so a reader does
     # not have to go hunting for which module supplies it.
     defaultSopsFile = ../../secrets/fleet.sops.yaml;
+
+    # Declared next to the templates that read them — `= {}` because the
+    # values live in the encrypted file; this only says "decrypt this key for
+    # this host". Moved here from hosts/thinkcentre/secrets.nix (now inert).
+    secrets = {
+      "opencode/server_password" = {}; # opencode-telegram.env
+      "filen/email" = {}; # filen-sync.env
+      "filen/password" = {}; # filen-sync.env
+      "searx/secret_key" = {}; # searxng.env, added 2026-10-22
+    };
 
     # Where the private key lives ON THE SERVER. Deliberately NOT
     # ~/.config/sops/age/keys.txt: sops-install-secrets runs early in boot,
