@@ -31,7 +31,7 @@
   services.avahi = {
     enable = true;
     nssmdns4 = true;
-    publish.enable = true;
+    settings.publish."disable-publishing" = false;
   };
 
   # 8123, twice: LAN (setup while at home — his own network, and the first
