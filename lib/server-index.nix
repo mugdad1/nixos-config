@@ -1,4 +1,12 @@
-# The ThinkCentre's service list, declared ONCE and rendered to an HTML index.
+# The fleet's service list, declared ONCE and rendered to an HTML index.
+#
+# RETURNED-BOX CLEANUP 2026-10-22: the ThinkCentre left the fleet, so every
+# row that pointed at 100.88.29.31 is either moved to grandpa (study, home
+# assistant, searxng — the nix-native layer that migrated) or commented out
+# (immich, vaultwarden, vikunja, caddy — compose services that ship back with
+# the box, per comment-out-don't-delete). One table now, headed by grandpa.
+# If any of the commented services gets a decision to migrate, move its row to
+# grandpa rather than reviving the thinkcentre base.
 #
 # Why this lives here and not on the server: Mugdad's rule, 2026-10-11 —
 # *"i dont want thing that goes after i re install nix ok? this is the main
@@ -23,16 +31,14 @@
 # sound tidier than the record.
 {
   g ? import ./gruvbox.nix,
-  # The tailscale IP moved 100.124.75.45 -> 100.88.29.31 on 2026-10-15, the
-  # day the ThinkCentre was reinstalled and re-registered on the tailnet. This
-  # is the ONE place the address is a default rather than a literal — `row`
-  # below builds every link from it — so it must match what `tailscale ip -4`
-  # reports on the box, not what an older page remembers.
-  host ? "http://100.88.29.31",
-  # grandpa's tailnet IP — the second table's link base, same reasoning as
-  # `host` above (must match `tailscale ip -4` on grandpa, 100.106.116.60
-  # since it was registered 2026-10-16). His ask 2026-10-19: "in caddy can we
-  # have 2 things / 1 for thinkcentre and 1 for grandpa".
+  # DEFAULT IS GRANDPA SINCE 2026-10-22 — the ThinkCentre was returned to its
+  # owner, so 100.88.29.31 has no box behind it. `row` below builds every
+  # link from this, so it must match what `tailscale ip -4` reports on
+  # grandpa (100.106.116.60 since it was registered 2026-10-16), not what an
+  # older page remembers.
+  host ? "http://100.106.116.60",
+  # `grandpa` is kept as the explicit name for the same base — `row` below
+  # switches link bases by machine, and both point at grandpa now.
   grandpa ? "http://100.106.116.60",
 }: let
   inherit (builtins) concatStringsSep filter map;
@@ -44,27 +50,36 @@
 
   # name · port · what it is. `study` first on his word — *"its the most
   # importnt url btw"*.
+  #
+  # study moved thinkcentre -> grandpa 2026-10-22 with the whole service
+  # layer (the box is back with its owner) — the systemd unit is declared in
+  # hosts/grandpa/services.nix now.
   services = [
     {
       name = "study";
       port = "8091";
       desc = "the study PWA — chapters, glossary, day entries";
       first = true;
+      machine = "grandpa";
     }
     # home assistant, added 2026-10-17 with the AC project's close
-    # (decisions.md row 114) — HA + ESPHome run natively on this box,
-    # firewall :8123 on LAN + tailnet, so the tailnet link answers
-    # from every host on the network.
+    # (decisions.md row 114); moved thinkcentre -> grandpa 2026-10-22 with the
+    # rest of the nix-native service layer — hosts/grandpa/home-assistant.nix,
+    # firewall :8123 on LAN + tailnet.
     {
       name = "home assistant";
       port = "8123";
       desc = "local home automation — the ac, dashboards, sensors";
+      machine = "grandpa";
     }
-    {
-      name = "immich";
-      port = "2283";
-      desc = "photos &amp; video backup";
-    }
+    # immich commented out 2026-10-22 — its compose dir + data stayed on the
+    # ThinkCentre's disk and the box went back to its owner (comment-out, never
+    # delete). No grandpa copy exists; a restore needs his word.
+    # {
+    #   name = "immich";
+    #   port = "2283";
+    #   desc = "photos &amp; video backup";
+    # }
     # jellyfin moved thinkcentre -> grandpa 2026-10-21 (his "mv jellyfin"), the
     # same move metube made the day before. There was nothing to carry: the
     # config was 900K, the cache 12K and /home/mugdad/media was empty (8K) on
@@ -110,32 +125,38 @@
     # lives in tailscaled's state, not in this repo — so it survives reboots
     # but NOT a fresh install, which is the one thing his "the same system
     # comes back" rule is for. Noted, not yet fixed.
-    {
-      name = "vaultwarden";
-      port = "8082";
-      desc = "password manager";
-      url = "https://thinkcentre.tailbc99bb.ts.net:8443/";
-      note = "tailnet https";
-    }
+    #
+    # COMMENTED OUT 2026-10-22 — the box was returned to its owner: the vault
+    # (and its tailscale serve on :8443) lived on the ThinkCentre and its
+    # compose data stayed on that disk. No grandpa copy exists; restoring it
+    # is his decision.
+    # {
+    #   name = "vaultwarden";
+    #   port = "8082";
+    #   desc = "password manager";
+    #   url = "https://thinkcentre.tailbc99bb.ts.net:8443/";
+    #   note = "tailnet https";
+    # }
     # vikunja, added 2026-10-20 with the task store's close (decisions.md row
     # 152). Same shape as vaultwarden: HTTPS-only, because his phone refused
     # cleartext to the tailnet IP ("err cleartext comm to ts ip not permiitted
     # by securtity policy"). Served by tailscale serve on :444, NOT :443 —
     # Caddy holds 0.0.0.0:443 and tailscaled's listener cannot bind over it
     # (row 158).
-    {
-      name = "vikunja";
-      port = "3456";
-      desc = "task store — caldav + web ui, synced from the phone";
-      url = "https://thinkcentre.tailbc99bb.ts.net:444/";
-      note = "tailnet https";
-    }
+    # **COMMENTED OUT 2026-10-22** — same reason as vaultwarden above: the
+    # task store's data lived on the ThinkCentre and the box was returned.
+    # {
+    #   name = "vikunja";
+    #   port = "3456";
+    #   desc = "task store — caldav + web ui, synced from the phone";
+    #   url = "https://thinkcentre.tailbc99bb.ts.net:444/";
+    #   note = "tailnet https";
+    # }
     # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
     # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
-    # grandpa's services, added the same day gitea died (2026-10-18). The
-    # row generator defaults to thinkcentre's host, so both carry an explicit
-    # `url` — grandpa's tailnet IP 100.106.116.60, which answers from anywhere
-    # tailscale is up, same reason the HA link works.
+    # grandpa's services, added the same day gitea died (2026-10-18). Every
+    # row now carries `machine = "grandpa"` or is commented out — the
+    # generator's default base is grandpa's tailnet IP since 2026-10-22.
     {
       name = "forgejo";
       port = "3000";
@@ -200,15 +221,18 @@
     # exact drift this file exists to prevent, recurring a day after the
     # uptime-kuma entry was fixed in f1ebc12. Verified: every other port in
     # this list answers.
-    {
-      name = "glances";
-      port = "61208";
-      desc = "cpu / temp / mem / disk, live";
-    }
+    # The thinkcentre's glances container row is gone with the box 2026-10-22;
+    # its grandpa twin (above) is the only glances entry now.
+    # searxng moved thinkcentre -> grandpa 2026-10-22 — NIX-NATIVE now, not a
+    # container: hosts/grandpa/searxng.nix (`services.searx`), port 8888,
+    # tailscale-only bind. The old compose dir stayed on the ThinkCentre's
+    # disk and ships with the box. This is the fleet's web-search endpoint
+    # (AGENTS.md § Conventions).
     {
       name = "searxng";
       port = "8888";
       desc = "private metasearch, json api enabled — zen's search engine";
+      machine = "grandpa";
     }
     # metube moved thinkcentre -> grandpa 2026-10-20 (his "mv metube to
     # grandpa"). Downloads go to grandpa's ~/media/videos now, not the
@@ -221,28 +245,32 @@
       desc = "yt-dlp web ui, downloads to the box";
       machine = "grandpa";
     }
-    # gitea mirror dropped 2026-10-18 — took it down with gitea ("it mirror cuz
-    # its bad"). Its db held only job configs, no data of its own.
-    {
-      name = "caddy";
-      port = "80";
-      desc = "reverse proxy — and the host of this page";
-    }
+    # caddy commented out 2026-10-22 — it reverse-proxied on the ThinkCentre
+    # and was this page's host there; the box left the fleet, so :80 has
+    # nothing behind it any more. The index page itself now ships wherever
+    # grandpa serves one, if a server for it is ever decided.
+    # {
+    #   name = "caddy";
+    #   port = "80";
+    #   desc = "reverse proxy — and the host of this page";
+    # }
   ];
 
   # `first = true` entries are hoisted to the top, the rest keep their order.
-  # The split is by `machine` (default = thinkcentre): two tables on one page —
-  # his ask 2026-10-19 ("1 for thinkcentre and 1 for grandpa").
+  # Since 2026-10-22 every live row is grandpa's — the ThinkCentre left the
+  # fleet — so one table serves the page; `isG`/`machine` stay in the shape
+  # of the data so a future second box just sets `machine` again.
   isG = s: (s.machine or "") == "grandpa";
   tcServices = filter (s: !(isG s)) services;
   gpServices = filter isG services;
   sorted =
-    (filter (s: s.first or false) tcServices)
+    gpServices
+    ++ (filter (s: s.first or false) tcServices)
     ++ (filter (s: !(s.first or false)) tcServices);
 
   # `url` wins over the generated host:port when an entry needs an absolute
-  # link (vaultwarden → tailscale HTTPS, see its entry above). Otherwise the
-  # link base follows the entry's machine — grandpa's rows get grandpa's IP.
+  # link. Otherwise the link base follows the entry's machine — everything
+  # resolves against grandpa's tailnet IP by default now.
   row = s: let
     href =
       s.url
@@ -270,15 +298,11 @@ in ''
   </style>
   <h1>mugdad &mdash; servers</h1>
   <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand, run <b>push-server-index</b> instead.</p>
-  <h2>thinkcentre &mdash; 100.88.29.31</h2>
+  <h2>grandpa &mdash; 100.106.116.60</h2>
   <table>
   ${table sorted}
   </table>
-  <h2>grandpa &mdash; 100.106.116.60</h2>
-  <table>
-  ${table gpServices}
-  </table>
   <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
   <hr>
-  <p class="m">blocky is dns on <b>127.0.0.1:53</b>, loopback only &mdash; never web-published.</p>
+  <p class="m">blocky is dns on <b>127.0.0.1:53</b> on each box — open to the tailnet on grandpa since 2026-10-22, never web-published.</p>
 ''

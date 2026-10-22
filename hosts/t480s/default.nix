@@ -41,9 +41,11 @@
   # as a note only, so nobody re-adds it wondering. It was dropped because its
   # sync bound to whatever the laptop happened to be on and only lived while
   # the laptop was up — which is precisely what the self-hosted task store
-  # replaces: Vikunja on the ThinkCentre (tailscale only,
-  # http://100.88.29.31:3456/), Tasks.org on the phone, web UI on this
-  # machine (modules/home/apps/tasks.nix).
+  # replaces: Vikunja, which lived on the ThinkCentre (tailscale only,
+  # http://100.88.29.31:3456/) until that box was returned 2026-10-22; the
+  # task store is offline pending his word on a grandpa home. Tasks.org on
+  # the phone, web UI on this machine (modules/home/apps/tasks.nix — the
+  # desktop entry is commented out for the same reason).
   environment.systemPackages = [
     pkgs.powertop
     pkgs.tmux
@@ -102,42 +104,48 @@
   # Runs as `username`, not root: rsync needs the SSH key at ~/.ssh, which is
   # root's would not be. HOME is set explicitly because a system unit gets no
   # login environment and ssh would otherwise look in /root.
-  systemd.services.push-server-index = {
-    description = "Ship the rendered service index to Caddy's docroot";
-    wants = ["network-online.target"];
-    # Ordering only, not requires: if tailscaled is the thing that is broken
-    # the push should still fail on its own merits, not be silently skipped.
-    after = ["network-online.target" "tailscaled.service"];
-    wantedBy = ["multi-user.target"];
-    restartTriggers = [(import ../../lib/server-index.nix {})];
-    path = with pkgs; [rsync openssh curl coreutils gnugrep];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = username;
-      Environment = ["HOME=/home/${username}"];
-      ExecStart = "${pkgs.writeShellScript "push-server-index" ''
-        set -eu
-        # -L --inplace are load-bearing, and the comment belongs to
-        # modules/home/apps/homepage.nix — read it there rather than duplicating
-        # the reasoning: Caddy has this file bind-mounted read-only, so only a
-        # write-through of the existing inode is picked up without a restart.
-        target=${username}@100.88.29.31:projects/servers/caddy/index.html
-        src=${pkgs.writeText "server-index.html" (import ../../lib/server-index.nix {})}
-        # Retried because tailscaled can be up-but-not-yet-connected for a few
-        # seconds after a cold boot. One attempt would leave a permanently red
-        # unit on a normal boot, and a monitor that cries wolf gets ignored.
-        i=0
-        until rsync -L --inplace "$src" "$target"; do
-          i=$((i + 1))
-          if [ "$i" -ge 6 ]; then
-            echo "$(date '+%F %T') push-server-index: failed after 6 attempts" >&2
-            exit 1
-          fi
-          sleep 10
-        done
-        echo "$(date '+%F %T') push-server-index: shipped, links served: $(curl -s --max-time 8 http://100.88.29.31/ | grep -c 'href=')"
-      ''}";
-    };
-  };
+  # push-server-index UNIT DISABLED 2026-10-22 — its target was the
+  # ThinkCentre's Caddy docroot and that box was returned to its owner, so
+  # every boot would run 6 rsync attempts against an address with no machine
+  # behind it and end red. The rendered page still exists locally
+  # (~/.local/share/mugdad/server-index.html via modules/home/apps/homepage.nix).
+  # Uncomment the whole block when a web host for the index is decided.
+  # systemd.services.push-server-index = {
+  #   description = "Ship the rendered service index to Caddy's docroot";
+  #   wants = ["network-online.target"];
+  #   # Ordering only, not requires: if tailscaled is the thing that is broken
+  #   # the push should still fail on its own merits, not be silently skipped.
+  #   after = ["network-online.target" "tailscaled.service"];
+  #   wantedBy = ["multi-user.target"];
+  #   restartTriggers = [(import ../../lib/server-index.nix {})];
+  #   path = with pkgs; [rsync openssh curl coreutils gnugrep];
+  #   serviceConfig = {
+  #     Type = "oneshot";
+  #     RemainAfterExit = true;
+  #     User = username;
+  #     Environment = ["HOME=/home/${username}"];
+  #     ExecStart = "${pkgs.writeShellScript "push-server-index" ''
+  #       set -eu
+  #       # -L --inplace are load-bearing, and the comment belongs to
+  #       # modules/home/apps/homepage.nix — read it there rather than duplicating
+  #       # the reasoning: Caddy has this file bind-mounted read-only, so only a
+  #       # write-through of the existing inode is picked up without a restart.
+  #       target=${username}@HOST:projects/servers/caddy/index.html
+  #       src=${pkgs.writeText "server-index.html" (import ../../lib/server-index.nix {})}
+  #       # Retried because tailscaled can be up-but-not-yet-connected for a few
+  #       # seconds after a cold boot. One attempt would leave a permanently red
+  #       # unit on a normal boot, and a monitor that cries wolf gets ignored.
+  #       i=0
+  #       until rsync -L --inplace "$src" "$target"; do
+  #         i=$((i + 1))
+  #         if [ "$i" -ge 6 ]; then
+  #           echo "$(date '+%F %T') push-server-index: failed after 6 attempts" >&2
+  #           exit 1
+  #         fi
+  #         sleep 10
+  #       done
+  #       echo "$(date '+%F %T') push-server-index: shipped, links served: $(curl -s --max-time 8 http://HOST/ | grep -c 'href=')"
+  #     ''}";
+  #   };
+  # };
 }

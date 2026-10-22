@@ -35,25 +35,26 @@ in {
         Fingerprinting = true;
       };
 
-      # Caddy's service index on the ThinkCentre (`http://100.88.29.31/`),
-      # not SearXNG — his pick 2026-10-11: links and a search box in one
-      # place doesn't work, because SearXNG's homepage template renders only
-      # a title and the search box (no tile grid; custom shortcuts exist
-      # solely as `!bang` tokens). So: Caddy lists the 15 services as
-      # homepage, SearXNG stays the search engine in the address bar.
-      # Unlocked on purpose: he may repoint it at any time.
-      # Plain http on purpose too: both are http-only containers, so
+      # HOMEPAGE REP pointed 2026-10-22: it was Caddy's service index on the
+      # ThinkCentre (`http://100.88.29.31/`), but that box was returned to its
+      # owner and its Caddy left with it. Grandpa serves nothing on :80, so
+      # the index page (still generated from lib/server-index.nix) has no
+      # host behind it until he decides one — the fallback that is actually
+      # live is SearXNG on grandpa. His pick 2026-10-11 was "links and a
+      # search box in one place doesn't work" (SearXNG's homepage template
+      # renders only a title and the search box, no tile grid), so this is a
+      # stopgap, not the old design returned. Unlocked on purpose: he may
+      # repoint it at any time.
+      # Plain http on purpose too: both are http-only services, so
       # HTTPS-Only mode will show its warning page once per origin until he
       # clicks "Continue with http" — the exception sticks in
       # permissions.sqlite.
-      # IP 100.124.75.45 -> 100.88.29.31 on 2026-10-15, when the ThinkCentre
-      # was reinstalled and tailscale gave it a new address. It is an IP and
-      # not the MagicDNS name on purpose: the laptop refuses MagicDNS
-      # (--accept-dns=false, see modules/core/tailscale.nix), so a tailnet
-      # hostname would only resolve through blocky's conditional — one more
-      # moving part for a page that has to come up with the browser.
+      # It is an IP and not the MagicDNS name on purpose: the laptop refuses
+      # MagicDNS (--accept-dns=false, see modules/core/tailscale.nix), so a
+      # tailnet hostname would only resolve through blocky's conditional —
+      # one more moving part for a page that has to come up with the browser.
       Homepage = {
-        URL = "http://100.88.29.31/";
+        URL = "http://100.106.116.60:8888/";
         StartPage = "homepage";
         Locked = false;
       };
