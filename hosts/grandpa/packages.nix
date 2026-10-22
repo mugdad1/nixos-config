@@ -40,6 +40,23 @@
     # sections that don't apply here — sdb, docker — say so instead of failing)
     (writeShellScriptBin "checkup" (builtins.readFile ../../scripts/checkup.sh))
 
+    # ── `ac` — one command for the AC (his standing ask, decisions row 164) ──
+    # writeShellApplication, NOT writeShellScriptBin, for the two reasons row 164
+    # chose it: runtimeInputs pins curl/python3 so `ac` never depends on what
+    # happens to be on $PATH, and shellcheck runs as a build gate so a broken
+    # script fails the build instead of failing at 1am when he types `ac on`.
+    #
+    # It was wired into hosts/thinkcentre/packages.nix (row 164) — that host was
+    # deleted on 2026-10-22 (row 193), and the declaration went with it, leaving
+    # `ac` off PATH entirely with only an unreferenced script behind it. Re-declared
+    # here (scripts/grandpa/ac.sh, moved out of scripts/thinkcentre/) so the tool
+    # lives on the box whose HA answers it.
+    (writeShellApplication {
+      name = "ac";
+      runtimeInputs = [curl python3];
+      text = builtins.readFile ../../scripts/grandpa/ac.sh;
+    })
+
     # ── asked for by name ────────────────────────────────────────────────────
     gh
     git

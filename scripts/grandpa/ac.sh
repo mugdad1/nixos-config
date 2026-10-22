@@ -31,7 +31,12 @@
 set -euo pipefail
 
 TOKEN_FILE="${AC_TOKEN_FILE:-$HOME/.local/state/opencode/ha-token}"
-HA="${AC_HOST:-http://100.88.29.31:8123}"
+# Home Assistant runs on THIS box, so loopback is the endpoint. The default used
+# to be http://100.88.29.31:8123 — the ThinkCentre's tailscale IP, dead since the
+# box was returned to its owner (2026-10-22, decisions row 188), which left every
+# bare `ac` call timing out after 10s. AC_HOST overrides it for pointing at
+# another HA (the laptop reaches grandpa at http://100.106.116.60:8123).
+HA="${AC_HOST:-http://127.0.0.1:8123}"
 
 POWER="switch.bedroom_ac_control_ac"
 SWING="switch.bedroom_ac_control_ac_swing"
