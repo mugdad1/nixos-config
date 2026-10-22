@@ -19,6 +19,43 @@
     export QT_QPA_PLATFORM=wayland
     export NIXOS_OZONE_WL=1
     export ELECTRON_OZONE_PLATFORM_HINT=wayland
+    # GPU mode chosen by `gpu-mode` (hosts/victus/default.nix). The file only
+    # exists on the Victus, so this is a no-op everywhere else. Cards are found
+    # by PCI vendor id (0x8086 Intel, 0x10de NVIDIA) instead of card0/card1:
+    # the numbering depends on module load order, the vendor does not.
+    if [ -r /var/lib/victus/gpu-mode ]; then
+      drm_card_for() {
+        for c in /dev/dri/card[0-9]*; do
+          [ -r "$c/device/vendor" ] || continue
+          if [ "$(cat "$c/device/vendor")" = "$1" ]; then
+            printf '%s\n' "$c"
+            return 0
+          fi
+        done
+        return 1
+      }
+      intel_card="$(drm_card_for 0x8086 || true)"
+      nvidia_card="$(drm_card_for 0x10de || true)"
+      case "$(cat /var/lib/victus/gpu-mode)" in
+        nvidia)
+          # dGPU renders, iGPU stays in the list because the internal panel is
+          # wired to it (no MUX on this chassis).
+          if [ -n "$nvidia_card" ] && [ -n "$intel_card" ]; then
+            export WLR_DRM_DEVICES="$nvidia_card:$intel_card"
+            export GBM_BACKEND=nvidia-drm
+            export __NV_PRIME_RENDER_OFFLOAD=1
+            export __GLX_VENDOR_LIBRARY_NAME=nvidia
+          else
+            echo "gpu-mode: nvidia requested but no NVIDIA DRM card found; staying on Intel" >&2
+          fi
+          ;;
+        intel | hybrid)
+          if [ -n "$intel_card" ]; then
+            export WLR_DRM_DEVICES="$intel_card"
+          fi
+          ;;
+      esac
+    fi
     exec ${pkgs.sway}/bin/sway
   '';
 in {

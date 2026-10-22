@@ -6,23 +6,30 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 ## Hosts
 
-Three hosts, all deploying from `main`:
+Two active hosts (plus the ThinkPad on its way out), all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
-| `t480s`     | Laptop — Sway desktop, home-manager             | ThinkPad T480s      |
-| `thinkcentre` | Headless server — Docker, blocky, tailscale, sshd | ThinkCentre M900x (10LY) |
+| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
 | `grandpa`   | Headless lightweight server — blocky, tailscale, sshd, no Docker | Custom i3-2120 box |
+| `t480s`     | Retired laptop, still declared until the box leaves — Sway desktop, home-manager | ThinkPad T480s |
 
-Installed: `t480s` (NixOS since 2026-10-11), `thinkcentre` (2026-10-13),
-`grandpa` (2026-10-16). The two servers import **no** desktop and **no**
-home-manager stack: their `variables.nix` declares no
+Installed: `t480s` (NixOS since 2026-10-11), `grandpa` (2026-10-16),
+`victus` (2026-10-22, replaces the ThinkPad). The ThinkCentre M900x that used
+to be the second server went back to its owner on 2026-10-22 and its host is
+gone from the flake — git history is the record. The server imports **no**
+desktop and **no** home-manager stack: its `variables.nix` declares no
 `browser`/`terminal`/`launcher`, and `modules/core/user.nix` only imports
 `modules/home` when `variables ? browser`.
 
-`grandpa` is deliberately the smallest of the three — no Docker, no backup
-disk, no sops key. Adding a service there is a decision, not a default; see
+`grandpa` is deliberately the smallest — no Docker, no backup disk, no sops
+key. Adding a service there is a decision, not a default; see
 `hosts/grandpa/default.nix`.
+
+`victus` is the ThinkPad's config minus everything ThinkPad-specific (battery
+threshold unit, TrackPoint quirk, `mem_sleep_default=deep`, throttled/tlp) plus
+the NVIDIA stack: open kernel modules, modesetting, PRIME offload and a
+three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only).
 
 ## Structure
 
@@ -38,29 +45,23 @@ nixos-config/
 │   ├── gruvbox.nix           # Color palette
 │   └── server-index.nix      # One declared list -> rendered service index
 ├── hosts/
+│   ├── victus/
+│   │   ├── default.nix       # Laptop host config: NVIDIA + Intel, gpu-mode switch
+│   │   ├── hardware-configuration.nix   # placeholder until install.sh copies the real one
+│   │   └── variables.nix     # username, timezone, browser/terminal/launcher
 │   ├── t480s/
-│   │   ├── default.nix       # Laptop host config (explicit imports)
+│   │   ├── default.nix       # Retired ThinkPad host config (kept until the box leaves)
 │   │   ├── hardware-configuration.nix   # generated — never hand-edited
 │   │   └── variables.nix     # username, timezone, browser/terminal/launcher
-│   └── thinkcentre/
-│       ├── default.nix       # identity: imports, boot, /srv/backup, time, zram
-│       ├── packages.nix      # environment.systemPackages (~90 lines)
-│       ├── overrides.nix     # every lib.mkForce + the networkd posture
-│       ├── backup.nix        # nightly 03:17 backup timer + clock gate
-│       ├── services.nix      # opencode, telegram bot, study, docker-stack, sv-watch
-│       ├── home-assistant.nix # HA container + the :8123 firewall opening
-│       ├── secrets.nix       # sops-nix wiring (host-specific file)
-│       ├── hardware-configuration.nix
-│       └── variables.nix
 │   └── grandpa/
 │       ├── default.nix       # identity: imports, boot, zram, no docker/no secrets
-│       ├── packages.nix      # headless subset of the ThinkCentre's list
+│       ├── packages.nix      # headless subset of the old ThinkCentre list
 │       ├── overrides.nix     # 32-bit Mesa off, networkd posture, sshd
 │       ├── hardware-configuration.nix
 │       └── variables.nix
 ├── modules/
-│   ├── core/                 # Shared system layer (15 files) — all three hosts
-│   ├── desktop/              # Desktop environment — t480s only
+│   ├── core/                 # Shared system layer (15 files) — every host
+│   ├── desktop/              # Desktop environment — the laptops only
 │   └── home/                 # Home-manager stack — only where variables declare a desktop
 │       ├── default.nix       # scanPaths + ../../scripts/default.nix
 │       ├── terminal/         # cli, dev, fish, shell, glow, lazyvim + fastfetch/, ghostty/, lazyvim-config/
@@ -86,7 +87,7 @@ build says nothing about a file that was never imported):
    sibling `.nix` files. **Any file created under `hosts/<name>/` must be named
    in the `imports` list of that directory's `default.nix`**, or it is dead
    weight. This cost a full build cycle once (see the comment above the
-   imports in `hosts/thinkcentre/default.nix`). Verification: probe
+   imports in `hosts/grandpa/default.nix`). Verification: probe
    `config.systemd.services.<name>` — never trust the build result alone.
 
 2. **`modules/{core,desktop,home}/` — `scanPaths`, no list to maintain.**
@@ -100,9 +101,9 @@ Also:
 
 - **`scripts/`** — wrapped one by one in `scripts/default.nix`
   (`writeShellScriptBin` + `builtins.readFile`), so a new script needs an entry
-  there. The ThinkCentre's four scripts are *read* from `hosts/thinkcentre/*.nix`
-  instead (`../../scripts/thinkcentre/…`), because that host has no home-manager
-  and never imports `scripts/default.nix`.
+  there. grandpa *reads* `scripts/thinkcentre/*.sh` from its own host files
+  instead (`../../scripts/thinkcentre/…`), because that host has no
+  home-manager and never imports `scripts/default.nix`.
 - **`assets/`** — raw files referenced by path (`modules/desktop/fonts.nix`,
   `modules/home/apps/xdg.nix`, `install.sh`). Nothing at the repo root is
   referenced by the running system any more.
@@ -116,16 +117,15 @@ mcli rebuild                 # = nh os switch ~/nixos-config
 mcli update                  # nix flake update + rebuild
 
 # Or explicitly:
-sudo nixos-rebuild switch --flake .#t480s
-sudo nixos-rebuild switch --flake .#thinkcentre
+sudo nixos-rebuild switch --flake .#victus
 sudo nixos-rebuild switch --flake .#grandpa
+sudo nixos-rebuild switch --flake .#t480s   # until the ThinkPad leaves
 ```
 
 `mcli` itself is repo-owned (`scripts/mcli.sh`) and installed as a system
-package on **all three** hosts — on `t480s` it also comes through
-`home.packages`, on `thinkcentre` and `grandpa` it is wired in their
-`hosts/<host>/packages.nix` because those hosts deliberately import no
-home-manager stack.
+package on **every** host — on the laptops it also comes through
+`home.packages`, on `grandpa` it is wired in `hosts/grandpa/packages.nix`
+because that host deliberately imports no home-manager stack.
 
 Other `mcli` commands: `diag`, `cleanup`, `trim`.
 
@@ -146,13 +146,15 @@ sudo install -m 600 -o root -g root age-key.txt /var/lib/sops-nix/key.txt
 install -m 600 age-key.txt ~/.config/sops/age/keys.txt
 ```
 
-All three hosts use the same path
+Every host uses the same path
 (`sops.age.keyFile = "/var/lib/sops-nix/key.txt"`, set as a fleet default in
-`modules/core/monitoring.nix` and restated in `hosts/thinkcentre/secrets.nix`);
+`modules/core/monitoring.nix`);
 the reason it is not a home directory is that `sops-install-secrets` runs early
 in boot, before homes are necessarily useful, and a root-owned path under
 `/var/lib` states plainly that this is machine state. **The key was placed on
-`t480s` and `grandpa` on 2026-10-18** — before that only the ThinkCentre had it.
+`t480s` and `grandpa` on 2026-10-18**, and it is the one thing `install.sh`
+cannot fetch for a new host: it looks for `~/age-key.txt` / `./age-key.txt`,
+installs it at that path, and refuses to start the build if neither exists.
 
 **The key is also what turns alerting on**, and since 2026-10-18 that is true
 on every host. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
@@ -185,30 +187,33 @@ nix flake check      # evaluate all outputs
 ```
 
 `install.sh` is a whiptail-guided installer for a fresh machine. It detects the
-host from DMI (`product_name`/`product_family` — the ThinkCentre reports only
-`10LYS02F00` in `product_name`), rewrites `username` in
-`hosts/<host>/variables.nix`, copies `/etc/nixos/hardware-configuration.nix`
-into the host directory, links `assets/wallpapers/wallpaper.png` into
-`~/Pictures/wallpapers/`, then runs `nixos-rebuild switch --flake .#<host>`.
-Regenerate `hardware-configuration.nix` on the target box at install time and
-diff — never hand-write it. GPU is fixed to Intel in `hosts/t480s/default.nix`
-and is not templated.
+host from DMI (`product_name`/`product_family`: `victus`/`HP` → `victus`,
+`thinkpad`/`t480s`/`20L8` → `t480s`, anything else → `grandpa`), rewrites
+`username` in `hosts/<host>/variables.nix`, installs the sops age key from
+`age-key.txt` if it is lying around, copies
+`/etc/nixos/hardware-configuration.nix` into the host directory, links
+`assets/wallpapers/wallpaper.png` into `~/Pictures/wallpapers/`, then runs
+`nixos-rebuild switch --flake .#<host>`. Regenerate
+`hardware-configuration.nix` on the target box at install time and diff — never
+hand-write it. `hosts/victus/` ships a placeholder that install.sh overwrites.
+GPU is fixed per host, not templated: Intel on `t480s`, Intel + NVIDIA on
+`victus`.
 
 ## Features
 
-- **Three hosts from one flake**, desktop opt-in per host
-- **Home Manager** for user packages and dotfiles (laptop only)
+- **Two active hosts from one flake** (`grandpa`, `victus`), plus the retiring
+  `t480s`; desktop opt-in per host
+- **Home Manager** for user packages and dotfiles (laptops only)
+- **Intel + NVIDIA hybrid** on `victus` — open modules, PRIME offload, and
+  `gpu-mode intel|hybrid|nvidia` to switch what renders
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
 - **Gruvbox** theme throughout
 - **Tailscale** tailnet, with MagicDNS explicitly refused (`--accept-dns=false`)
 - **Blocky** as the local DNS resolver — `127.0.0.1:53`, upstreams raced in
-  parallel. On the ThinkCentre only the two encrypted upstreams are shipped
-  (`overrides.nix` forces the laptop's work resolvers out); on `t480s` the work
-  resolvers race too. With Blocky on, systemd-resolved stays off and
+  parallel (NextDNS DoT + AdGuard DoQ + the work resolvers, which simply lose
+  the race at home). With Blocky on, systemd-resolved stays off and
   `/etc/resolv.conf` is a static `nameserver 127.0.0.1`. Tailnet names resolve
   via a Blocky `conditional` to MagicDNS `100.100.100.100`.
-- **Nightly 03:17 backup** on the ThinkCentre (`backup.nix` + a bounded clock
-  gate — the box has no CMOS battery, so a cold boot can start in 2015)
 - **Security hardening** — kernel sysctl, AppArmor, coredumps disabled
 - **sops-nix** secrets, encrypted at rest in a public repo
 
@@ -216,29 +221,29 @@ and is not templated.
 
 Worth knowing so they are not mistaken for oversights:
 
-- **`t480s` is not a server, but it does answer ssh** — `modules/core/sshd.nix`
-  is shared, so **all three hosts** run sshd with `:22` open on every interface
-  (changed 2026-10-13 on his word, *"allow ssh like normally, in lan, in
-  both"*). Password auth is on since the same day; root stays locked out and
-  `AllowUsers` is his account only. The firewall is enabled and the shared core
-  opens **no** TCP port except `22` — **corrected 2026-10-18:** this section
-  used to claim `22` was the only opened TCP port "in the whole flake", which
-  stopped being true when Home Assistant landed: `hosts/thinkcentre/
-  home-assistant.nix` additionally opens **`8123`** on `tailscale0` and on the
-  LAN. Tailscale opens UDP `41641` (`modules/core/tailscale.nix`,
-  `openFirewall = true`).
-- **No swap partition on any host** — `zramSwap` (RAM-backed, lz4) covers it:
-  `modules/desktop/services.nix` for `t480s`, `hosts/thinkcentre/default.nix`
-  and `hosts/grandpa/default.nix` for the servers.
-- **`thinkcentre`: no NetworkManager, iwd or ModemManager** — wired-only, DHCP
-  via systemd-networkd (`hosts/thinkcentre/overrides.nix`).
-- **No btrfs anywhere** — all three roots are ext4, so nothing enables
-  `services.btrfs.autoScrub`; the `mkForce false` lines in the two server
-  overrides are guards, not host fixes (`t480s` is ext4 too — see the note in
-  `hosts/thinkcentre/overrides.nix`).
-- **`thinkcentre`: no 32-bit Mesa, no `mandb`** — the shared
-  core enables/assumes them for the laptop; the host forces each off, because
-  a 32-bit stack has nothing to act on there.
+- **Every host answers ssh** — `modules/core/sshd.nix` is shared, so all of
+  them run sshd with `:22` open on every interface (changed 2026-10-13 on his
+  word, *"allow ssh like normally, in lan, in both"*). Password auth is on
+  since the same day; root stays locked out and `AllowUsers` is his account
+  only. The firewall is enabled and the shared core opens **no** TCP port
+  except `22`; Tailscale opens UDP `41641` (`modules/core/tailscale.nix`,
+  `openFirewall = true`). Home Assistant on grandpa opens `8123` on
+  `tailscale0` and on the LAN (`hosts/grandpa/home-assistant.nix`).
+- **No swap partition on any host** — `zramSwap` (RAM-backed, zstd) covers it:
+  `modules/desktop/services.nix` for the laptops, `hosts/grandpa/default.nix`
+  for the server.
+- **`grandpa`: no NetworkManager, iwd or ModemManager** — wired-only, DHCP via
+  systemd-networkd (`hosts/grandpa/overrides.nix`).
+- **No btrfs anywhere** — every root is ext4, so nothing enables
+  `services.btrfs.autoScrub`; the `mkForce false` lines in grandpa's overrides
+  are guards, not host fixes.
+- **`grandpa`: no 32-bit Mesa, no `mandb`** — the shared core enables/assumes
+  them for the laptops; the host forces each off, because a 32-bit stack has
+  nothing to act on there.
+- **`victus`: no MUX, no vendor tool** — the internal panel is wired to the
+  Intel iGPU, so `gpu-mode nvidia` makes the RTX 3050 render but the iGPU still
+  scans the panel out. The three modes are described at the top of
+  `hosts/victus/default.nix`.
 
 ## History
 
@@ -249,6 +254,13 @@ from Void + runit on 2026-10-13, with `modules/core` decoupled from the
 desktop first (2026-10-12) so a headless host could import it. **A third host
 joined on 2026-10-16: `grandpa`** (i3-2120, headless, core set only — no
 Docker, no secrets, no backup), installed and verified headless the next day.
+
+**2026-10-22: the fleet shrank back to two and changed laptops.** The
+ThinkCentre went back to its owner, so `hosts/thinkcentre/` was deleted and its
+services moved to grandpa. The ThinkPad is retiring; **`victus`** (HP Victus 15,
+i5-12th-gen H + RTX 3050) is the new daily laptop and takes over the desktop
+role, with the NVIDIA stack and the three-way GPU switch described above. The
+`t480s` host stays declared until the box actually leaves.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,

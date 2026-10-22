@@ -38,24 +38,23 @@ fi
 #--- Confirm ---#
 
 #--- Detect host + GPU ---#
-# product_name alone is NOT enough on the ThinkCentre: it reports 10LYS02F00
-# there — a bare machine-type string with no product name in it — so the old
-# three-way match below could never fire and install.sh aborted with
-# "Could not detect host!". product_family carries the real name
-# ("ThinkCentre M900x"); fall back to the 10LY machine type if family is blank.
+# product_name alone is NOT enough on every box: the returned ThinkCentre
+# reported 10LYS02F00 there, a bare machine-type string, so product_family is
+# consulted too. The Victus reports "Victus by HP 15-fa1xxx" in product_name
+# and sometimes "Victus" in product_family; either match is enough.
 DMI_NAME="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
 DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 
 if grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
     HOST="t480s"
     GPU="intel"
-elif grep -qi 'thinkcentre' <<<"$DMI_FAMILY" || grep -qi '^10LY' <<<"$DMI_NAME"; then
-    HOST="thinkcentre"
-    GPU="intel"
+elif grep -qi 'victus' <<<"$DMI_NAME$DMI_FAMILY"; then
+    HOST="victus"
+    GPU="nvidia"
 else
-    # His call, 2026-10-16: "if thinkcenter or thinkpad else grandpa". Three
-    # boxes in this house — if the DMI is neither of the other two, it IS
-    # grandpa. No BIOS string to get wrong, nothing to ask.
+    # His call, 2026-10-16: "if thinkcenter or thinkpad else grandpa". With the
+    # ThinkCentre gone (2026-10-22) this fallback is the only other box in the
+    # house, so if the DMI is neither the ThinkPad nor the Victus it IS grandpa.
     HOST="grandpa"
     # No GPU. The box is headless and its GeForce GT 210 has no supported
     # driver left in nixpkgs (340.x is gone), so the card is blacklisted
@@ -88,6 +87,30 @@ sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${H
 echo -e "${INFO}Preparing environment"
 mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
 ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
+
+#--- sops age key ---#
+# Every host declares the fleet Telegram secrets (modules/core/monitoring.nix),
+# so the first switch decrypts them. Without the private key, activation fails
+# part-way through a fresh install, which is the worst possible moment to find
+# out. Look for the key beside the installer or in $HOME and install it; if it
+# is nowhere, stop before building a system that cannot activate.
+if [ ! -f /var/lib/sops-nix/key.txt ]; then
+    KEY_SRC=""
+    for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
+        if [ -f "$candidate" ]; then
+            KEY_SRC="$candidate"
+            break
+        fi
+    done
+    if [ -n "$KEY_SRC" ]; then
+        echo -e "${INFO}Installing sops age key from ${KEY_SRC}"
+        sudo install -D -m 600 -o root -g root "$KEY_SRC" /var/lib/sops-nix/key.txt
+    else
+        echo -e "${ERROR}No sops age key found."
+        echo -e "${INFO}Put it at /var/lib/sops-nix/key.txt (or ~/age-key.txt) and re-run; see README, 'sops secrets'."
+        exit 1
+    fi
+fi
 
 #--- Hardware config ---#
 

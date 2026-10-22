@@ -107,7 +107,16 @@
     };
 
     nixosConfigurations = {
+      # RETIRED-OUT, still buildable on purpose: the ThinkPad is still in his
+      # hands for a few more days (his call, 2026-10-22: "keep until the box
+      # leaves"). Victus replaces it as the laptop; delete this line and
+      # hosts/t480s/ the day it is gone.
       t480s = mkHost "t480s";
+
+      # HP Victus 15 — i5-12th-gen H + RTX 3050 Laptop, the new daily laptop.
+      # Created 2026-10-22. hardware-configuration.nix in the repo is a
+      # placeholder until install.sh copies the generated one at install time.
+      victus = mkHost "victus";
       # Lenovo ThinkCentre M900x (10LY) — REMOVED 2026-10-22. It was the fleet's
       # first NixOS server after the Void migration, but it went back to its
       # owner (his "rm thinkcentre host"), so hosts/thinkcentre/ is gone and
