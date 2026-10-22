@@ -51,7 +51,6 @@ DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 gpu_for() {
     case "$1" in
         victus) echo "nvidia" ;;
-        t480s) echo "intel" ;;
         *) echo "none" ;;
     esac
 }
@@ -60,8 +59,13 @@ if [ -n "${HOST:-}" ]; then
     GPU="$(gpu_for "$HOST")"
     echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
 elif grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
-    HOST="t480s"
-    GPU="intel"
+    # The ThinkPad's host was removed from the flake on 2026-10-22 when the
+    # Victus took over as the laptop ("rm thinkpad"). Refuse loudly instead of
+    # sed-ing a variables.nix that no longer exists.
+    echo -e "${ERROR}This is the retired ThinkPad t480s."
+    echo "Its configuration was removed from the flake on 2026-10-22."
+    echo "Nothing to install here; reinstall grandpa or victus with HOST=<host>."
+    exit 1
 elif grep -qi 'victus\|hp' <<<"$DMI_NAME$DMI_FAMILY"; then
     HOST="victus"
     GPU="nvidia"

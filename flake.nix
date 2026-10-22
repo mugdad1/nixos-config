@@ -107,12 +107,12 @@
     };
 
     nixosConfigurations = {
-      # RETIRED-OUT, still buildable on purpose: the ThinkPad is still in his
-      # hands for a few more days (his call, 2026-10-22: "keep until the box
-      # leaves"). Victus replaces it as the laptop; delete this line and
-      # hosts/t480s/ the day it is gone.
-      t480s = mkHost "t480s";
-
+      # Lenovo ThinkPad T480s — REMOVED 2026-10-22, the day the Victus arrived
+      # (his "rm thinkpad"). It carried the fleet's daily-laptop role since
+      # 2026-10-11; hosts/t480s/ is deleted and the Victus took over. Its home
+      # directory lives on as a backup at grandpa:~/backup/t480s/. Git history
+      # is the record.
+      #
       # HP Victus 15 — i5-12th-gen H + RTX 3050 Laptop, the new daily laptop.
       # Created 2026-10-22. hardware-configuration.nix in the repo is a
       # placeholder until install.sh copies the generated one at install time.

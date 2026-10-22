@@ -6,16 +6,15 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 ## Hosts
 
-Two active hosts (plus the ThinkPad on its way out), all deploying from `main`:
+Two active hosts, both deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
 | `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
 | `grandpa`   | Headless lightweight server — blocky, tailscale, sshd, no Docker | Custom i3-2120 box |
-| `t480s`     | Retired laptop, still declared until the box leaves — Sway desktop, home-manager | ThinkPad T480s |
 
-Installed: `t480s` (NixOS since 2026-10-11), `grandpa` (2026-10-16),
-`victus` (2026-10-22, replaces the ThinkPad). The ThinkCentre M900x that used
+Installed: `grandpa` (NixOS since 2026-10-16), `victus` (2026-10-22, took over
+the laptop role from the ThinkPad). The ThinkCentre M900x that used
 to be the second server went back to its owner on 2026-10-22 and its host is
 gone from the flake — git history is the record. The server imports **no**
 desktop and **no** home-manager stack: its `variables.nix` declares no
@@ -48,10 +47,6 @@ nixos-config/
 │   ├── victus/
 │   │   ├── default.nix       # Laptop host config: NVIDIA + Intel, gpu-mode switch
 │   │   ├── hardware-configuration.nix   # placeholder until install.sh copies the real one
-│   │   └── variables.nix     # username, timezone, browser/terminal/launcher
-│   ├── t480s/
-│   │   ├── default.nix       # Retired ThinkPad host config (kept until the box leaves)
-│   │   ├── hardware-configuration.nix   # generated — never hand-edited
 │   │   └── variables.nix     # username, timezone, browser/terminal/launcher
 │   └── grandpa/
 │       ├── default.nix       # identity: imports, boot, zram, no docker/no secrets
@@ -119,7 +114,6 @@ mcli update                  # nix flake update + rebuild
 # Or explicitly:
 sudo nixos-rebuild switch --flake .#victus
 sudo nixos-rebuild switch --flake .#grandpa
-sudo nixos-rebuild switch --flake .#t480s   # until the ThinkPad leaves
 ```
 
 `mcli` itself is repo-owned (`scripts/mcli.sh`) and installed as a system
@@ -155,9 +149,13 @@ in boot, before homes are necessarily useful, and a root-owned path under
 `t480s` and `grandpa` on 2026-10-18**, and it is the one thing `install.sh`
 cannot fetch for a new host: it looks for `~/age-key.txt` / `./age-key.txt`,
 installs it at that path, and refuses to start the build if neither exists.
+`victus` is the deliberate exception: it installs with no key, because its
+secrets are gated off by hostname (`sops = lib.mkIf (host != "victus")` in
+`modules/core/monitoring.nix`) so a missing key cannot fail the first switch.
 
 **The key is also what turns alerting on**, and since 2026-10-18 that is true
-on every host. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
+on `grandpa`; `victus` sends no Telegram alerts until the key is placed at
+`/var/lib/sops-nix/key.txt` and that gate is dropped. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
 token from the sops-rendered `/run/secrets/rendered/notify-telegram.env` —
 root:root 0400, because every caller (smartd, sv-watch, `notify-telegram@`) runs
 as root. The token and the template that ships it are declared **fleet-wide in
@@ -188,9 +186,9 @@ nix flake check      # evaluate all outputs
 
 `install.sh` is a whiptail-guided installer for a fresh machine. It detects the
 host from DMI (`product_name`/`product_family`: `victus`/`HP` → `victus`,
-`thinkpad`/`t480s`/`20L8` → `t480s`, anything unrecognised → `victus`, since
-that is the only machine in the house being installed; `HOST=grandpa
-./install.sh` overrides), rewrites
+anything unrecognised → `victus`, since that is the only machine in the house
+being installed; `HOST=grandpa ./install.sh` overrides, and a ThinkPad DMI is
+refused outright since that host left the flake on 2026-10-22), rewrites
 `username` in `hosts/<host>/variables.nix`, installs the sops age key from
 `age-key.txt` if it is lying around, copies
 `/etc/nixos/hardware-configuration.nix` into the host directory, links
@@ -198,13 +196,12 @@ that is the only machine in the house being installed; `HOST=grandpa
 `nixos-rebuild switch --flake .#<host>`. Regenerate
 `hardware-configuration.nix` on the target box at install time and diff — never
 hand-write it. `hosts/victus/` ships a placeholder that install.sh overwrites.
-GPU is fixed per host, not templated: Intel on `t480s`, Intel + NVIDIA on
-`victus`.
+GPU is fixed per host, not templated: Intel + NVIDIA on `victus`.
 
 ## Features
 
-- **Two active hosts from one flake** (`grandpa`, `victus`), plus the retiring
-  `t480s`; desktop opt-in per host
+- **Two active hosts from one flake** (`grandpa`, `victus`), desktop opt-in
+  per host
 - **Home Manager** for user packages and dotfiles (laptops only)
 - **Intel + NVIDIA hybrid** on `victus` — open modules, PRIME offload, and
   `gpu-mode intel|hybrid|nvidia` to switch what renders
@@ -259,10 +256,12 @@ Docker, no secrets, no backup), installed and verified headless the next day.
 
 **2026-10-22: the fleet shrank back to two and changed laptops.** The
 ThinkCentre went back to its owner, so `hosts/thinkcentre/` was deleted and its
-services moved to grandpa. The ThinkPad is retiring; **`victus`** (HP Victus 15,
-i5-12th-gen H + RTX 3050) is the new daily laptop and takes over the desktop
-role, with the NVIDIA stack and the three-way GPU switch described above. The
-`t480s` host stays declared until the box actually leaves.
+services moved to grandpa. **`victus`** (HP Victus 15, i5-12th-gen H + RTX
+3050) is the new daily laptop and takes over the desktop role, with the NVIDIA
+stack and the three-way GPU switch described above. The ThinkPad arrived at the
+end of the day and its host was removed at once ("rm thinkpad"), so the flake
+declares exactly two machines; its home directory survives as a backup at
+`grandpa:~/backup/t480s/`.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,
