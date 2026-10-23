@@ -13,8 +13,10 @@
   #
   #   intel  — iGPU renders, Cardwire blocks dGPU access, GPU stays in D3cold.
   #   hybrid — iGPU renders, dGPU available per-app via nvidia-offload.
-  #   nvidia — dGPU renders, iGPU still scans out the internal panel (no MUX,
-  #            so the panel cannot be moved off the iGPU).
+  #   nvidia — iGPU scans out and renders the desktop; dGPU remains available
+  #            for apps via PRIME offload. There is no MUX, and wlroots cannot
+  #            use the dGPU as primary while eDP-1 is wired to the iGPU:
+  #            forcing that gives a black screen, sometimes with only a cursor.
   #
   # The mode is a file under /var/lib/victus read by the sway session wrapper in
   # modules/desktop/services.nix (which sets WLR_DRM_DEVICES before exec sway).
@@ -63,14 +65,15 @@
     echo "GPU mode: $mode — log out and back in to apply."
     echo "  intel  iGPU only, dGPU off"
     echo "  hybrid iGPU now, dGPU on demand: nvidia-offload <command>"
-    echo "  nvidia dGPU renders everything (iGPU still drives the panel)"
+    echo "  nvidia iGPU drives the panel, dGPU available for PRIME offload"
   '';
 
   # Super+P menu, ported from the old ROG power-profile-menu: power-saver =
   # Intel only, balanced = both GPUs, performance = NVIDIA only. There is no
-  # ASUS MUX on this chassis, so "NVIDIA only" means the dGPU renders while the
-  # iGPU keeps scanning out the panel; the renderer change takes effect at the
-  # next login, while Cardwire's block/unblock is applied immediately.
+  # ASUS MUX on this chassis. "NVIDIA only" keeps the iGPU driving the panel
+  # and exposes the dGPU for PRIME offload; a true dGPU scanout is not possible.
+  # The renderer change takes effect at the next login, while Cardwire's
+  # block/unblock is applied immediately.
   gpuMenu = pkgs.writeShellScriptBin "gpu-menu" ''
     set -eu
     export PATH=${lib.makeBinPath [

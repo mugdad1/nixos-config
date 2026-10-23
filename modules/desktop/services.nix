@@ -43,20 +43,28 @@
       nvidia_card="$(drm_card_for 0x10de || true)"
       case "$(cat /var/lib/victus/gpu-mode)" in
         nvidia)
-          # dGPU renders, iGPU stays in the list because the internal panel is
-          # wired to it (no MUX on this chassis).
-          if [ -n "$nvidia_card" ] && [ -n "$intel_card" ]; then
-            export WLR_DRM_DEVICES="$nvidia_card:$intel_card"
-            export GBM_BACKEND=nvidia-drm
-            export __NV_PRIME_RENDER_OFFLOAD=1
-            export __GLX_VENDOR_LIBRARY_NAME=nvidia
-            # Sway detects "nvidia-drm" as an unsupported proprietary driver
-            # and pops a swaynag on every login. This chassis intentionally
-            # keeps the module loaded; opt in instead of dismissing the nag.
-            export SWAY_UNSUPPORTED_GPU=true
+          # The internal panel is wired to the iGPU; this chassis has no MUX.
+          # wlroots cannot use the dGPU as the primary renderer while the
+          # Intel GPU scans out eDP-1: it fails to pick an output format,
+          # disables the panel, and leaves a black screen (sometimes only a
+          # cursor). Keep Intel as the KMS/scanout device and expose the dGPU
+          # for PRIME offload instead. NVIDIA still handles HDMI through the
+          # second card, but it does not render the compositor.
+          if [ -n "$intel_card" ]; then
+            if [ -n "$nvidia_card" ]; then
+              export WLR_DRM_DEVICES="$intel_card:$nvidia_card"
+            else
+              export WLR_DRM_DEVICES="$intel_card"
+            fi
           else
-            echo "gpu-mode: nvidia requested but no NVIDIA DRM card found; staying on Intel" >&2
+            echo "gpu-mode: nvidia requested but no Intel DRM card found; leaving WLR_DRM_DEVICES unset" >&2
           fi
+          export __NV_PRIME_RENDER_OFFLOAD=1
+          export __GLX_VENDOR_LIBRARY_NAME=nvidia
+          # Sway detects "nvidia-drm" as an unsupported proprietary driver
+          # and pops a swaynag on every login. This chassis intentionally
+          # keeps the module loaded; opt in instead of dismissing the nag.
+          export SWAY_UNSUPPORTED_GPU=true
           ;;
         intel)
           if [ -n "$intel_card" ]; then
