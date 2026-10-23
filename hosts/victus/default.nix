@@ -11,18 +11,18 @@
   # HP ships nothing for Linux and this chassis has no MUX, so the switch is
   # built here out of the three things that actually work on Wayland:
   #
-  #   intel  — iGPU renders, nvidia modules unloaded, dGPU powers down.
-  #   hybrid — iGPU renders, dGPU loaded and available per-app via nvidia-offload.
+  #   intel  — iGPU renders, Cardwire blocks dGPU access, GPU stays in D3cold.
+  #   hybrid — iGPU renders, dGPU available per-app via nvidia-offload.
   #   nvidia — dGPU renders, iGPU still scans out the internal panel (no MUX,
   #            so the panel cannot be moved off the iGPU).
   #
   # The mode is a file under /var/lib/victus read by the sway session wrapper in
   # modules/desktop/services.nix (which sets WLR_DRM_DEVICES before exec sway).
-  # Changing it takes effect at the next login; module load/unload happens
-  # immediately so battery draw changes without a reboot.
+  # Cardwire applies the block/unblock immediately; the renderer change takes
+  # effect at the next login.
   gpuMode = pkgs.writeShellScriptBin "gpu-mode" ''
     set -eu
-    export PATH=${lib.makeBinPath [pkgs.kmod pkgs.coreutils]}:$PATH
+    export PATH=${lib.makeBinPath [pkgs.kmod pkgs.coreutils pkgs.cardwire]}:$PATH
     mode="''${1:-}"
     case "$mode" in
       intel|hybrid|nvidia) ;;
@@ -38,19 +38,72 @@
     printf '%s\n' "$mode" > /var/lib/victus/gpu-mode.tmp
     chmod 0644 /var/lib/victus/gpu-mode.tmp
     mv /var/lib/victus/gpu-mode.tmp /var/lib/victus/gpu-mode
+    # Keep the driver loaded in every mode; Cardwire blocks device access at
+    # the syscall level, which is what lets the dGPU reach D3cold without the
+    # fragile modprobe -r that sway/apps used to prevent.
+    modprobe nvidia 2>/dev/null || true
+    modprobe nvidia_uvm 2>/dev/null || true
+    modprobe nvidia_modeset 2>/dev/null || true
+    modprobe nvidia_drm 2>/dev/null || true
+
     case "$mode" in
       intel)
-        # Refuses (cleanly) if something still holds the modules.
-        modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia 2>/dev/null || true
+        if ! cardwire set integrated; then
+          echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
+        fi
         ;;
-      *)
-        modprobe nvidia nvidia_uvm nvidia_modeset nvidia_drm 2>/dev/null || true
+      hybrid | nvidia)
+        if ! cardwire set hybrid; then
+          echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
+        fi
         ;;
     esac
     echo "GPU mode: $mode — log out and back in to apply."
     echo "  intel  iGPU only, dGPU off"
     echo "  hybrid iGPU now, dGPU on demand: nvidia-offload <command>"
     echo "  nvidia dGPU renders everything (iGPU still drives the panel)"
+  '';
+
+  # Super+P menu, ported from the old ROG power-profile-menu: power-saver =
+  # Intel only, balanced = both GPUs, performance = NVIDIA only. There is no
+  # ASUS MUX on this chassis, so "NVIDIA only" means the dGPU renders while the
+  # iGPU keeps scanning out the panel; the renderer change takes effect at the
+  # next login, while Cardwire's block/unblock is applied immediately.
+  gpuMenu = pkgs.writeShellScriptBin "gpu-menu" ''
+    set -eu
+    export PATH=${lib.makeBinPath [
+      gpuMode
+      pkgs.rofi
+      pkgs.libnotify
+      pkgs.power-profiles-daemon
+      pkgs.coreutils
+    ]}:$PATH
+    mode="$(cat /var/lib/victus/gpu-mode 2>/dev/null || echo hybrid)"
+    case "$mode" in
+      intel) selected=0 ;;
+      nvidia) selected=2 ;;
+      *) selected=1 ;;
+    esac
+    intel="<span color='#98971a'>󰾆 </span>Intel only"
+    both="<span color='#d79921'>󰾅 </span>Both (hybrid)"
+    nvidia="<span color='#cc241d'>󰓅 </span>NVIDIA only"
+    chosen="$(printf '%s\n' "$intel" "$both" "$nvidia" | \
+      rofi -dmenu -i -markup-rows -p 'GPU mode' \
+        -theme "$HOME/.config/rofi/powermenu-theme.rasi" \
+        -theme-str 'window {width: 320px;} listview {columns: 1;}' \
+        -selected-row "$selected")" || exit 0
+    case "$chosen" in
+      *Intel*) target=intel; profile=power-saver ;;
+      *Both*) target=hybrid; profile=balanced ;;
+      *NVIDIA*) target=nvidia; profile=performance ;;
+      *) exit 0 ;;
+    esac
+    powerprofilesctl set "$profile" 2>/dev/null || true
+    if out="$(gpu-mode "$target" 2>&1)"; then
+      notify-send -u normal "GPU mode: $target" "Log out and back in to apply."
+    else
+      notify-send -u critical "GPU mode failed" "$out"
+    fi
   '';
 
   # patchelf >= 0.18 relocates the .dynamic section of these non-PIE NVIDIA
@@ -129,42 +182,63 @@ in {
     };
   };
 
-  # The nvidia kernel modules are loaded on demand below instead of via
-  # boot.kernelModules: that option loads them unconditionally, which silently
-  # turned `gpu-mode intel` back into hybrid on every reboot. nixpkgs only adds
-  # them to boot.kernelModules when X is enabled (see
-  # hardware/video/nvidia.nix) and this host is Wayland-only, so this unit is
-  # the only boot-time loader besides `gpu-mode` itself.
-  systemd.services.victus-gpu-modules = {
-    description = "Load NVIDIA modules for the selected gpu-mode";
+  # Cardwire owns dGPU access now. Unlike unloading the modules (which this
+  # chassis made fragile: sway and apps hold /dev/nvidia* and renderD128), it
+  # keeps the driver loaded and blocks opens of the dGPU device nodes with an
+  # eBPF/LSM program. The GPU can then stay in D3cold and nothing can wake it.
+  # It is generic: no ASUS WMI or MUX is involved, and Integrated mode is
+  # supported exactly on laptops like this one where the dGPU is an offload
+  # GPU behind the iGPU.
+  services.cardwired = {
+    enable = true;
+    settings = {
+      auto_apply_gpu_state = true;
+      experimental_nvidia_block = true; # also block /dev/nvidiactl etc.
+      external_display_auto_switch = true; # HDMI is wired to the dGPU
+    };
+  };
+
+  # Cardwire does not unload drivers, so keep the whole stack loaded for it to
+  # see and block. The NVIDIA driver runtime-suspends the GPU to D3cold when
+  # nothing is using it.
+  boot.kernelModules = [
+    "nvidia"
+    "nvidia_uvm"
+    "nvidia_modeset"
+    "nvidia_drm"
+  ];
+
+  # Apply the mode stored in /var/lib/victus/gpu-mode to cardwired at boot.
+  # `gpu-mode` applies it immediately for the running session; this makes the
+  # choice survive a reboot without relying on cardwire's own persistence.
+  systemd.services.victus-gpu-mode = {
+    description = "Apply the saved GPU mode to Cardwire";
     wantedBy = ["multi-user.target"];
-    after = ["systemd-tmpfiles-setup.service"];
+    after = ["cardwired.service"];
+    wants = ["cardwired.service"];
     before = ["greetd.service"];
+    path = with pkgs; [cardwire coreutils];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
     };
+    restartIfChanged = false;
     script = ''
       mode="$(cat /var/lib/victus/gpu-mode 2>/dev/null || echo hybrid)"
-      if [ "$mode" = intel ]; then
-        # In case udev/nvidia-persistenced loaded them before this unit ran.
-        ${pkgs.kmod}/bin/modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia 2>/dev/null || true
-      else
-        ${pkgs.kmod}/bin/modprobe nvidia
-        ${pkgs.kmod}/bin/modprobe nvidia_uvm
-        ${pkgs.kmod}/bin/modprobe nvidia_modeset
-        ${pkgs.kmod}/bin/modprobe nvidia_drm
-      fi
+      case "$mode" in
+        intel) target=integrated ;;
+        hybrid | nvidia) target=hybrid ;;
+        *) target=hybrid ;;
+      esac
+      for _ in 1 2 3 4 5; do
+        if cardwire set "$target"; then
+          exit 0
+        fi
+        sleep 1
+      done
+      echo "victus-gpu-mode: could not set Cardwire mode to $target" >&2
     '';
   };
-
-  # nixpkgs puts nvidia_uvm in boot.kernelModules for the open driver (see
-  # hardware/video/nvidia.nix), and modprobe would pull in the base nvidia
-  # module as a dependency — even in `gpu-mode intel`. systemd-modules-load
-  # probes with the libkmod blacklist applied, so this only suppresses the
-  # boot-time load; `gpu-mode` and the oneshot below still modprobe it
-  # explicitly (explicit modprobe ignores the blacklist).
-  boot.blacklistedKernelModules = ["nvidia_uvm"];
 
   # Generic tuning only. Deliberately NOT carried over from the t480s:
   # mem_sleep_default=deep (Alder Lake uses s2idle), the Elan TrackPoint quirk,
@@ -191,6 +265,7 @@ in {
 
   environment.systemPackages = [
     gpuMode
+    gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
   ];

@@ -58,7 +58,31 @@
             echo "gpu-mode: nvidia requested but no NVIDIA DRM card found; staying on Intel" >&2
           fi
           ;;
-        intel | hybrid)
+        intel)
+          if [ -n "$intel_card" ]; then
+            export WLR_DRM_DEVICES="$intel_card"
+          fi
+          # Hide the dGPU from userspace as well as the kernel. Without this,
+          # glvnd enumerates every EGL vendor and sway/apps open the NVIDIA
+          # render node even though WLR_DRM_DEVICES points at the Intel card,
+          # which keeps the modules pinned and the GPU wakeable.
+          mesa_egl=/run/opengl-driver/share/glvnd/egl_vendor.d/50_mesa.json
+          intel_vk=/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json
+          if [ -r "$mesa_egl" ]; then
+            export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa_egl"
+          fi
+          if [ -r "$intel_vk" ]; then
+            # VK_ICD_FILENAMES is the old name; newer loaders use VK_DRIVER_FILES.
+            export VK_DRIVER_FILES="$intel_vk"
+            export VK_ICD_FILENAMES="$intel_vk"
+          fi
+          export __GLX_VENDOR_LIBRARY_NAME=mesa
+          unset __NV_PRIME_RENDER_OFFLOAD __NV_PRIME_RENDER_OFFLOAD_PROVIDER __VK_LAYER_NV_optimus
+          ;;
+        hybrid)
+          # dGPU modules stay loaded, but nothing should open them by default.
+          # `nvidia-offload` sets the PRIME variables for the one command that
+          # asks for the dGPU.
           if [ -n "$intel_card" ]; then
             export WLR_DRM_DEVICES="$intel_card"
           fi
