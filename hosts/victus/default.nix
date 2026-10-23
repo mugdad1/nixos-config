@@ -129,6 +129,7 @@
   });
 in {
   imports = [
+    ./battery-charge-limit.nix
     ./hardware-configuration.nix
     ../../modules/core
     ../../modules/desktop
@@ -271,6 +272,15 @@ in {
   services.throttled.enable = false;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
+
+  # Use HP's own ACPI charge-mode methods instead of TLP thresholds.  The test
+  # on board 8A4F stopped charging at 89% (SBCO 0x05 -> GBCO 0x04) and resumed
+  # it with SBCO 0x00.  The daemon is in battery-charge-limit.nix.
+  services.victus.batteryChargeLimit = {
+    enable = true;
+    stopAt = 80;
+    resumeAt = 77;
+  };
 
   environment.systemPackages = [
     gpuMode
