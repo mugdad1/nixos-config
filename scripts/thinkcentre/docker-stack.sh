@@ -80,12 +80,12 @@ glances
 # tonight. `docker compose down` alone is NOT a removal on this box; this
 # list is what makes it stick.
 #
-# metube moved thinkcentre -> grandpa; it is live there (100.106.116.60:8081,
-# its own docker-stack brings it up). Listed here so it is not also run here.
+# metube moved thinkcentre -> grandpa and is live there (100.106.116.60:8081).
+# Do NOT add it to DISABLED: this list is shared by every host that reads this
+# script, so a global hold would disable metube on the very box that runs it.
 stirling-pdf
 paperless
 syncthing
-metube
 # ─── ntfy: parked here 2026-10-21 ────────────────────────────────────────────
 # His 2026-10-12 `just rm notify` (wiki row 75) removed the CONTAINER but not
 # ~/projects/servers/ntfy/docker-compose.yml — correct under comment-out,
