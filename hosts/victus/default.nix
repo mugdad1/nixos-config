@@ -175,6 +175,14 @@ in {
     "psi=1"
     "rootflags=noatime"
     "fbcon=nodefer"
+    # USB enumeration on the Type-C port (bus 3 port 1) fails with
+    # "device descriptor read/64, error -71" for some low-speed devices.
+    # Give enumeration more time and try both init schemes; also keep
+    # autosuspend off while probing.
+    "usbcore.old_scheme_first=1"
+    "usbcore.use_both_schemes=1"
+    "usbcore.initial_descriptor_timeout=10000"
+    "usbcore.autosuspend=-1"
   ];
 
   services.throttled.enable = false;
