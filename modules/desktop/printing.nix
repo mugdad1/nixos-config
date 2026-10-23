@@ -20,4 +20,12 @@
   # (including USB), and the ipp-usb NixOS module still sets the obsolete
   # `services.avahi.publish.*` options in 26.11, which produced two evaluation
   # warnings. `lpinfo -v` still lists `direct hp`, so HP printing is unchanged.
+  #
+  # ipp-usb also enabled SANE by default. Keep scanner support explicitly so
+  # removing ipp-usb does not silently take the scanner away from an HP
+  # all-in-one; sane-airscan covers network scanners via eSCL/WSD.
+  hardware.sane = {
+    enable = true;
+    extraBackends = [pkgs.sane-airscan];
+  };
 }
