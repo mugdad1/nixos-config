@@ -15,7 +15,7 @@
 #   searxng.env             EnvironmentFile for the searxng container
 #
 # A third, opencode-telegram.env, went with the Telegram bot on 2026-10-23
-# (row 206) — along with the `opencode/server_password` secret, which existed
+# (row 207) — along with the `opencode/server_password` secret, which existed
 # only to be mirrored into that template; the server reads its password from
 # ~/.config/opencode/service-prod.json directly.
 #

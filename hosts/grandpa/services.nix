@@ -55,7 +55,7 @@
   # letting go. Verified 2026-10-23 across a reboot: with no TUI running it
   # bound the port itself.
   #
-  # It USED to exist for the Telegram bot (removed 2026-10-23, row 206). What
+  # It USED to exist for the Telegram bot (removed 2026-10-23, row 207). What
   # keeps it now is that it is the only thing that answers :13420 after a reboot
   # — sessions and any agent talking to opencode need it, TUI or not.
   opencodeServe = pkgs.writeShellScript "opencode-serve-wait" ''

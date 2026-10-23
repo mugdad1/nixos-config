@@ -44,7 +44,7 @@
 # grandpa … nix work only"). Three things that travelled with them have since
 # been removed at his order: the Telegram bot together with the entire alert
 # path it carried (smartd's mailer, the notify-telegram@ OnFailure= hook, the
-# `telegram/*` secrets, "no more telegram and whatsapp", 2026-10-23, row 206),
+# `telegram/*` secrets, "no more telegram and whatsapp", 2026-10-23, row 207),
 # WhatsApp (bridge/watcher/313 timer, "no more whatsapp", same day, the project
 # itself already deleted from disk) and sv-watch (same day). opencode-serve is
 # the one component of that stack he chose to KEEP when asked — it is what

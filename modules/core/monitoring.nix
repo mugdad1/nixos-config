@@ -11,7 +11,7 @@
 #
 # DELIVERY, or the lack of it. Two transports were tried and BOTH are gone now:
 # the ntfy container (2026-10-12, "just rm notify") and then Telegram itself,
-# removed wholesale at his order on 2026-10-23 (row 206) - the bot, the
+# removed wholesale at his order on 2026-10-23 (row 207) - the bot, the
 # `notify-telegram` script, the `notify-telegram@` OnFailure= template, its
 # sops secrets and the `telegram/*` key pair all went in one commit.
 #
@@ -48,7 +48,7 @@
   # fleet-wide: it started in hosts/thinkcentre/secrets.nix because until
   # 2026-10-18 the ThinkCentre was the only host that could deliver anything,
   # then had to move somewhere all three hosts import once the age key was
-  # placed on them. Telegram went wholesale on 2026-10-23 (row 206) and took
+  # placed on them. Telegram went wholesale on 2026-10-23 (row 207) and took
   # the last `sops.secrets` entry with it — what is left is the two defaults a
   # host needs before it can declare ANY secret at all, which is why it stayed
   # in modules/core rather than being deleted with the credential.
@@ -90,7 +90,7 @@
   # OnFailure= USED to be wired here too: `unitConfig.OnFailure =
   # ["notify-telegram@%n.service"]` on callers such as backup-daily, which
   # reported "backup-daily.service failed on thinkcentre" to the phone. The
-  # template unit went with Telegram on 2026-10-23 (row 206), and so did the
+  # template unit went with Telegram on 2026-10-23 (row 207), and so did the
   # unit sweep that had shared it — so a failing unit now has NO notification
   # path at all, only journald and `systemctl --failed`. Recorded here rather
   # than left silent, because the hook's absence is a real regression and the
@@ -99,7 +99,7 @@
     enable = true;
     autodetect = true;
     notifications = {
-      # NO MAIL, since 2026-10-23 (row 206). `notifications.mail` was never the
+      # NO MAIL, since 2026-10-23 (row 207). `notifications.mail` was never the
       # generic option here: it was `enable = true` with our own
       # `notify-telegram` as the `mailer`, because smartd calls a
       # sendmail-compatible binary as `<mailer> -i <recipient>` and pipes the
