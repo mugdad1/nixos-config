@@ -148,14 +148,30 @@ R=$(dig +short +time=3 +tries=1 github.com @192.168.8.1 2>/dev/null | head -1)
 if [ -n "$R" ]; then ok "router 192.168.8.1 (the house's DNS) -> $R"
 else bad "ROUTER 192.168.8.1 NOT ANSWERING — the house has no DNS"; fi
 
-# 3) this box on the LAN side — refused is CORRECT (rule 4), an answer would
-#    be the surprise. Raw dig text decides; no shell one-liner guesswork.
-Q=$(dig +time=3 +tries=1 github.com @192.168.8.225 2>&1)
-case "$Q" in
-  *"connection refused"*) ok "192.168.8.225:53 refused — correct: this box does not serve the LAN" ;;
-  *"no servers could be reached"*) note "192.168.8.225:53 no reply (timeout) — not refused, check the interface" ;;
-  *) note "192.168.8.225:53 ANSWERS — something binds the LAN; rule 4 says nothing should" ;;
-esac
+# 3) rule 4: this box must not serve the LAN. blocky deliberately binds
+#    0.0.0.0:53 (decisions row 177 — the tailnet needs it, and the box itself
+#    needs it on loopback), so the boundary is the FIREWALL, not the bind.
+#    Port 53 may be accepted only on tailscale0.
+#
+#    Do NOT probe the LAN address from here to test this: a packet to our own
+#    LAN IP is answered by local delivery and never enters the INPUT chain,
+#    so it always succeeds and cannot reveal LAN exposure. This used to query
+#    a hard-coded ThinkCentre address (192.168.8.225), which after the
+#    2026-10-22 migration timed out and read "check the interface" — a false
+#    alarm on a healthy box. Read the rule that actually enforces it instead.
+SUDO_FW=""
+for s_cand in /run/wrappers/bin/sudo "$(command -v sudo 2>/dev/null)"; do
+  if [ -n "$s_cand" ] && [ -x "$s_cand" ]; then SUDO_FW="$s_cand"; break; fi
+done
+[ -n "$SUDO_FW" ] || SUDO_FW="sudo"
+FW53=$("$SUDO_FW" -n iptables -S nixos-fw 2>/dev/null \
+       | grep -E -- '--dport 53( |$)' | grep -v -- '-i tailscale0 ' || true)
+if [ -n "$FW53" ]; then
+  bad "rule 4: port 53 accepted off tailscale0 — the LAN can reach our DNS:"
+  printf '%s\n' "$FW53" | sed 's/^/        /'
+else
+  ok "rule 4: :53 accepted on tailscale0 only (0.0.0.0 bind, firewalled off the LAN)"
+fi
 
 # ── tailscale: the UNIT being active proves nothing (2026-10-16: active but
 #    BackendState=Stopped, no tailscale0) ─────────────────────────────────────
