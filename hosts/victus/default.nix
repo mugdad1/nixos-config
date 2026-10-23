@@ -52,6 +52,20 @@
     echo "  hybrid iGPU now, dGPU on demand: nvidia-offload <command>"
     echo "  nvidia dGPU renders everything (iGPU still drives the panel)"
   '';
+
+  # patchelf >= 0.18 relocates the .dynamic section of these non-PIE NVIDIA
+  # executables into a read-only PT_LOAD. glibc writes the DT_DEBUG pointer into
+  # .dynamic before main runs, so they die with SIGSEGV inside ld.so's dl_main
+  # (this is why nvidia-smi and nvidia-cuda-mps-control were broken while nvtop
+  # read both GPUs fine). 0.15.2 keeps .dynamic writable; it is used below to
+  # re-link the pristine copies from origBin/ that the driver build keeps.
+  nvidiaPatchelf = pkgs.patchelf.overrideAttrs (old: rec {
+    version = "0.15.2";
+    src = pkgs.fetchurl {
+      url = "https://github.com/NixOS/patchelf/releases/download/${version}/patchelf-${version}.tar.gz";
+      hash = "sha256-DWn63A3rY/5GZlu9qZ6gIJy4G7PWDPVRCE+dvsB8u2w=";
+    };
+  });
 in {
   imports = [
     ./hardware-configuration.nix
@@ -82,6 +96,26 @@ in {
 
   hardware.nvidia = {
     open = true;
+
+    # Stable is 595.104.02. Only its userland outputs are rebuilt here (the
+    # kernel module comes from the untouched passthru.open and stays cached):
+    # re-install each pristine executable and re-apply interpreter + RPATH with
+    # nvidiaPatchelf, instead of the corrupted copies from the normal build.
+    package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (old: {
+      postInstall = (if (old.postInstall or null) != null then old.postInstall else "") + ''
+        for i in nvidia-smi nvidia-cuda-mps-server nvidia-cuda-mps-control \
+                 nvidia-debugdump nvidia-powerd; do
+          if [ -e "$bin/origBin/$i" ]; then
+            install -Dm755 "$bin/origBin/$i" "$bin/bin/$i"
+            ${nvidiaPatchelf}/bin/patchelf \
+              --interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+              --set-rpath "$out/lib:$libPath" \
+              "$bin/bin/$i"
+          fi
+        done
+      '';
+    });
+
     modesetting.enable = true;
     powerManagement.enable = true;
     powerManagement.finegrained = false;
