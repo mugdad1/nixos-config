@@ -1,4 +1,5 @@
-# sway configuration for the t480s session (replaces river + kwm/kwim).
+# sway configuration for the victus session (carried over from the t480s
+# river + kwm/kwim setup).
 #
 # Writes ~/.config/sway/config. Everything kwm/kwim carried over:
 # - output baseline eDP-1 scale 1.2 (ex-seeded kanshi/displays.nix)
@@ -119,7 +120,8 @@
     ["wl-clip-persist" "--clipboard" "both"]
     ["wl-paste" "--watch" "cliphist" "store"]
     ["waybar"]
-    ["swaync"]
+    # swaync is a home-manager systemd user service (modules/home/desktop/swaync);
+    # exec'ing it here races that unit into a start-limit failure.
     ["udiskie" "--automount" "--notify" "--smart-tray"]
     ["init-wallpaper"]
     ["swayosd-server"]
@@ -154,7 +156,7 @@ in {
 
   xdg.configFile."sway/config".text = ''
     # mugdad's sway configuration (replaces river + kwm/kwim)
-    # generated from modules/home/sway/sway.nix
+    # generated from modules/home/desktop/sway/sway.nix
     # https://github.com/mugdad1/nixos-config
     set $mod Mod4
     set $alt Mod1

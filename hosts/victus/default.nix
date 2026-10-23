@@ -95,11 +95,42 @@ in {
     };
   };
 
-  # The nvidia module only loads its kernel modules at boot when X is enabled
-  # (see nixpkgs hardware/video/nvidia.nix), and this host is Wayland-only, so
-  # load them explicitly. Without this, `nvidia-offload` only works after
-  # somebody modprobes by hand.
-  boot.kernelModules = ["nvidia" "nvidia_uvm" "nvidia_modeset" "nvidia_drm"];
+  # The nvidia kernel modules are loaded on demand below instead of via
+  # boot.kernelModules: that option loads them unconditionally, which silently
+  # turned `gpu-mode intel` back into hybrid on every reboot. nixpkgs only adds
+  # them to boot.kernelModules when X is enabled (see
+  # hardware/video/nvidia.nix) and this host is Wayland-only, so this unit is
+  # the only boot-time loader besides `gpu-mode` itself.
+  systemd.services.victus-gpu-modules = {
+    description = "Load NVIDIA modules for the selected gpu-mode";
+    wantedBy = ["multi-user.target"];
+    after = ["systemd-tmpfiles-setup.service"];
+    before = ["greetd.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      mode="$(cat /var/lib/victus/gpu-mode 2>/dev/null || echo hybrid)"
+      if [ "$mode" = intel ]; then
+        # In case udev/nvidia-persistenced loaded them before this unit ran.
+        ${pkgs.kmod}/bin/modprobe -r nvidia_drm nvidia_modeset nvidia_uvm nvidia 2>/dev/null || true
+      else
+        ${pkgs.kmod}/bin/modprobe nvidia
+        ${pkgs.kmod}/bin/modprobe nvidia_uvm
+        ${pkgs.kmod}/bin/modprobe nvidia_modeset
+        ${pkgs.kmod}/bin/modprobe nvidia_drm
+      fi
+    '';
+  };
+
+  # nixpkgs puts nvidia_uvm in boot.kernelModules for the open driver (see
+  # hardware/video/nvidia.nix), and modprobe would pull in the base nvidia
+  # module as a dependency — even in `gpu-mode intel`. systemd-modules-load
+  # probes with the libkmod blacklist applied, so this only suppresses the
+  # boot-time load; `gpu-mode` and the oneshot below still modprobe it
+  # explicitly (explicit modprobe ignores the blacklist).
+  boot.blacklistedKernelModules = ["nvidia_uvm"];
 
   # Generic tuning only. Deliberately NOT carried over from the t480s:
   # mem_sleep_default=deep (Alder Lake uses s2idle), the Elan TrackPoint quirk,
@@ -118,6 +149,7 @@ in {
 
   environment.systemPackages = [
     gpuMode
+    pkgs.nvtopPackages.full
     pkgs.tmux
   ];
 

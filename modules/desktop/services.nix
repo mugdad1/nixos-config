@@ -25,10 +25,15 @@
     # the numbering depends on module load order, the vendor does not.
     if [ -r /var/lib/victus/gpu-mode ]; then
       drm_card_for() {
-        for c in /dev/dri/card[0-9]*; do
-          [ -r "$c/device/vendor" ] || continue
-          if [ "$(cat "$c/device/vendor")" = "$1" ]; then
-            printf '%s\n' "$c"
+        # Vendor lives in sysfs: /dev/dri/cardN is a character device, so
+        # /dev/dri/cardN/device/vendor does not exist ("Not a directory").
+        for d in /sys/class/drm/card[0-9]*; do
+          [ -r "$d/device/vendor" ] || continue
+          card="''${d##*/}"
+          # skip connectors (card2-eDP-1 etc.), keep card nodes only
+          [ -c "/dev/dri/$card" ] || continue
+          if [ "$(cat "$d/device/vendor")" = "$1" ]; then
+            printf '/dev/dri/%s\n' "$card"
             return 0
           fi
         done
@@ -45,6 +50,10 @@
             export GBM_BACKEND=nvidia-drm
             export __NV_PRIME_RENDER_OFFLOAD=1
             export __GLX_VENDOR_LIBRARY_NAME=nvidia
+            # Sway detects "nvidia-drm" as an unsupported proprietary driver
+            # and pops a swaynag on every login. This chassis intentionally
+            # keeps the module loaded; opt in instead of dismissing the nag.
+            export SWAY_UNSUPPORTED_GPU=true
           else
             echo "gpu-mode: nvidia requested but no NVIDIA DRM card found; staying on Intel" >&2
           fi
@@ -99,18 +108,18 @@ in {
     bpftune.enable = true;
 
     # sched_ext: EEVDF stays the in-kernel default, this swaps a BPF scheduler
-    # in over it at runtime (kernel >= 6.12; ours is 7.2, and /sys/kernel/sched_ext
+    # in over it at runtime (kernel >= 6.12; ours is 7.3, and /sys/kernel/sched_ext
     # is what the unit conditions on). scx_bpfland is the interactive-aware one:
     # it sorts tasks by voluntary context-switch rate and prioritizes the
     # interactive queue, which is the laptop case — nix builds, indexing or
     # containers churning while you type.
     #
-    # NOT scx_lavd, despite it being the usual "gaming" answer: its scheduling
-    # domains are built per-LLC and per-core type (P/E, AMD CCDs), and a Kaby
-    # Lake-R is a single homogeneous cluster, so its main advantage does not
-    # apply here. A BORE/BMQ kernel was considered and rejected too — same
-    # reasoning, and it would mean replacing the mainline kernel for gains that
-    # show up mostly on heterogeneous CPUs.
+    # NOT scx_lavd, despite it being the usual "gaming" answer: lavd splits
+    # domains per-LLC and per-core type and tunes for latency-critical games,
+    # while this laptop mostly runs builds, containers and a browser alongside
+    # typing — the interactive queue is the thing to protect here. A BORE/BMQ
+    # kernel was considered and rejected too: same reasoning, and it would mean
+    # replacing the mainline kernel for a marginal scheduler change.
     #
     # If the scheduler process dies, the kernel falls back to EEVDF by itself;
     # disabling this option and rebuilding undoes it entirely.
@@ -119,6 +128,11 @@ in {
       scheduler = "scx_bpfland";
     };
   };
+
+  # gvfs 1.48+ spawns `wsdd` itself when a file manager browses the Windows
+  # Network neighbourhood. Without it, Nautilus/Nemo show "Failed to spawn the
+  # wsdd daemon" and the SMB workgroup comes up empty.
+  environment.systemPackages = [pkgs.wsdd];
 
   # tuigreet's --remember cache; lives here (not shared boot.nix) because
   # the `greeter` user only exists where greetd runs.
