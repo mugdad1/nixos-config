@@ -64,7 +64,9 @@ nixos-config/
 │       └── desktop/          # theme, osd, swaylock + sway/, waybar/, rofi/, swaync/
 ├── pkgs/                     # callPackage files: filen-cli.nix, notify-telegram.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
-│   └── thinkcentre/          # backup-run.sh, sv-watch.sh, docker-stack.sh, http-endpoints
+│   ├── *.sh                  # checkup, mcli, notify-telegram, hm-find, desktop helpers
+│   ├── grandpa/              # ac.sh — grandpa's own
+│   └── thinkcentre/          # docker-stack.sh (still read), backup-run.sh (orphaned)
 ├── secrets/                  # ENCRYPTED sops files (committed, useless without a key)
 └── assets/
     ├── fonts/                # SCHLBKB.TTF (century-schoolbook)
@@ -157,8 +159,8 @@ secrets are gated off by hostname (`sops = lib.mkIf (host != "victus")` in
 on `grandpa`; `victus` sends no Telegram alerts until the key is placed at
 `/var/lib/sops-nix/key.txt` and that gate is dropped. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
 token from the sops-rendered `/run/secrets/rendered/notify-telegram.env` —
-root:root 0400, because every caller (smartd, sv-watch, `notify-telegram@`) runs
-as root. The token and the template that ships it are declared **fleet-wide in
+root:root 0400, because every caller (smartd, `notify-telegram@`) runs as root.
+(`sv-watch` was a third caller until it was removed at his order, 2026-10-23.) The token and the template that ships it are declared **fleet-wide in
 `modules/core/monitoring.nix`**, not in a per-host `secrets.nix`, so a host gets
 alerting the moment its key is in place and nothing else has to change. A host
 that has lost its key fails closed: it logs `NOTIFY(no-token)` to journald and

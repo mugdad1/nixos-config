@@ -212,7 +212,7 @@ done
 [ "$COPIED" -gt 0 ] || die "no sources were copied"
 
 # --- verify: counts / bytes / read-back ------------------------------------
-# Sources change while we run (whatsapp store, opencode logs), so if a count
+# Sources change while we run (opencode logs, media), so if a count
 # disagrees we re-rsync that source once and re-count. Still idempotent.
 log ""
 log "=== VERIFY: files and bytes, source vs snapshot ==="

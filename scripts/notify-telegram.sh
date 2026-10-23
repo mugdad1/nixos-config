@@ -1,16 +1,18 @@
 #!/bin/sh
 # notify-telegram.sh - THE delivery path for alerts on all three hosts.
 #
-# WHY IT EXISTS (2026-10-18): three things detect failures on this fleet -
-# sv-watch (thinkcentre: units, containers, endpoints, DNS), smartd (disks, all
-# three hosts) and systemd's own OnFailure= hooks (backup-daily) - and since
-# 2026-10-12 not one of them delivered anything. The ntfy container left the
-# stack on his "just rm notify", and sv-watch's push() became an unconditional
-# printf. A box could lose a disk or a container and the only trace was
-# journald - which is exactly the failure mode sv-watch was written to end.
-# Telegram is the channel he already carries (the bot in hosts/thinkcentre/
-# services.nix), so this posts to the Bot API directly instead of resurrecting
-# a self-hosted relay nobody subscribed to.
+# WHY IT EXISTS (2026-10-18): the things that detect failures on this fleet -
+# smartd (disks, all three hosts) and systemd's own OnFailure= hooks - could
+# detect and not report, because delivery had been off since 2026-10-12, when
+# the ntfy container left the stack on his "just rm notify". A box could lose
+# a disk and the only trace was journald. Telegram is the channel he already
+# carries (the bot in hosts/grandpa/services.nix), so this posts to the Bot API
+# directly instead of resurrecting a self-hosted relay nobody subscribed to.
+#
+# A third caller existed: sv-watch swept units, containers, endpoints and DNS.
+# He had it removed 2026-10-23 ("i dont wsnt sv watch"), so the smartd and
+# OnFailure= callers above are the whole remaining audience - this script is
+# untouched by that removal, only the callers changed.
 #
 # THE TOKEN IS NOT IN THIS FILE. The repo is public, so the token is ciphertext
 # in secrets/fleet.sops.yaml and is rendered at activation into:
@@ -21,11 +23,13 @@
 # A HOST WITHOUT THE KEY IS NOT A FAILURE. Since 2026-10-18 all three hosts
 # have the key (restored by hand, see the README), but a fresh install - or a
 # host whose key was never placed - has no rendered file: the alert still lands
-# in the journal with a NOTIFY(no-token) marker, and the exit status is 0. That matters because
-# sv-watch's alert() QUEUES on a non-zero push and retries the queue every
-# sweep - a host that can never deliver would fill /var/lib/sv-watch/outbox
-# forever. Exit 1 is reserved for the honest case: a delivery was attempted and
-# Telegram did not accept it, which is worth retrying.
+# in the journal with a NOTIFY(no-token) marker, and the exit status is 0. That
+# separation still matters: a caller that retries on non-zero must not retry
+# forever on a host that has no key to succeed with. Exit 1 is reserved for the
+# honest case - a delivery was attempted and Telegram did not accept it, which
+# is worth retrying. (The retry-until-success loop that used to demand this was
+# sv-watch's queue, /var/lib/sv-watch/outbox, gone with it on 2026-10-23; the
+# contract stayed because smartd's hook reads the same statuses.)
 #
 # Usage:
 #   notify-telegram "message"                  # text as arguments

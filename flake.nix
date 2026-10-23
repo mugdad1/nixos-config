@@ -122,8 +122,10 @@
       # owner (his "rm thinkcentre host"), so hosts/thinkcentre/ is gone and
       # nothing here declares it any more. The service layer it carried lives
       # on grandpa (see the MOVED FROM notes in hosts/grandpa/); scripts/
-      # thinkcentre/ stays on disk because grandpa still reads sv-watch.sh and
-      # docker-stack.sh from it. Git history is the record.
+      # thinkcentre/ stays on disk because grandpa still reads docker-stack.sh
+      # from it (hosts/grandpa/default.nix). sv-watch.sh, its http-endpoints
+      # and postboot-verify.sh went 2026-10-23 with sv-watch itself. Git
+      # history is the record.
       # Grandpa's box — Intel i3-2120 (Sandy Bridge), 6 GiB, single 298 GiB HDD,
       # headless server / CLI box. NixOS **installed 2026-10-16** and
       # `hardware-configuration.nix` is the real generated file from that day

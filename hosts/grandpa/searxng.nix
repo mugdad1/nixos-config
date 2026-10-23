@@ -35,10 +35,13 @@
 # FIREWALL: tailscale0 only. The compose published 8888 on every interface
 # (docker's default), but every consumer — his laptop, his phone, the agents'
 # search — reaches it over the tailnet, and an open search box on the LAN
-# answers questions nobody here asked. Bind is 0.0.0.0 for the same reason
-# blocky binds 0.0.0.0: sv-watch health-checks 127.0.0.1:8888, and loopback
-# has to answer for that sweep to mean anything. LAN can come back the day
-# something on the LAN needs it — one line, same as HA's 8123.
+# answers questions nobody here asked. Bind stays 0.0.0.0 — loopback has to
+# answer for a local `curl 127.0.0.1:8888` to mean anything, and the tailnet
+# address is served by the same socket — while the firewall below, not the
+# bind, is what keeps the LAN out. (The old reason given for 0.0.0.0 was
+# sv-watch health-checking loopback; sv-watch was removed 2026-10-23, but the
+# bind still earns its keep for the two callers above.) LAN can come back the
+# day something on the LAN needs it — one line, same as HA's 8123.
 {config, ...}: {
   services.searx = {
     enable = true;
@@ -57,7 +60,7 @@
 
       server = {
         port = 8888;
-        bind_address = "0.0.0.0"; # loopback for sv-watch, LAN closed below
+        bind_address = "0.0.0.0"; # loopback + tailnet; LAN closed by firewall below
         base_url = "http://100.106.116.60:8888/"; # tailnet, always
         secret_key = "$SEARX_SECRET_KEY"; # sops placeholder, never in Nix
         limiter = false; # as on the old box — and no redis because of it

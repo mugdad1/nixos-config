@@ -1,9 +1,10 @@
 # Alerting + disk health, shared by all three hosts.
 #
 # WHY (2026-10-18): every host could detect a failure and none could report one.
-# The detectors were already there - sv-watch on the thinkcentre (units,
-# containers, published endpoints, DNS), and nothing at all for disk failure on
-# any host (`smartctl` was installed, the `smartd` daemon was not) - while
+# The detectors were already there - a unit/container/endpoint/DNS sweep
+# (sv-watch, on the thinkcentre; removed at his order 2026-10-23, see below),
+# and nothing at all for disk failure on any host (`smartctl` was installed,
+# the `smartd` daemon was not) - while
 # delivery had been off since 2026-10-12, when the ntfy container was removed on
 # his "just rm notify". The result he hit: a box can lose a disk or a container
 # and the only trace is journald, which nobody reads unasked.
@@ -11,8 +12,9 @@
 # WHAT THIS ADDS, in the two places that were empty:
 #
 #   1. A delivery path - `notify-telegram`, one script (pkgs/notify-telegram.nix
-#      -> scripts/notify-telegram.sh) used by sv-watch, by smartd below, and by
-#      the OnFailure= template unit here. It posts to the Telegram Bot API with
+#      -> scripts/notify-telegram.sh) used by smartd below and by the
+#      OnFailure= template unit here. (sv-watch was a third caller until
+#      2026-10-23.) It posts to the Telegram Bot API with
 #      the token out of sops; on a host with no key yet it logs NOTIFY(no-token)
 #      and exits 0 instead of queueing forever. See that script's header.
 #
@@ -96,7 +98,8 @@ in {
     #
     # root:root 0400 (the default) and NOT the `username` owner the ThinkCentre's
     # other two templates use: every caller of notify-telegram is root (smartd,
-    # sv-watch, notify-telegram@), so nothing else needs to read it. The script's
+    # notify-telegram@ — sv-watch until 2026-10-23), so nothing else needs to
+    # read it. The script's
     # probe is `[ -r ... ]` as root, so a host that somehow lost its key fails
     # closed — it logs NOTIFY(no-token) and exits 0 rather than queueing forever.
     templates."notify-telegram.env".content = ''
@@ -106,9 +109,10 @@ in {
   };
 
   # OnFailure= hook for any unit that has to be heard about. Used by
-  # backup-daily (hosts/thinkcentre/backup.nix); sv-watch already reports failed
-  # units on its own sweep, but a failing backup should reach the phone with
-  # the failed unit named, not wait for a sweep to classify it.
+  # backup-daily (hosts/thinkcentre/backup.nix); the unit sweep that used to
+  # report failed units alongside it went 2026-10-23, which makes this hook the
+  # only path a failing unit has to the phone — a failing backup still reaches
+  # it with the failed unit named rather than not at all.
   #
   # `%i` is the failed unit's name as the instance, `%n` in the caller expands
   # to the same, so `unitConfig.OnFailure = ["notify-telegram@%n.service"]`

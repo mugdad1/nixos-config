@@ -6,16 +6,21 @@
 # rule 2026-10-16: "see the thinkcentre" / "dont add anything from u". The ONLY
 # gaps found by diffing the two files were python3, docker-compose and ffmpeg:
 # python3 is in (a basic runtime, no reason to differ); docker-compose and
-# ffmpeg are NOT — ffmpeg exists over there for the WhatsApp/media stack and
-# nothing here needs it, and compose runs as the v2 plugin bundled with the
-# docker engine this host gained on 2026-10-19, so a standalone docker-compose
-# package is dead weight. The four WhatsApp writeTextFile entries were out for
-# the same reason (WhatsApp was removed fleet-wide, row 107) — that changed
-# 2026-10-22, when the whole service layer travelled here because the
-# ThinkCentre is being returned to its owner: row 136 had already repealed
-# row 107, so they are in the list again. opencode was deliberately omitted
-# until 2026-10-16, when he asked for it by name ("fish opencode gh git mcli
-# tailscale"). Secrets stay fleet-scope in modules/core (sops,
+# ffmpeg are NOT — compose runs as the v2 plugin bundled with the docker engine
+# this host gained on 2026-10-19, so a standalone docker-compose package is
+# dead weight, and ffmpeg was here only for the WhatsApp media stack.
+#
+# WHATSAPP IS OUT, for good this time. The WhatsApp writeTextFile entries and
+# the ffmpeg / go / gcc the bridge needed travelled here on 2026-10-22 with the
+# rest of the ThinkCentre service layer (rows 136 repealing 107), and are
+# removed 2026-10-23 on his "no more whatsapp" — ~/projects/whatsapp-mcp is
+# already deleted from the box, so the bridge could not have started anyway.
+# `sqlite` is the one survivor of that group: it was listed as the bridge's
+# store/whatsapp.db reader AND as the agent's own session DB (opencode.db),
+# and the second use is still live.
+#
+# opencode was deliberately omitted until 2026-10-16, when he asked for it by
+# name ("fish opencode gh git mcli tailscale"). Secrets stay fleet-scope in modules/core (sops,
 # secrets/fleet.sops.yaml, rows 121–122), NOT per-host — ./secrets.nix added
 # 2026-10-22 carries only the two host-local *templates*
 # (opencode-telegram.env, filen-sync.env) that moved with ./services.nix.
@@ -137,83 +142,7 @@
     smartmontools # SMART health for the HDD
     traceroute
 
-    # ── MOVED HERE from hosts/thinkcentre/packages.nix, 2026-10-22 ──────────
-    # The ThinkCentre is being returned to its owner, so the WhatsApp / study /
-    # opencode service layer moves with the rest of it. The header above still
-    # records why these four entries were OUT while WhatsApp was removed
-    # fleet-wide (row 107) — row 136 repealed that, and since 2026-10-22 they
-    # belong here rather than nowhere. Keep them in step with
-    # hosts/thinkcentre/packages.nix if that host ever returns.
-
-    # ffmpeg — the whatsapp-mcp server shells out to it for audio conversion
-    # and video previews (audio.py / media_preview.py); without it those tools
-    # refuse and downloaded videos cannot be cut into readable frames
-    # (decisions row 38's second gap, the one `xbps-install ffmpeg` closed on
-    # Void).
-    ffmpeg
-
-    # The build toolchain for a fresh whatsapp-bridge: `go build` with cgo needs
-    # a C compiler, and sqlite is the agent's own session DB (opencode.db) plus
-    # the bridge's store/whatsapp.db — both read ad hoc without one.
-    go
-    gcc
     sqlite
 
-    # ── WhatsApp tooling, nixified 2026-10-15 ───────────────────────────────
-    # These four lived in ~/.local/bin, which is outside Nix and in practice
-    # outside the backup: reinstalls on 2026-10-08 AND 2026-10-15 deleted them.
-    # His word: "keep them in the nixos-config" so a reinstall cannot take them
-    # again.
-    #
-    # They stay plain script files under scripts/whatsapp/ and are installed
-    # VERBATIM -- writeTextFile with builtins.readFile, not writeShellScriptBin
-    # and not inline heredocs in this file: what he reads and edits in the repo
-    # is byte-for-byte what runs, with its own shebang and its own docstring
-    # explaining why each rule exists. python3 resolves the interpreter.
-    (writeTextFile {
-      name = "wa-send";
-      destination = "/bin/wa-send";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/wa-send;
-    })
-    # Log-first send through the bridge's /api/send (field is `recipient`, not
-    # chat_jid -- the 2026-10-03 bug), refuses the stop flag, refuses a `|`
-    # in the why, writes FAILED - (NOT SENT) itself, and records every sent
-    # text so the watcher cannot wake on our own messages.
-    (writeTextFile {
-      name = "watch-whatsapp";
-      destination = "/bin/watch-whatsapp.py";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/watch-whatsapp.py;
-    })
-    # One-shot poller over store/messages.db with a persistent rowid cursor,
-    # scoped to the same 11 chats as the reply allow-list. Exits on a hit:
-    # the completion is what wakes the agent.
-    (writeTextFile {
-      name = "wa-armsup";
-      destination = "/bin/wa-armsup.sh";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/wa-armsup.sh;
-    })
-    # Supervisor -- one arm at a time (two arms starve each other on the shared
-    # cursor), and it stands down rather than respawning a refusing watcher.
-    (writeTextFile {
-      name = "qr-serve";
-      destination = "/bin/qr-serve.py";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/qr-serve.py;
-    })
-    # The 313 ritual -- one script, one job: put the bare number 313 into two
-    # groups at 3:13am and 3:13pm. His order 2026-10-20: "send 313 only to
-    # both groups nothing else is requried" / "u must!!!! not respond to
-    # anything anything this is a strong rule". The never-respond half is
-    # enforced in wa-send (RITUAL), not here: only the bare number passes,
-    # and only with this script's one-time ticket.
-    (writeTextFile {
-      name = "wa-313";
-      destination = "/bin/wa-313.sh";
-      executable = true;
-      text = builtins.readFile ../../scripts/whatsapp/wa-313.sh;
-    })
   ];
 }

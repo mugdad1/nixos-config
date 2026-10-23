@@ -28,8 +28,10 @@
 # unit that sweeps the stack directory at boot. The compose files stay the
 # source of truth for *what* runs; this decides *when*.
 #
-# WHAT IT IS NOT: an orchestrator. It has no health logic (sv-watch does that),
-# it does not stop anything, and it will not start a directory that has no
+# WHAT IT IS NOT: an orchestrator. It has no health logic — the sweep that
+# used to supply it (sv-watch) was removed at his order 2026-10-23, so nothing
+# watches container health on this box now — it does not stop anything, and it
+# will not start a directory that has no
 # compose file. It runs `docker compose up -d`, which is idempotent — already
 # running projects are left alone and cost one API call.
 #
@@ -61,8 +63,8 @@ DISABLED='
 # glances — retired from compose 2026-10-19: the native NixOS service
 # (hosts/thinkcentre/glances.nix) owns :61208 now. This entry stops the stack
 # from re-creating the container on every boot — a recreated-but-not-started
-# container still sits in docker ps -aq, which sv-watch sweeps, so the page
-# came back after every reboot.
+# container still sits in docker ps -aq. That mattered while sv-watch swept
+# docker ps and paged on it (gone 2026-10-23), and it still wastes a slot.
 glances
 # ─── dropped 2026-10-20 on his word ──────────────────────────────────────────
 # "stirling and paperless i never used them u may remove them / im not sure
@@ -182,7 +184,8 @@ done
 rm -f /tmp/docker-stack.$$
 
 # Non-zero only on a real failure, so the unit lands in `systemctl --failed`
-# and sv-watch sees it. Held/disabled projects are a choice, not a fault, and
+# where a human or `checkup` will see it. Held/disabled projects are a choice,
+# not a fault, and
 # must never mark the unit failed — otherwise a parked project produces a
 # permanently red unit that everybody learns to ignore.
 echo "$(date '+%F %T') docker-stack: $started up, $held disabled, $failed failed; $(docker ps -q | wc -l) containers now running"

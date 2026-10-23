@@ -29,44 +29,20 @@ note() { printf '  ...   %s\n' "$*"; }
 FAILED_UNITS=$(systemctl list-units --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
 if [ -n "$FAILED_UNITS" ]; then bad "failed units: $FAILED_UNITS"; else ok "no failed units"; fi
 
-# The watcher is here because it became a unit on 2026-10-20 (services.nix):
-# before that a hand-run supervisor's death was invisible to this loop and
-# only the arm count below could catch it.
-for u in whatsapp-bridge whatsapp-watcher tailscaled blocky; do
+# Core units only. The WhatsApp units (whatsapp-bridge / whatsapp-watcher)
+# went with the "no more whatsapp" removal on 2026-10-23. tailscaled and
+# blocky stay: both have bitten, and an active unit proving nothing was
+# learned the hard way (2026-10-16 -- backend stopped, unit green).
+for u in tailscaled blocky; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then ok "unit $u active"
   else bad "unit $u not active"; fi
 done
 
-# The bridge unit being active is NOT the bridge being connected. On
-# 2026-10-21 11:59:57 WhatsApp sent "401 device_removed", whatsmeow deleted
-# the session, and the bridge sat there RUNNING with no WhatsApp behind it
-# for eleven minutes -- so this sweep would have said "all clean" while the
-# whole duty was dead: no sends (they came back "Not connected to WhatsApp")
-# and no inbound. Same class as the tailscaled line above: a green systemctl
-# means nothing, the INTERFACE state is the truth.
-#
-# The health route is behind the same bearer auth as everything else, so the
-# probe MUST carry the token -- an unauthenticated probe gets 401 and
-# `curl -f` turns that into a failure, which is the same trap that made the
-# 3:13am 313 fire report a false "bridge did not answer" and skip the ritual.
-BRIDGE_TOKEN_FILE="${WA_BRIDGE_DIR:-$HOME/projects/whatsapp-mcp/whatsapp-bridge}/store/.bridge-token"
-if [ -r "$BRIDGE_TOKEN_FILE" ]; then
-  BRIDGE_TOKEN="$(cat "$BRIDGE_TOKEN_FILE" 2>/dev/null)"
-  BRIDGE_HEALTH="$(curl -fsS --max-time 5 -H "Authorization: Bearer $BRIDGE_TOKEN" \
-      http://127.0.0.1:8080/api/health 2>/dev/null)"
-  case "$BRIDGE_HEALTH" in
-    *'"connected":true'*) ok "bridge connected (whatsapp session live)" ;;
-    *) bad "bridge NOT connected -- the unit may be active with no whatsapp session behind it (health: ${BRIDGE_HEALTH:-no answer})" ;;
-  esac
-else
-  bad "bridge token not readable at $BRIDGE_TOKEN_FILE -- cannot tell whether whatsapp is connected"
-fi
 # Timers — only ones this host actually INSTALLED. backup-daily.timer left with
 # the 240GB on 2026-10-16 (row 106); demanding it here made checkup FAIL by
 # design on a healthy box.
 TIMERS=""
 systemctl list-unit-files backup-daily.timer --no-legend 2>/dev/null | grep -q '^backup' && TIMERS="backup-daily.timer"
-TIMERS="$TIMERS sv-watch.timer"
 for t in $TIMERS; do
   if systemctl is-active --quiet "$t" 2>/dev/null; then ok "timer $t active"
   else bad "timer $t not active"; fi
@@ -185,58 +161,6 @@ else
   bad "tailscale0 missing — node is DOWN (sudo tailscale up --accept-dns=false)"
 fi
 
-# ── whatsapp duty ───────────────────────────────────────────────────────────
-STATE="${WA_STATE:-$HOME/.local/state/opencode}"
-if [ -e "$STATE/wa-stop" ]; then
-  note "wa-stop PRESENT — sends and watcher are (deliberately) down"
-else
-  ok "guard lifted (wa-stop absent)"
-fi
-# ARMS ARE COUNTED AS watch-whatsapp.py PROCESSES — the poller that actually
-# holds the rowid cursor, never the supervisor's name. Two lies stood here
-# before, both real, both on 2026-10-20:
-#  1) '[w]a-armsup\.sh' matched the WORDS "wa-armsup.sh 1800" inside an
-#     agent's message text → "3 — TWO ARMS STARVE EACH OTHER" on a one-arm
-#     box.
-#  2) the path-anchored fix still lied: the hit-capture `out=$(...)` and the
-#     background wake both FORK the script, and a fork keeps argv — so main +
-#     capture wrapper + wake subshell = three processes named wa-armsup.sh
-#     while exactly ONE cursor holder existed. Name-counting cannot tell
-#     copies of one arm from a second arm; only the poller can.
-# pgrep -c prints its count AND exits 1 when the count is 0 — the `|| true`
-# then head keeps one clean number either way (2026-10-16: a "0\n0" made the
-# script report TWO ARMS with a count of zero).
-# Count ARMS, not ARGV MENTIONS. pgrep -f matches the whole command line, so
-# any process that merely NAMES the poller counts as one -- and on 2026-10-20
-# 13:08 an agent shell running a command that mentioned the path made this
-# read "2 — TWO ARMS STARVE EACH OTHER" while exactly one poller existed
-# (pid 7731, under whatsapp-watcher.service). That is the same class of lie
-# as the 3-arms artifact before it: the pattern has to match the poller as
-# an ARGUMENT, not as text anywhere on the line.
-#
-# An arm is a process whose argv holds the poller path as an ARGUMENT (argv[1]
-# for `python3 /path/watch-whatsapp.py 1800`, argv[0] if it is exec'd
-# directly). Anything else is a shell that happened to talk about it.
-ARMS=0
-for pid in $(pgrep -f 'watch-whatsapp' 2>/dev/null); do
-  [ -r "/proc/$pid/cmdline" ] || continue
-  a0=""; a1=""
-  { IFS= read -r -d '' a0 || true; IFS= read -r -d '' a1 || true; } \
-    < "/proc/$pid/cmdline" 2>/dev/null
-  case "$a0" in */watch-whatsapp.py) ARMS=$((ARMS + 1)); continue ;; esac
-  case "$a1" in */watch-whatsapp.py) ARMS=$((ARMS + 1)) ;; esac
-done
-ARMS=$(printf '%s' "$ARMS" | head -n 1)
-case "$ARMS" in
-  ""|*[!0-9]*) bad "watcher arms: unreadable count (pgrep broken?)" ;;
-  0) bad "watcher NOT armed — since 2026-10-20 that is \`systemctl restart whatsapp-watcher\`, never a second wa-armsup.sh" ;;
-  1) ok "watcher arms: 1" ;;
-  *) bad "watcher arms: $ARMS — TWO ARMS STARVE EACH OTHER, kill one" ;;
-esac
-if [ "$ARMS" -ge 1 ] && [ -f "$STATE/wa-watch.log" ]; then
-  ok "last arm: $(grep '=== ARM' "$STATE/wa-watch.log" | tail -1 | sed 's/^=== //')"
-fi
-
 # ── repos (two hosts share them: pull before push, always) ──────────────────
 for R in "$HOME/projects/wiki" "$HOME/nixos-config"; do
   [ -d "$R/.git" ] || continue
@@ -249,20 +173,6 @@ for R in "$HOME/projects/wiki" "$HOME/nixos-config"; do
   D=$(git -C "$R" status --porcelain 2>/dev/null | head -1)
   [ -n "$D" ] && note "$(basename "$R"): uncommitted changes present"
 done
-
-# ── WhatsApp duty: session count, no unit to supervise ──────────────────────
-# The duty used to sit in server-agent.service (a tmux screen holding
-# `opencode mini --agent server`); he removed the unit 2026-10-20 — *"stop the
-# server agent rm iit"*, *"cuz i will just use normal session"* — so the duty
-# is the wake (wa-armsup -> `opencode run -s $WA_SESSION`) plus whatever normal
-# session he opens himself. Nothing here FAILs on that: a missing screen is
-# his order, not a fault. The count is only a note — 0 is the expected number
-# until someone opens a session.
-if command -v opencode >/dev/null 2>&1; then
-  SERVER_SESS=$(timeout 10 opencode api get /api/session 2>/dev/null \
-    | grep -o '"agent":"server"' | wc -l | tr -d ' ')
-  note "server agent sessions open: ${SERVER_SESS:-0} (no unit since 2026-10-20 — wake + his own sessions)"
-fi
 
 echo
 if [ "$FAIL" = 1 ]; then echo "RESULT: FAIL (see lines above)"; else echo "RESULT: all clean"; fi

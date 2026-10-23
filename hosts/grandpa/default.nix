@@ -39,11 +39,13 @@
 # engine under them (see the block below).
 #
 # SINCE 2026-10-22 it is also the box the fleet's services live on: the
-# ThinkCentre is being returned to its owner, so Home Assistant, the WhatsApp
-# bridge/watcher/313 timer, the Telegram bot, opencode-serve, study, sv-watch
-# and filen-sync all moved here ("move the services from thinkcentre to
-# grandpa … nix work only"). The import list below names them; each file
-# explains what it carries. Still absent by choice: no backup (the /srv/backup
+# ThinkCentre is being returned to its owner, so Home Assistant, the Telegram
+# bot, opencode-serve, study and filen-sync all moved here ("move the services
+# from thinkcentre to grandpa … nix work only"). Two things that travelled with
+# them have since been removed at his order: WhatsApp (bridge/watcher/313
+# timer, "no more whatsapp", 2026-10-23, the project itself already deleted
+# from disk) and sv-watch (same day). The import list below names what remains;
+# each file explains what it carries. Still absent by choice: no backup (the /srv/backup
 # disk is physical and stays with the ThinkCentre — see hosts/thinkcentre/
 # backup.nix), and adding anything further is his call, not an improvement to
 # file.
@@ -85,8 +87,7 @@ in {
     #   home-assistant.nix  the AC hub (HA + ESPHome + avahi + :8123) — the
     #                       one thing that cannot simply be reinstalled, since
     #                       its state is paired hardware
-    #   services.nix        opencode-serve/telegram, study, the WhatsApp
-    #                       bridge + watcher + 313 timer, sv-watch, filen-sync,
+    #   services.nix        opencode-serve/telegram, study, filen-sync,
     #                       journald persistent
     #   secrets.nix         the two host-local TEMPLATES those units read; the
     #                       secret values themselves stay fleet-scope in
