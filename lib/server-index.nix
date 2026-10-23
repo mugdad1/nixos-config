@@ -303,7 +303,7 @@ in ''
    tr:first-child a{color:#${c.bright_yellow};font-weight:700}
    hr{border:0;border-top:1px solid #${c.bg2};margin:26px 0}
   </style>
-  <h1>mugdad &mdash; servers</h1>
+  <h1>mugdad &mdash; Server</h1>
   <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand; nginx on grandpa serves this page (a rebuild is the publish).</p>
   <h2>grandpa &mdash; 100.106.116.60</h2>
   <table>
@@ -311,5 +311,5 @@ in ''
   </table>
   <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
   <hr>
-  <p class="m">blocky is dns on <b>127.0.0.1:53</b> on each box — open to the tailnet on grandpa since 2026-10-22, never web-published.</p>
+  <p class="m">blocky is dns on <b>0.0.0.0:53</b> on grandpa — bound on every interface so loopback and the tailnet both answer; the firewall, not the bind, is what keeps the LAN out. Never web-published.</p>
 ''
