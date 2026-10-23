@@ -61,7 +61,7 @@
     "  bindsym ${mod}+Escape exec swaylock"
     "  bindsym ${alt}+Escape exec \"swaylock && systemctl suspend\""
     "  bindsym ${mod}+Shift+Escape exec power-menu"
-    "  bindsym F7 exec toggle-screen"
+    "  bindsym ${mod}+F7 exec toggle-screen"
   ];
 
   screenshots = [
