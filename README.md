@@ -11,7 +11,7 @@ Two active hosts, both deploying from `main`:
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
 | `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
-| `grandpa`   | Headless lightweight server — blocky, tailscale, sshd, no Docker | Custom i3-2120 box |
+| `grandpa`   | Headless lightweight server — Docker, blocky, tailscale, sshd, sops | Custom i3-2120 box |
 
 Installed: `grandpa` (NixOS since 2026-10-16), `victus` (2026-10-22, took over
 the laptop role from the ThinkPad). The ThinkCentre M900x that used
@@ -21,11 +21,11 @@ desktop and **no** home-manager stack: its `variables.nix` declares no
 `browser`/`terminal`/`launcher`, and `modules/core/user.nix` only imports
 `modules/home` when `variables ? browser`.
 
-`grandpa` is deliberately the smallest — no Docker, no backup disk, no sops
-key. Adding a service there is a decision, not a default; see
-`hosts/grandpa/default.nix`.
+`grandpa` is deliberately the smallest — Docker is enabled, but there is no
+backup disk; the sops key and the service layer are present. Adding a service
+there is a decision, not a default; see `hosts/grandpa/default.nix`.
 
-`victus` is the ThinkPad's config minus everything ThinkPad-specific (battery
+`victus` is the old laptop config minus everything ThinkPad-specific (battery
 threshold unit, TrackPoint quirk, `mem_sleep_default=deep`, throttled/tlp) plus
 the NVIDIA stack: open kernel modules, modesetting, PRIME offload and a
 three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only).
@@ -37,7 +37,6 @@ nixos-config/
 ├── flake.nix                 # mkHost: ./hosts/${host} + sops-nix module
 ├── flake.lock
 ├── treefmt.toml              # treefmt (alejandra/shfmt/stylua/taplo)
-├── rust-toolchain.toml
 ├── install.sh                # Guided installer (whiptail)
 ├── lib/
 │   ├── default.nix           # scanPaths helper (RECURSIVE)
@@ -46,16 +45,16 @@ nixos-config/
 ├── hosts/
 │   ├── victus/
 │   │   ├── default.nix       # Laptop host config: NVIDIA + Intel, gpu-mode switch
-│   │   ├── hardware-configuration.nix   # placeholder until install.sh copies the real one
+│   │   ├── hardware-configuration.nix   # real generated file; install.sh overwrites it
 │   │   └── variables.nix     # username, timezone, browser/terminal/launcher
 │   └── grandpa/
-│       ├── default.nix       # identity: imports, boot, zram, no docker/no secrets
+│       ├── default.nix       # identity: imports, boot, zram, Docker stack, index
 │       ├── packages.nix      # headless subset of the old ThinkCentre list
 │       ├── overrides.nix     # 32-bit Mesa off, networkd posture, sshd
 │       ├── hardware-configuration.nix
 │       └── variables.nix
 ├── modules/
-│   ├── core/                 # Shared system layer (15 files) — every host
+│   ├── core/                 # Shared system layer — every host
 │   ├── desktop/              # Desktop environment — the laptops only
 │   └── home/                 # Home-manager stack — only where variables declare a desktop
 │       ├── default.nix       # scanPaths + ../../scripts/default.nix
@@ -65,8 +64,7 @@ nixos-config/
 ├── pkgs/                     # callPackage files: filen-cli.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
 │   ├── *.sh                  # checkup, mcli, hm-find, desktop helpers
-│   ├── grandpa/              # ac.sh — grandpa's own
-│   └── thinkcentre/          # docker-stack.sh (still read), backup-run.sh (orphaned)
+│   └── grandpa/              # ac.sh, docker-stack.sh — grandpa's own
 ├── secrets/                  # ENCRYPTED sops files (committed, useless without a key)
 └── assets/
     ├── fonts/                # SCHLBKB.TTF (century-schoolbook)
@@ -98,9 +96,9 @@ Also:
 
 - **`scripts/`** — wrapped one by one in `scripts/default.nix`
   (`writeShellScriptBin` + `builtins.readFile`), so a new script needs an entry
-  there. grandpa *reads* `scripts/thinkcentre/*.sh` from its own host files
-  instead (`../../scripts/thinkcentre/…`), because that host has no
-  home-manager and never imports `scripts/default.nix`.
+  there. grandpa *reads* `scripts/grandpa/*.sh` from its own host files instead
+  (`../../scripts/grandpa/…`), because that host has no home-manager and never
+  imports `scripts/default.nix`.
 - **`assets/`** — raw files referenced by path (`modules/desktop/fonts.nix`,
   `modules/home/apps/xdg.nix`, `install.sh`). Nothing at the repo root is
   referenced by the running system any more.
@@ -199,8 +197,9 @@ refused outright since that host left the flake on 2026-10-22), rewrites
 `assets/wallpapers/wallpaper.png` into `~/Pictures/wallpapers/`, then runs
 `nixos-rebuild switch --flake .#<host>`. Regenerate
 `hardware-configuration.nix` on the target box at install time and diff — never
-hand-write it. `hosts/victus/` ships a placeholder that install.sh overwrites.
-GPU is fixed per host, not templated: Intel + NVIDIA on `victus`.
+hand-write it. `hosts/victus/` ships the real generated file; install.sh
+overwrites it on a fresh install. GPU is fixed per host, not templated: Intel +
+NVIDIA on `victus`.
 
 ## Features
 
@@ -228,10 +227,18 @@ Worth knowing so they are not mistaken for oversights:
   them run sshd with `:22` open on every interface (changed 2026-10-13 on his
   word, *"allow ssh like normally, in lan, in both"*). Password auth is on
   since the same day; root stays locked out and `AllowUsers` is his account
-  only. The firewall is enabled and the shared core opens **no** TCP port
-  except `22`; Tailscale opens UDP `41641` (`modules/core/tailscale.nix`,
-  `openFirewall = true`). Home Assistant on grandpa opens `8123` on
-  `tailscale0` and on the LAN (`hosts/grandpa/home-assistant.nix`).
+  only. `fail2ban` is enabled (5 failures, 1 hour); key-only login is still
+  blocked because victus has no `authorized_keys` yet. The firewall is enabled;
+  shared core opens **no** TCP port except `22`, and Tailscale opens UDP
+  `41641` (`modules/core/tailscale.nix`, `openFirewall = true`). grandpa opens
+  its service ports explicitly, and Docker-published ports bypass the NixOS
+  firewall entirely.
+- **grandpa service boundaries** — Vaultwarden binds `127.0.0.1:8082` and is
+  served as HTTPS at `https://grandpa.tailbc99bb.ts.net:8443`; Forgejo,
+  Immich, metube, Home Assistant, Glances and study are tailnet-only;
+  Jellyfin listens on both the tailnet and the LAN for the TV; the index page
+  is tailnet-only on `:80`. The two Tailscale Serve routes are pinned in Nix
+  (`systemd.services.tailscale-serve`), not just CLI state.
 - **No swap partition on any host** — `zramSwap` (RAM-backed, zstd) covers it:
   `modules/desktop/services.nix` for the laptops, `hosts/grandpa/default.nix`
   for the server.
@@ -255,8 +262,8 @@ before September 2026; the `asus` host and everything that served it were
 removed then. The ThinkCentre replaced it as the real second host — migrated
 from Void + runit on 2026-10-13, with `modules/core` decoupled from the
 desktop first (2026-10-12) so a headless host could import it. **A third host
-joined on 2026-10-16: `grandpa`** (i3-2120, headless, core set only — no
-Docker, no secrets, no backup), installed and verified headless the next day.
+joined on 2026-10-16: `grandpa`** (i3-2120, headless, core set plus Docker and
+sops, no backup), installed and verified headless the next day.
 
 **2026-10-22: the fleet shrank back to two and changed laptops.** The
 ThinkCentre went back to its owner, so `hosts/thinkcentre/` was deleted and its
@@ -271,4 +278,6 @@ The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,
 `modules/home/` regrouped into `terminal/`, `apps/`, `desktop/` with `scanPaths`
 made recursive, `fonts/` + `wallpapers/` moved under `assets/`, and the
-ThinkCentre's four shell scripts moved to `scripts/thinkcentre/`.
+ThinkCentre's shell scripts moved to `scripts/thinkcentre/`; after the host was
+retired, `docker-stack.sh` moved to `scripts/grandpa/` and the rest were
+removed.

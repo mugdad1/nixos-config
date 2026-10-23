@@ -50,7 +50,12 @@ cmd_rebuild() {
 cmd_update() {
   info "Updating flake inputs..."
   pushd "${FLAKE_DIR}" >/dev/null
-  nix flake update
+  # Do NOT update nixpkgs-hplip: it is pinned to an exact rev on purpose so
+  # the HPLIP workaround cannot move underneath us. nixos-hardware and
+  # rust-overlay are gone from the flake entirely.
+  nix flake update \
+    nixpkgs home-manager nix-flatpak nix-index-database \
+    zen-browser opencode sops-nix
   popd >/dev/null
   info "Rebuilding with updated inputs..."
   cmd_rebuild

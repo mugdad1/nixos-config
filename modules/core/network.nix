@@ -13,20 +13,17 @@ in {
   networking = {
     hostName = host;
     enableIPv6 = false;
-    # NetworkManager + iwd exist for the ThinkPad (wife? no — workstation) only.
-    # The ThinkCentre is wired-only (eno1 into the room switch), so NM is
-    # unwanted bloat here — it is what pulls iwd and ModemManager along with it,
-    # even though this box has no modem and no 802.11 interface. Wifi and the
-    # NM/iwd stack stay on the laptop, which imports this same module, so the
-    # gate is keyed on host rather than on an option the shared module cannot
-    # see. The laptop's `wifi.backend = "iwd"` is left untouched (it lives on
-    # the t480s, never on this box).
-    networkmanager = lib.mkIf (host != "thinkcentre") {
+    # NetworkManager + iwd exist for the laptop only. grandpa is wired-only
+    # (enp3s0 into the room switch), so NM is unwanted bloat there — it pulls
+    # iwd and ModemManager along even though that box has no modem and no
+    # 802.11 interface. The gate is keyed on host rather than on an option the
+    # shared module cannot see.
+    networkmanager = lib.mkIf (host == "victus") {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
-      # on Intel: the t480s was flapping between two BSSIDs of one SSID after
-      # the backend was switched to wpa_supplicant. iwd is also the NixOS default
-      # for wifi.
+      # on Intel: the previous laptop was flapping between two BSSIDs of one
+      # SSID after the backend was switched to wpa_supplicant. iwd is also the
+      # NixOS default for wifi.
       wifi.backend = "iwd";
       # With Blocky on, NetworkManager must not write resolver state from DHCP —
       # nothing but Blocky answers.
@@ -41,8 +38,8 @@ in {
 
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
-  # module when wifi.backend = "iwd". Off on thinkcentre — no wifi here.
-  networking.wireless.iwd.enable = lib.mkIf (host != "thinkcentre") true;
+  # module when wifi.backend = "iwd". Off on grandpa — no wifi there.
+  networking.wireless.iwd.enable = lib.mkIf (host == "victus") true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;
@@ -63,8 +60,9 @@ in {
     options edns0
   '';
 
-  environment.systemPackages = with pkgs; [
-    networkmanagerapplet
-    iw # nl80211 wifi diagnostics
-  ];
+  environment.systemPackages = with pkgs;
+    lib.optionals (host == "victus") [
+      networkmanagerapplet
+      iw # nl80211 wifi diagnostics
+    ];
 }

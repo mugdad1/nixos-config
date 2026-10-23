@@ -167,18 +167,24 @@ in {
     # re-install each pristine executable and re-apply interpreter + RPATH with
     # nvidiaPatchelf, instead of the corrupted copies from the normal build.
     package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (old: {
-      postInstall = (if (old.postInstall or null) != null then old.postInstall else "") + ''
-        for i in nvidia-smi nvidia-cuda-mps-server nvidia-cuda-mps-control \
-                 nvidia-debugdump nvidia-powerd; do
-          if [ -e "$bin/origBin/$i" ]; then
-            install -Dm755 "$bin/origBin/$i" "$bin/bin/$i"
-            ${nvidiaPatchelf}/bin/patchelf \
-              --interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-              --set-rpath "$out/lib:$libPath" \
-              "$bin/bin/$i"
-          fi
-        done
-      '';
+      postInstall =
+        (
+          if (old.postInstall or null) != null
+          then old.postInstall
+          else ""
+        )
+        + ''
+          for i in nvidia-smi nvidia-cuda-mps-server nvidia-cuda-mps-control \
+                   nvidia-debugdump nvidia-powerd; do
+            if [ -e "$bin/origBin/$i" ]; then
+              install -Dm755 "$bin/origBin/$i" "$bin/bin/$i"
+              ${nvidiaPatchelf}/bin/patchelf \
+                --interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+                --set-rpath "$out/lib:$libPath" \
+                "$bin/bin/$i"
+            fi
+          done
+        '';
     });
 
     modesetting.enable = true;
@@ -209,6 +215,11 @@ in {
       external_display_auto_switch = true; # HDMI is wired to the dGPU
     };
   };
+
+  # Cardwire logs full D-Bus dispatch_call messages at INFO, plus one line
+  # whenever fwupd/smartd probes the blocked GPU. That is benign but noisy;
+  # warnings and errors are enough for this daemon.
+  systemd.services.cardwired.environment.RUST_LOG = "warn";
 
   # Cardwire does not unload drivers, so keep the whole stack loaded for it to
   # see and block. The NVIDIA driver runtime-suspends the GPU to D3cold when
@@ -242,7 +253,10 @@ in {
         hybrid | nvidia) target=hybrid ;;
         *) target=hybrid ;;
       esac
-      for _ in 1 2 3 4 5; do
+      # cardwired normally starts in well under a second, but a slow boot or a
+      # D-Bus race can make the first attempts fail. Give it 30 seconds before
+      # declaring the saved mode unreachable.
+      for _ in {1..30}; do
         if cardwire set "$target"; then
           exit 0
         fi

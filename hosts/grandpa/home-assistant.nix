@@ -52,10 +52,7 @@
     settings.publish."disable-publishing" = false;
   };
 
-  # 8123, twice: LAN (setup while at home — his own network, and the first
-  # visit creates the account) and tailnet (dad's phone anywhere, via the
-  # Tailscale already on this box — the Blynk-cloud hole in one less place).
+  # 8123 on tailscale0 only. Setup is complete, and dad's phone already uses
+  # the tailnet address; there is no reason to keep answering the flat LAN.
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8123];
-  networking.firewall.allowedTCPPorts = [8123]; # LAN — say the word and it
-  # comes off, tailscale0-only is one delete away.
 }

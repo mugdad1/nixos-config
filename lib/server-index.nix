@@ -68,7 +68,7 @@
     # home assistant, added 2026-10-17 with the AC project's close
     # (decisions.md row 114); moved thinkcentre -> grandpa 2026-10-22 with the
     # rest of the nix-native service layer — hosts/grandpa/home-assistant.nix,
-    # firewall :8123 on LAN + tailnet.
+    # firewall :8123 on tailscale0 only.
     {
       name = "home assistant";
       port = "8123";
@@ -127,15 +127,14 @@
     # and serves "Vaultwarden", /api/config 200, while the old no-port link
     # still returns 000.
     #
-    # GAP worth knowing: like vikunja's, this serve is set through the CLI and
-    # lives in tailscaled's state, not in this repo — so it survives reboots
-    # but NOT a fresh install, which is the one thing his "the same system
-    # comes back" rule is for. Noted, not yet fixed.
+    # Both Serve routes are now pinned by systemd.services.tailscale-serve in
+    # hosts/grandpa/default.nix, so a fresh install recreates them instead of
+    # relying on tailscaled's CLI state.
     #
-    # MOVED thinkcentre -> grandpa 2026-10-22 with the compose trio. The serve
-    # above was re-created on grandpa too: `tailscale serve --bg --https=8443
-    # http://100.106.116.60:8082`, same port (:443 is free there now, but :8443
-    # was kept so only the hostname in his saved links changes).
+    # MOVED thinkcentre -> grandpa 2026-10-22 with the compose trio. Vaultwarden
+    # now binds 127.0.0.1:8082, so the serve target is localhost too, same port
+    # (:443 is free there now, but :8443 was kept so only the hostname in his
+    # saved links changes).
     {
       name = "vaultwarden";
       port = "8082";

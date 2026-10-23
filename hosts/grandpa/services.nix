@@ -87,7 +87,6 @@
       exec filen --skip-update rclone "''${args[@]}"
     '';
   };
-
 in {
   # The reasoning for the wait-wrapper lives at opencodeServe above; this is
   # just the unit. It outlived the Telegram bot (removed 2026-10-23) because it
@@ -148,6 +147,11 @@ in {
       RestartSec = "5s";
     };
   };
+
+  # The index links study at grandpa's tailnet address; keep the bind on
+  # 0.0.0.0 so loopback also works, and let the firewall expose it on
+  # tailscale0 only.
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8091];
 
   # ─── filen-sync — the 2-way drive mirror ───────────────────────────────────
   # Periodic bidirectional sync of the Filen drive root into ~/filen, so the

@@ -11,6 +11,10 @@ in {
         enable = true;
         editor = false;
         configurationLimit = 10;
+        # Count boots and fall back to the previous generation after repeated
+        # failures; useful on victus where a bad GPU/kernel boot is otherwise
+        # a manual rescue.
+        bootCounting.enable = true;
       };
 
       efi.canTouchEfiVariables = true;

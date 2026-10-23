@@ -62,21 +62,20 @@
   dockerStack = pkgs.writeShellApplication {
     name = "docker-stack";
     runtimeInputs = with pkgs; [docker coreutils gnugrep];
-    # Same launcher thinkcentre uses — sweeps ~/projects/servers.
-    text = builtins.readFile ../../scripts/thinkcentre/docker-stack.sh;
+    # Sweeps ~/projects/servers; kept under scripts/grandpa/ now.
+    text = builtins.readFile ../../scripts/grandpa/docker-stack.sh;
   };
 in {
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
-    # Headless: deliberately NOT ../../modules/desktop — the same omission that
-    # makes thinkcentre headless, since core stopped dragging the desktop in on
-    # 2026-10-12.
+    # Headless: deliberately NOT ../../modules/desktop — core stopped dragging
+    # the desktop in on 2026-10-12.
 
     # MUST BE LISTED EXPLICITLY. mkHost passes ./hosts/${host} as its module, and
     # a NixOS module that is a *directory* resolves to that directory's
-    # default.nix ONLY — it does not sweep up sibling .nix files. hosts/thinkcentre
-    # learned this the expensive way (see the long warning in its default.nix).
+    # default.nix ONLY — it does not sweep up sibling .nix files. A previous
+    # host learned this the expensive way; git history has the warning.
     ./packages.nix
     ./overrides.nix
     # GLANCES (2026-10-19, his "can we have glances for grandpa") — NixOS-native
@@ -85,10 +84,9 @@ in {
 
     # ── THE SERVICE LAYER, MOVED FROM hosts/thinkcentre 2026-10-22 ──────────
     # His order: "move the services from thinkcentre to grandpa … nix work
-    # only". The ThinkCentre is being returned to its owner, so what it was the
-    # server of lives here now. Each file carries its own rationale for the
-    # move; hosts/thinkcentre keeps its copies commented out as the record of
-    # where this came from.
+    # only". The ThinkCentre went back to its owner, so what it was the server
+    # of lives here now. Each file carries its own rationale for the move; the
+    # old host's copies are in git history.
     #   home-assistant.nix  the AC hub (HA + ESPHome + avahi + :8123) — the
     #                       one thing that cannot simply be reinstalled, since
     #                       its state is paired hardware
@@ -105,25 +103,12 @@ in {
     ./services.nix
     ./secrets.nix
     ./searxng.nix
-
-    # THE MD SERVICE (2026-10-18, removed same day on his "u can rm the md one
-    # idont care that much"): mkdocs-material rendered ~/projects/wiki, nginx
-    # served it, a timer pulled git. wiki.nix kept on disk with its rationale;
-    # the git repo itself is untouched — only the renderer goes.
-    # ./wiki.nix
-    # GITEA-MIRROR (2026-10-19, his "lets have gitea mirror … on grandpa"):
-    # native systemd service, tailnet-only :4321, pushes GitHub → Forgejo.
-    # MOVED TO DOCKER same day on his "i want forgero and mirror in docker
-    # now" — the module stays for its rationale; the compose file lives at
-    # ~/projects/servers/gitea-mirror/ and docker-stack sweeps it.
-    # ./gitea-mirror.nix
   ];
 
   # The ESP lives at /boot (systemd-boot writes there; NixOS's default is already
   # /boot, but keep it explicit so a regenerated hardware-configuration.nix that
   # mounts the ESP elsewhere cannot silently write to a non-ESP directory and
-  # boot the old loader — the exact failure documented in
-  # hosts/thinkcentre/default.nix).
+  # boot the old loader — a failure documented in git history).
   boot.loader.efi.efiSysMountPoint = "/boot";
 
   # No display is ever attached. Blacklist the whole NVIDIA stack so neither
@@ -136,10 +121,9 @@ in {
     "nvidiafb"
   ];
 
-  # Time, same posture as thinkcentre: a literal-IPv4 NTP list, so the clock can
-  # be fixed even when DNS is down (the full deadlock reasoning lives in
-  # hosts/thinkcentre/default.nix). Nothing here assumes the CMOS cell is missing
-  # — it is simply never worse than the pool hostname.
+  # Time: a literal-IPv4 NTP list, so the clock can be fixed even when DNS is
+  # down. The full deadlock reasoning is in git history. Nothing here assumes
+  # the CMOS cell is missing — it is simply never worse than the pool hostname.
   services.timesyncd.enable = true;
   networking.timeServers = [
     "162.159.200.1" # time.cloudflare.com
@@ -149,7 +133,7 @@ in {
 
   # zram, not a swap partition: the disk is a slow spinning HDD and RAM is only
   # 6 GiB, so compressed RAM swap buys far more than a swap file on the
-  # platter. Same shape as thinkcentre.
+  # platter. Same shape as the previous server.
   zramSwap = {
     enable = true;
     algorithm = "lz4";
@@ -221,13 +205,37 @@ in {
     };
   };
 
-  # The module has no openFirewall (checked 2026-10-18 in nixpkgs 6510408), and
-  # modules/core/network.nix turns the firewall on for every host — so without
-  # this line forgejo listens but nobody can reach it. Verified live: active +
-  # LISTEN :3000 with a curl from the thinkcentre still timing out (000/exit 28)
-  # until the port was allowed. LAN-only box, plain http, same as gitea was.
-  # Still :3000 after the docker move — the compose file publishes 3000.
-  networking.firewall.allowedTCPPorts = [3000];
+  # Forgejo is Docker, so the compose file owns the bind. It publishes
+  # 100.106.116.60:3000 (tailnet only); Docker bypasses the NixOS firewall, so
+  # there is no host firewall rule for :3000 any more.
+
+  # Tailscale Serve was historically CLI state only, so a fresh install lost
+  # both HTTPS routes. Pin them here; reset+re-add is idempotent, and the reset
+  # also clears stale paths from an older manual setup. The service runs as
+  # root (tailscale serve requires it) and retries if tailscaled is not ready.
+  systemd.services.tailscale-serve = {
+    description = "Tailscale Serve HTTPS proxies";
+    wantedBy = ["multi-user.target"];
+    after = ["tailscaled.service"];
+    wants = ["tailscaled.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+    script = ''
+      for _ in {1..30}; do
+        if ${pkgs.tailscale}/bin/tailscale status >/dev/null 2>&1; then
+          break
+        fi
+        sleep 1
+      done
+      ${pkgs.tailscale}/bin/tailscale serve reset
+      ${pkgs.tailscale}/bin/tailscale serve --bg --https=444 http://100.106.116.60:3456
+      ${pkgs.tailscale}/bin/tailscale serve --bg --https=8443 http://127.0.0.1:8082
+    '';
+  };
 
   # ── THE SERVICE INDEX PAGE (2026-10-22) ────────────────────────────────────
   #
@@ -235,8 +243,8 @@ in {
   # stuff also rebuild". The page itself was never the problem — it is
   # generated from lib/server-index.nix — but its HOST left with the
   # ThinkCentre (Caddy on :80). nginx was already this box's web server until
-  # the md service was removed on 2026-10-19 (wiki.nix, still on disk, not
-  # imported), so this is that role coming back for a static page.
+  # the md service was removed on 2026-10-19; wiki.nix has since been removed
+  # in cleanup, so git history has the rationale.
   #
   # DECLARATIVE ON PURPOSE, unlike the old `push-server-index` rsync: the page
   # is the store path below, so the index cannot drift from the service list —

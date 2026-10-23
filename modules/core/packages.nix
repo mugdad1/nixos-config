@@ -77,6 +77,7 @@ in {
 
   environment.systemPackages = with pkgs; [
     cachix
+    nftables # `sudo nft list ruleset` — the firewall is nftables
     sops
     filen-cli
     # adb / fastboot — STILL NEEDED for his phone. This is the only Android

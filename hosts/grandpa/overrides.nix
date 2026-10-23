@@ -1,8 +1,7 @@
 # Host-level OVERRIDES for grandpa — every value a shared module sets for the
-# ThinkPad that this wired, headless box has to undo, plus the systemd-networkd
-# posture that replaces NetworkManager. Same shape and reasoning as
-# hosts/thinkcentre/overrides.nix; read that file for the long notes — this one
-# keeps only what is specific to grandpa.
+# laptop that this wired, headless box has to undo, plus the systemd-networkd
+# posture that replaces NetworkManager. The long notes live in git history;
+# this file keeps only what is specific to grandpa.
 #
 # ONLY active because ./overrides.nix is named in the imports list of
 # ./default.nix — a directory module does not sweep up its siblings.
@@ -19,13 +18,9 @@
   # see the longer note in hosts/thinkcentre/overrides.nix.
   services.btrfs.autoScrub.enable = lib.mkForce false;
 
-  # ── network: NetworkManager out, systemd-networkd in ───────────────────────
-  # Wired desktop: NM drags in iwd and ModemManager for hardware that is not
-  # present. modules/core/network.nix gates that stack on `host != "thinkcentre"`,
-  # so grandpa WOULD inherit it — these mkForce lines are what turn it back off.
-  systemd.services.ModemManager.enable = lib.mkForce false;
-  networking.networkmanager.enable = lib.mkForce false;
-  networking.wireless.iwd.enable = lib.mkForce false;
+  # ── network: systemd-networkd in ───────────────────────────────────────────
+  # Wired desktop: modules/core/network.nix enables NetworkManager/iwd only on
+  # victus, so this host never inherits that stack or ModemManager.
   networking.useDHCP = false;
   networking.useNetworkd = true;
   # blocky owns /etc/resolv.conf (core/network.nix forces nameserver 127.0.0.1
