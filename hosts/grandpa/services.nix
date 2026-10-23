@@ -36,26 +36,7 @@
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
   ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
-  # The donor's 90 s readiness wait, verbatim in behaviour. After= only
-  # guarantees opencode was SPAWNED, not that its API port answers — a bot that
-  # starts blind is better than one that never starts, so it is bounded at 90 s
-  # either way.
-  waitOpencode = pkgs.writeShellScript "wait-opencode-api" ''
-    i=0
-    # PORT: opencode v2 listens on 13420 (v1 used 49374, then the wait grepped
-    # a port nothing was bound to and always spun the full 90 s).
-    while ! ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:13420 '; do
-      i=$((i + 1))
-      if [ "$i" -ge 18 ]; then
-        echo "$(date '+%F %T') opencode-telegram: gave up waiting for opencode after 90s, starting anyway"
-        break
-      fi
-      ${pkgs.coreutils}/bin/sleep 5
-    done
-    echo "$(date '+%F %T') opencode-telegram: opencode API is up, starting bot"
-  '';
-
-  # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
+  # ─── OpenCode server — the fleet's persistent opencode on :13420 ───────────
   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
   # already holds 127.0.0.1:13420 — the interactive TUI holds it for as long as
   # its session lives. Modelling that conflict with systemd's restart loop
@@ -63,33 +44,25 @@
   # 28 on 2026-10-23, each costing a journal write and a memory peak for a bind
   # it could not win.
   #
-  # The wait has to live in the MAIN process, not in ExecStartPre. First attempt
+  # The wait has to live in the MAIN process, not in ExecStartPre. That attempt
   # (same day) put it in ExecStartPre with TimeoutStartSec=infinity: the unit
   # then sits in `activating`, and `systemctl start` waits for EVERY job in its
-  # transaction — so the bot's `Wants=opencode-serve` hung
-  # switch-to-configuration for 18 minutes at "starting the following units:
-  # opencode-telegram.service". Type=simple marks the unit active the instant
-  # THIS script is forked, so start returns immediately however long it sleeps,
-  # and systemd keeps the same PID through `exec`, so once the port frees the
-  # main process really is opencode. One sleeping process, zero restarts, and it
-  # takes over within 5 s of the TUI letting go.
+  # transaction, so it hung switch-to-configuration for 18 minutes. Type=simple
+  # marks the unit active the instant THIS script is forked, so start returns
+  # immediately however long it sleeps, and systemd keeps the same PID through
+  # `exec`, so once the port frees the main process really is opencode. One
+  # sleeping process, zero restarts, and it takes over within 5 s of the TUI
+  # letting go. Verified 2026-10-23 across a reboot: with no TUI running it
+  # bound the port itself.
+  #
+  # It USED to exist for the Telegram bot (removed 2026-10-23, row 206). What
+  # keeps it now is that it is the only thing that answers :13420 after a reboot
+  # — sessions and any agent talking to opencode need it, TUI or not.
   opencodeServe = pkgs.writeShellScript "opencode-serve-wait" ''
     while ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:13420 '; do
       ${pkgs.coreutils}/bin/sleep 5
     done
     exec ${pkgs.opencode}/bin/opencode serve --service
-  '';
-
-  # The bot launcher, NIXIFIED 2026-10-15. It used to be a hand-written
-  # ~/.local/bin/opencode-telegram-start; when that file was missing systemd
-  # reported 203/EXEC (not a crash — the file is simply not there) and
-  # switch-to-configuration exited 4, failing an otherwise perfect rebuild.
-  # Building it here makes the launcher part of the system closure.
-  opencodeTelegramStart = pkgs.writeShellScriptBin "opencode-telegram-start" ''
-    # Absolute npx, not a bare one: this script's PATH is whatever the unit
-    # sets. `exec` so the node process replaces the shell — without it systemd
-    # sees a wrapper PID and SIGTERM lands on the shell first.
-    exec ${pkgs.nodejs}/bin/npx -y @grinev/opencode-telegram-bot@latest start
   '';
 
   # The recurring Filen 2-WAY sync. bisync and not `sync`: rclone's `sync` is
@@ -116,16 +89,11 @@
   };
 
 in {
-  # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
-  # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
-  # already holds 127.0.0.1:13420 — the interactive TUI holds it for as long as
-  # its session lives. Instead of fighting that with a restart loop, the unit
-  # WAITS for the port (opencodeServe above) and binds it within 5 s of the TUI
-  # releasing it. Telegram is unaffected either way: the bot's own waitOpencode
-  # only cares that SOMETHING answers 13420, and it does not order on this unit
-  # (see below) — so a serve that is still waiting never holds the bot off.
+  # The reasoning for the wait-wrapper lives at opencodeServe above; this is
+  # just the unit. It outlived the Telegram bot (removed 2026-10-23) because it
+  # is what answers :13420 after a reboot, TUI or not.
   systemd.services.opencode-serve = {
-    description = "OpenCode V2 serve (singleton the Telegram bot attaches to)";
+    description = "OpenCode V2 serve (persistent :13420, waits for a free port)";
     wantedBy = ["multi-user.target"];
     after = ["network.target"];
     serviceConfig = {
@@ -150,66 +118,6 @@ in {
       # process — moving the wait back into ExecStartPre re-creates the
       # `activating` deadlock that hung a rebuild for 18 minutes.
       ExecStart = opencodeServe;
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
-
-  # ─── Telegram bot ──────────────────────────────────────────────────────────
-  # Wants= on opencode-serve, but NOT Requires= and — since 2026-10-23 — not
-  # After= either. Requires propagates STOP, so every opencode restart would
-  # take the bot down with it; the donor kept the bot up and re-attaching, and
-  # that is the behaviour worth preserving.
-  #
-  # After= earns nothing here. opencode-serve is Type=simple, so it reports
-  # active the instant its wrapper is forked — long before 13420 is actually
-  # bound — which means the ordering completes without guaranteeing the thing it
-  # looks like it waits for. waitOpencode below is the check that matters: it
-  # polls the port itself and bounds at 90 s. Dropping After= also removes the
-  # hazard the FIRST fix for the restart loop hit the same day, where serve
-  # parked in `activating` and ordering could not be satisfied at all.
-  systemd.services.opencode-telegram = {
-    description = "opencode-telegram bot (waits for the OpenCode API)";
-    # Until sops-nix has rendered the config the bot cannot run: with no config
-    # it launches an interactive wizard and dies with "Interactive wizard
-    # requires a TTY terminal", and Restart=always turns that into a crash
-    # loop every 10 s that also leaves the unit in `systemctl --failed`. The
-    # condition keeps it skipped-cleanly instead — status reads "condition
-    # failed", it stays out of --failed, and it starts by itself the moment the
-    # file lands. Ordering on sops-install-secrets matters: that unit runs
-    # before sysinit.target, so without this `after` there is no guarantee the
-    # render happened before the condition is evaluated.
-    unitConfig.ConditionPathExists =
-      config.sops.templates."opencode-telegram.env".path;
-    wantedBy = ["multi-user.target"];
-    wants = ["opencode-serve.service"];
-    # sops-install-secrets ONLY — opencode-serve is deliberately absent, see the
-    # comment above this unit.
-    after = ["sops-install-secrets.service"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # EnvironmentFile, not Environment: the values are secrets, so they
-      # belong in a file owned by `username` at 0400 that systemd reads
-      # directly, rather than being expanded into the unit's Environment=
-      # where `systemctl show` would print them back.
-      EnvironmentFile = [config.sops.templates."opencode-telegram.env".path];
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        # bash FIRST: npm runs install scripts with `spawn sh`, and sh was in
-        # none of these directories — the bot died every start with
-        # "npm error enoent spawn sh ENOENT" (exit 254). pkgs.bash/bin carries
-        # both bash and sh; without it npx resolves fine but the package it
-        # fetches cannot run its own lifecycle script.
-        "PATH=${pkgs.bash}/bin:${pkgs.nodejs}/bin:/home/${username}/.local/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin"
-      ];
-      ExecStartPre = waitOpencode;
-      ExecStart = "${opencodeTelegramStart}/bin/opencode-telegram-start";
-      # The 90 s readiness wait would otherwise hit the 90 s default start
-      # timeout and get SIGKILLed mid-wait.
-      TimeoutStartSec = "5min";
       Restart = "always";
       RestartSec = "10s";
     };

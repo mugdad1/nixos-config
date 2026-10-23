@@ -1,4 +1,4 @@
-# Alerting + disk health, shared by all three hosts.
+# Disk health + the fleet's sops wiring, shared by every host.
 #
 # WHY (2026-10-18): every host could detect a failure and none could report one.
 # The detectors were already there - a unit/container/endpoint/DNS sweep
@@ -9,66 +9,68 @@
 # his "just rm notify". The result he hit: a box can lose a disk or a container
 # and the only trace is journald, which nobody reads unasked.
 #
-# WHAT THIS ADDS, in the two places that were empty:
+# DELIVERY, or the lack of it. Two transports were tried and BOTH are gone now:
+# the ntfy container (2026-10-12, "just rm notify") and then Telegram itself,
+# removed wholesale at his order on 2026-10-23 (row 206) - the bot, the
+# `notify-telegram` script, the `notify-telegram@` OnFailure= template, its
+# sops secrets and the `telegram/*` key pair all went in one commit.
 #
-#   1. A delivery path - `notify-telegram`, one script (pkgs/notify-telegram.nix
-#      -> scripts/notify-telegram.sh) used by smartd below and by the
-#      OnFailure= template unit here. (sv-watch was a third caller until
-#      2026-10-23.) It posts to the Telegram Bot API with
-#      the token out of sops; on a host with no key yet it logs NOTIFY(no-token)
-#      and exits 0 instead of queueing forever. See that script's header.
+# WHAT IS LEFT is `smartd`, still worth running on its own: it is the one thing
+# that notices a disk going bad BEFORE it takes the box with it, and it was
+# simply not enabled anywhere. Autodetect covers sda/nvme0n1 without naming
+# devices that move between boots (their /dev paths do - see hosts/thinkcentre's
+# hardware comment). SMART was last configured by hand on the donor Void
+# install; this is the NixOS replacement.
 #
-#   2. `smartd` on every host. It is the one thing that notices a disk going bad
-#      BEFORE it takes the box with it, and it was simply not enabled anywhere.
-#      Autodetect covers sda/nvme0n1 without naming devices that move between
-#      boots (their /dev paths do - see hosts/thinkcentre's hardware comment).
-#      SMART was last configured by hand on the donor Void install; this is the
-#      NixOS replacement.
+# Its notifications now go to `wall` only. `notifications.mail` went with
+# Telegram: smartd calls a sendmail-compatible binary as `<mailer> -i
+# <recipient>` and pipes the report to stdin, and with no such binary left on
+# the box there is nothing for it to call - an MTA would be the only
+# alternative and there will not be one. `wall` still stays on - the journal
+# copy is what you find when you eventually look, and on a headless box it
+# costs nothing. Net effect to be explicit about: a failing disk is logged,
+# not telephoned. Nothing on this box pushes a message anywhere now.
 #
-# The smartd hook is deliberately `notifications.mail` with our own script as
-# the `mailer`: smartd calls a sendmail-compatible binary as
-# `<mailer> -i <recipient>` and pipes the report to stdin, which is exactly the
-# interface notify-telegram implements (it ignores `-i`; the chat id is the
-# secret). `wall` also stays on - the journal copy is what you find when you
-# eventually look, and on a headless box it costs nothing.
+# The sops block below is the fleet wiring, not the credential it used to
+# carry: it names the ciphertext file and the age key path for every host
+# except victus (see the comment there). The `telegram/*` secrets it declared
+# were the last entries in it.
 {
   pkgs,
   config,
   lib,
   host,
   ...
-}: let
-  notify = pkgs.callPackage ../../pkgs/notify-telegram.nix {};
-in {
-  environment.systemPackages = [notify];
-
-  # ── the Telegram credential, for EVERY host ────────────────────────────────
+}: {
+  # ── the fleet's sops wiring, for every host except victus ──────────────────
   #
-  # WHERE IT LIVES AND WHY IT IS HERE. This started in hosts/thinkcentre/
-  # secrets.nix, because until 2026-10-18 the ThinkCentre was the only host that
-  # could deliver anything. On his order ("do 1 2 now!", item 2 of the alerting
-  # work) the age key was placed on all three hosts, so t480s and grandpa can
-  # deliver too — and the credential had to move somewhere all three import.
-  # `modules/core` is that place, and this module is where the alert path
-  # already lives, so the token and the thing that sends with it are one file.
+  # WHAT THIS BLOCK IS. It used to exist to carry the Telegram credential
+  # fleet-wide: it started in hosts/thinkcentre/secrets.nix because until
+  # 2026-10-18 the ThinkCentre was the only host that could deliver anything,
+  # then had to move somewhere all three hosts import once the age key was
+  # placed on them. Telegram went wholesale on 2026-10-23 (row 206) and took
+  # the last `sops.secrets` entry with it — what is left is the two defaults a
+  # host needs before it can declare ANY secret at all, which is why it stayed
+  # in modules/core rather than being deleted with the credential.
   #
   # Both options are `mkDefault` so a host that wants a different key path or a
   # different ciphertext file can still say so and win.
   #
-  # The ciphertext file was RENAMED the same day: secrets/thinkcentre.sops.yaml
+  # The ciphertext file was RENAMED on 2026-10-18: secrets/thinkcentre.sops.yaml
   # -> secrets/fleet.sops.yaml. A fleet-wide secret in a file named after one
-  # host is exactly the kind of drift the rest of this pass was spent deleting.
+  # host is exactly the kind of drift the rest of that pass was spent deleting.
   # Nothing re-encrypted — the file name is not in the ciphertext, and
   # .sops.yaml's `path_regex` is generic (`secrets/[^/]+\.sops\.yaml$`), so it
   # keeps covering the new name.
   #
   # NOT ON victus (2026-10-22, "can we skip on it"): that host is set up without
   # the age key, and sops-install-secrets fails the whole activation when a
-  # declared secret cannot be decrypted — so declaring the token there would
+  # declared secret cannot be decrypted — so declaring a secret there would
   # block its very first switch. The gate is by hostname, not by key presence,
   # because activation is exactly where the absence would bite. Consequence:
-  # no Telegram alerts FROM the Victus. To turn them on, copy the key to
-  # /var/lib/sops-nix/key.txt and delete the `host != "victus"` condition.
+  # grandpa's secrets decrypt from here, the Victus's own host file does not
+  # participate. To change that, copy the key to /var/lib/sops-nix/key.txt and
+  # delete the `host != "victus"` condition.
   sops = lib.mkIf (host != "victus") {
     defaultSopsFile = lib.mkDefault ../../secrets/fleet.sops.yaml;
 
@@ -83,61 +85,31 @@ in {
     # itself (it is not in the repo, by design). Restore it to this path before
     # the first switch, or activation fails while decrypting.
     age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
-
-    secrets = {
-      # Names map onto the YAML structure with `/` as the nesting separator, so
-      # "telegram/bot_token" is `telegram: { bot_token: ... }`. Moved here from
-      # the ThinkCentre's file 2026-10-18; the values are unchanged.
-      "telegram/bot_token" = {};
-      "telegram/allowed_user_id" = {};
-    };
-
-    # Rendered at activation to /run/secrets/rendered/notify-telegram.env, the
-    # path scripts/notify-telegram.sh reads by default — so no unit has to be
-    # told where the token is.
-    #
-    # root:root 0400 (the default) and NOT the `username` owner the ThinkCentre's
-    # other two templates use: every caller of notify-telegram is root (smartd,
-    # notify-telegram@ — sv-watch until 2026-10-23), so nothing else needs to
-    # read it. The script's
-    # probe is `[ -r ... ]` as root, so a host that somehow lost its key fails
-    # closed — it logs NOTIFY(no-token) and exits 0 rather than queueing forever.
-    templates."notify-telegram.env".content = ''
-      TELEGRAM_BOT_TOKEN=${config.sops.placeholder."telegram/bot_token"}
-      TELEGRAM_CHAT_ID=${config.sops.placeholder."telegram/allowed_user_id"}
-    '';
   };
 
-  # OnFailure= hook for any unit that has to be heard about. Used by
-  # backup-daily (hosts/thinkcentre/backup.nix); the unit sweep that used to
-  # report failed units alongside it went 2026-10-23, which makes this hook the
-  # only path a failing unit has to the phone — a failing backup still reaches
-  # it with the failed unit named rather than not at all.
-  #
-  # `%i` is the failed unit's name as the instance, `%n` in the caller expands
-  # to the same, so `unitConfig.OnFailure = ["notify-telegram@%n.service"]`
-  # produces "backup-daily.service failed on thinkcentre".
-  systemd.services."notify-telegram@" = {
-    description = "Telegram alert that %i failed";
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${notify}/bin/notify-telegram --title 'unit failed' \"%i failed on ${config.networking.hostName}\"";
-    };
-  };
-
+  # OnFailure= USED to be wired here too: `unitConfig.OnFailure =
+  # ["notify-telegram@%n.service"]` on callers such as backup-daily, which
+  # reported "backup-daily.service failed on thinkcentre" to the phone. The
+  # template unit went with Telegram on 2026-10-23 (row 206), and so did the
+  # unit sweep that had shared it — so a failing unit now has NO notification
+  # path at all, only journald and `systemctl --failed`. Recorded here rather
+  # than left silent, because the hook's absence is a real regression and the
+  # next person to add a transport should re-add it.
   services.smartd = {
     enable = true;
     autodetect = true;
     notifications = {
-      mail = {
-        # Default is `services.mail.sendmailSetuidWrapper != null`, which is
-        # false here: there is no MTA on any of these boxes and there will not
-        # be one. The mailer below is the whole point.
-        enable = true;
-        mailer = "${notify}/bin/notify-telegram";
-        recipient = "telegram";
-        sender = "smartd@${config.networking.hostName}";
-      };
+      # NO MAIL, since 2026-10-23 (row 206). `notifications.mail` was never the
+      # generic option here: it was `enable = true` with our own
+      # `notify-telegram` as the `mailer`, because smartd calls a
+      # sendmail-compatible binary as `<mailer> -i <recipient>` and pipes the
+      # report to stdin, which is the interface that script implemented. With
+      # Telegram gone there is no such binary left on the box, and `enable`
+      # without one would point smartd at a sendmail that does not exist. The
+      # default for this option is `sendmailSetuidWrapper != null`, which is
+      # false — there is no MTA on any of these boxes and there will not be
+      # one — so dropping the block is the honest spelling of "no delivery".
+      #
       # An attrset with `enable`, not a bool (the first draft of this file set
       # `wall = true;` and the eval refused it - which is the good kind of loud).
       wall.enable = true;

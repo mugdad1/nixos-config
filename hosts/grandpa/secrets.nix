@@ -5,17 +5,21 @@
 # WHAT IS IN THIS FILE: the sops.secrets declarations for the keys this host
 # renders, plus the *templates* whose shapes are a property of the units that
 # read them. The secret VALUES are ciphertext in secrets/fleet.sops.yaml
-# (fleet-scope, decisions rows 121–122; monitoring.nix declares the `telegram/*`
-# pair from there). The keys below used to be declared in
+# (fleet-scope, decisions rows 121–122). The keys below used to be declared in
 # hosts/thinkcentre/secrets.nix — that file is commented out with the rest of
 # the box, so the declarations moved with the templates that consume them
 # (a placeholder errors out at eval until its secret is declared, which is how
 # this was caught: the grandpa rebuild failed on exactly that).
 #
-#   opencode-telegram.env   EnvironmentFile for systemd.services.opencode-telegram
 #   filen-sync.env          EnvironmentFile for the filen-sync bisync unit
+#   searxng.env             EnvironmentFile for the searxng container
 #
-# Both are host-local because they name `owner = username` — the unit that
+# A third, opencode-telegram.env, went with the Telegram bot on 2026-10-23
+# (row 206) — along with the `opencode/server_password` secret, which existed
+# only to be mirrored into that template; the server reads its password from
+# ~/.config/opencode/service-prod.json directly.
+#
+# They are host-local because they name `owner = username` — the unit that
 # reads them runs as that user. Putting them in modules/core would hand every
 # host a template for a unit only this host runs, which is the same overreach
 # the sops secrets were moved OUT of a host file to avoid. Read
@@ -41,7 +45,6 @@
     # values live in the encrypted file; this only says "decrypt this key for
     # this host". Moved here from hosts/thinkcentre/secrets.nix (now inert).
     secrets = {
-      "opencode/server_password" = {}; # opencode-telegram.env
       "filen/email" = {}; # filen-sync.env
       "filen/password" = {}; # filen-sync.env
       "searx/secret_key" = {}; # searxng.env, added 2026-10-22
@@ -53,45 +56,11 @@
     # /var/lib states plainly that this is machine state, not user state.
     age.keyFile = "/var/lib/sops-nix/key.txt";
 
-    templates."opencode-telegram.env" = {
-      # The unit runs as `username`, so it must be able to read the file.
-      # Default is root:root 0400, which would give the unit an
-      # "Access denied" and a crash loop that looks like a bot bug.
-      owner = username;
-      mode = "0400";
-      content = ''
-        TELEGRAM_BOT_TOKEN=${config.sops.placeholder."telegram/bot_token"}
-        TELEGRAM_ALLOWED_USER_ID=${config.sops.placeholder."telegram/allowed_user_id"}
-
-        # OpenCode v2. The bot defaults to v1 and CANNOT detect the version, so
-        # every value here is load-bearing: v1's default port is 4096 and v2's
-        # is 13420, and a stale port makes the wait-loop spin out and start a
-        # bot that is permanently blind while every unit reads green.
-        OPENCODE_SERVER_VERSION=v2
-        OPENCODE_API_URL=http://127.0.0.1:13420
-        # USERNAME IS A LITERAL, not a sops placeholder, and NOT "mugdad" — the
-        # server rejects Basic auth unless it is exactly `opencode` (measured
-        # live 2026-10-15: `opencode` returned 200 while `mugdad`, `root` and
-        # the empty string each returned 401, same password throughout). It is
-        # a constant of the server, not a credential, so it belongs in Nix where
-        # a reviewer can see it, and it doubles as the bot's own fallback.
-        OPENCODE_SERVER_USERNAME=opencode
-        OPENCODE_SERVER_PASSWORD=${config.sops.placeholder."opencode/server_password"}
-
-        # v2 requires a default model. `opencode` / `big-pickle` are this
-        # house's provider, not an example — the .env.example ships different
-        # ones and copying those would point the bot at a provider that is not
-        # configured here.
-        OPENCODE_MODEL_PROVIDER=opencode
-        OPENCODE_MODEL_ID=big-pickle
-      '';
-    };
-
     # Credentials for the recurring Filen 2-WAY bisync (./services.nix).
     #
-    # Its own template rather than reusing one above, because EnvironmentFile
-    # needs KEY=value lines while the telegram template feeds a bot config with
-    # a specific shape. Both render at activation into /run/secrets/rendered/,
+    # Its own template rather than reusing one above: EnvironmentFile wants
+    # plain KEY=value lines, while a template is free to render whatever shape
+    # its unit reads. Both render at activation into /run/secrets/rendered/,
     # so no Filen credential exists as plaintext outside this encrypted file
     # and that root-owned runtime directory.
     #

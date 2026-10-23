@@ -68,7 +68,6 @@ SOURCES="
 /home/mugdad/projects
 /home/mugdad/.local/state/opencode
 /home/mugdad/.local/bin
-/home/mugdad/.config/opencode-telegram-bot
 /etc/fstab
 /etc/docker
 /var/lib/nixos

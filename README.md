@@ -62,9 +62,9 @@ nixos-config/
 │       ├── terminal/         # cli, dev, fish, shell, glow, lazyvim + fastfetch/, ghostty/, lazyvim-config/
 │       ├── apps/             # browser, git, gui, homepage, vscodium, xdg
 │       └── desktop/          # theme, osd, swaylock + sway/, waybar/, rofi/, swaync/
-├── pkgs/                     # callPackage files: filen-cli.nix, notify-telegram.nix
+├── pkgs/                     # callPackage files: filen-cli.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
-│   ├── *.sh                  # checkup, mcli, notify-telegram, hm-find, desktop helpers
+│   ├── *.sh                  # checkup, mcli, hm-find, desktop helpers
 │   ├── grandpa/              # ac.sh — grandpa's own
 │   └── thinkcentre/          # docker-stack.sh (still read), backup-run.sh (orphaned)
 ├── secrets/                  # ENCRYPTED sops files (committed, useless without a key)
@@ -155,16 +155,18 @@ installs it at that path, and refuses to start the build if neither exists.
 secrets are gated off by hostname (`sops = lib.mkIf (host != "victus")` in
 `modules/core/monitoring.nix`) so a missing key cannot fail the first switch.
 
-**The key is also what turns alerting on**, and since 2026-10-18 that is true
-on `grandpa`; `victus` sends no Telegram alerts until the key is placed at
-`/var/lib/sops-nix/key.txt` and that gate is dropped. `notify-telegram` (`modules/core/monitoring.nix`) reads its bot
-token from the sops-rendered `/run/secrets/rendered/notify-telegram.env` —
-root:root 0400, because every caller (smartd, `notify-telegram@`) runs as root.
-(`sv-watch` was a third caller until it was removed at his order, 2026-10-23.) The token and the template that ships it are declared **fleet-wide in
-`modules/core/monitoring.nix`**, not in a per-host `secrets.nix`, so a host gets
-alerting the moment its key is in place and nothing else has to change. A host
-that has lost its key fails closed: it logs `NOTIFY(no-token)` to journald and
-**exits 0**, so a box that cannot deliver never grows an outbox.
+**Alerting is gone, and the key no longer implies any.** Until 2026-10-23 the
+key's second job was turning Telegram on: `notify-telegram` read a bot token
+from the sops-rendered `/run/secrets/rendered/notify-telegram.env` and both
+`smartd` and a `notify-telegram@` OnFailure= hook called it. That whole path
+went at his order ("no more telegram and whatsapp") — script, template unit,
+`telegram/*` secrets and every caller in one commit — after the ntfy container
+had already gone and WhatsApp with it. The age key is therefore now only about
+decrypting the credentials that remain (`filen`, `searx`, `opencode`), and what
+is left of failure reporting is `smartd`'s `wall` notification plus the
+journal: a failing disk or unit is **logged, not telephoned**. Restoring a
+transport is his call; when it happens it should bring back both halves, not
+just one.
 
 The ciphertext file is `secrets/fleet.sops.yaml` (renamed from
 `thinkcentre.sops.yaml` on 2026-10-18 — a fleet-wide secret in a file named

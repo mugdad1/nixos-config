@@ -22,8 +22,9 @@
 # opencode was deliberately omitted until 2026-10-16, when he asked for it by
 # name ("fish opencode gh git mcli tailscale"). Secrets stay fleet-scope in modules/core (sops,
 # secrets/fleet.sops.yaml, rows 121–122), NOT per-host — ./secrets.nix added
-# 2026-10-22 carries only the two host-local *templates*
-# (opencode-telegram.env, filen-sync.env) that moved with ./services.nix.
+# 2026-10-22 carries only the two host-local *templates* it renders
+# (filen-sync.env for the bisync unit, searxng.env for the searxng container).
+# A third, opencode-telegram.env, went with the Telegram bot on 2026-10-23.
 #
 # ONLY active because ./packages.nix is named in the imports list of
 # ./default.nix — a directory module does not sweep up its siblings.

@@ -107,14 +107,17 @@ mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
 ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
 
 #--- sops age key ---#
-# Hosts that declare the fleet Telegram secrets (modules/core/monitoring.nix)
-# decrypt them on the first switch. Without the private key, activation fails
+# Hosts that declare ANY sops secret decrypt it on the first switch.
+# modules/core/monitoring.nix supplies the default ciphertext file and the key
+# path; the declarations themselves live in the host's own secrets.nix. Without
+# the private key, activation fails
 # part-way through a fresh install, which is the worst possible moment to find
 # out. Look for the key beside the installer or in $HOME and install it; if it
 # is nowhere, stop before building a system that cannot activate.
 #
-# victus is exempt: monitoring.nix gates the secrets off there on purpose, so it
-# has nothing to decrypt and must not be blocked by a missing key.
+# victus is exempt: it declares no secrets at all, and monitoring.nix gates its
+# whole sops block off there on purpose, so it has nothing to decrypt and must
+# not be blocked by a missing key.
 if [ "$HOST" = "victus" ]; then
     echo -e "${INFO}${GREEN}victus${RESET} declares no sops secrets; no age key needed."
 elif [ ! -f /var/lib/sops-nix/key.txt ]; then

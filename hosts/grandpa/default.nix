@@ -39,12 +39,17 @@
 # engine under them (see the block below).
 #
 # SINCE 2026-10-22 it is also the box the fleet's services live on: the
-# ThinkCentre is being returned to its owner, so Home Assistant, the Telegram
-# bot, opencode-serve, study and filen-sync all moved here ("move the services
-# from thinkcentre to grandpa … nix work only"). Two things that travelled with
-# them have since been removed at his order: WhatsApp (bridge/watcher/313
-# timer, "no more whatsapp", 2026-10-23, the project itself already deleted
-# from disk) and sv-watch (same day). The import list below names what remains;
+# ThinkCentre is being returned to its owner, so Home Assistant, opencode-serve,
+# study and filen-sync all moved here ("move the services from thinkcentre to
+# grandpa … nix work only"). Three things that travelled with them have since
+# been removed at his order: the Telegram bot together with the entire alert
+# path it carried (smartd's mailer, the notify-telegram@ OnFailure= hook, the
+# `telegram/*` secrets, "no more telegram and whatsapp", 2026-10-23, row 206),
+# WhatsApp (bridge/watcher/313 timer, "no more whatsapp", same day, the project
+# itself already deleted from disk) and sv-watch (same day). opencode-serve is
+# the one component of that stack he chose to KEEP when asked — it is what
+# answers :13420 after a reboot, bot or no bot. The import list below names
+# what remains;
 # each file explains what it carries. Still absent by choice: no backup (the /srv/backup
 # disk is physical and stays with the ThinkCentre — see hosts/thinkcentre/
 # backup.nix), and adding anything further is his call, not an improvement to
@@ -87,11 +92,11 @@ in {
     #   home-assistant.nix  the AC hub (HA + ESPHome + avahi + :8123) — the
     #                       one thing that cannot simply be reinstalled, since
     #                       its state is paired hardware
-    #   services.nix        opencode-serve/telegram, study, filen-sync,
+    #   services.nix        opencode-serve, study, filen-sync,
     #                       journald persistent
-    #   secrets.nix         the two host-local TEMPLATES those units read; the
-    #                       secret values themselves stay fleet-scope in
-    #                       modules/core/monitoring.nix
+    #   secrets.nix         the two host-local TEMPLATES those units read (filen,
+    #                       searx); the secret values themselves stay fleet-scope
+    #                       in modules/core/monitoring.nix
     #   searxng.nix         the house search engine — declared NIX-NATIVE the
     #                       same day ("Declare it inside grandpa") instead of
     #                       staying a ThinkCentre-only compose project that
