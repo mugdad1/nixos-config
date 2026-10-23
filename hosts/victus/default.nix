@@ -50,11 +50,13 @@
       intel)
         if ! cardwire set integrated; then
           echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
+          exit 1
         fi
         ;;
       hybrid | nvidia)
         if ! cardwire set hybrid; then
           echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
+          exit 1
         fi
         ;;
     esac
@@ -98,9 +100,15 @@
       *NVIDIA*) target=nvidia; profile=performance ;;
       *) exit 0 ;;
     esac
-    powerprofilesctl set "$profile" 2>/dev/null || true
+    # The GPU mode is the source of truth: only change the power profile after
+    # it actually applied. The mapping is the Super+P contract:
+    #   Intel only -> power-saver, Both -> balanced, NVIDIA only -> performance.
     if out="$(gpu-mode "$target" 2>&1)"; then
-      notify-send -u normal "GPU mode: $target" "Log out and back in to apply."
+      if pp_out="$(powerprofilesctl set "$profile" 2>&1)"; then
+        notify-send -u normal "GPU mode: $target" "Power profile: $profile. Log out and back in to apply."
+      else
+        notify-send -u normal "GPU mode: $target" "Power profile not changed: $pp_out"
+      fi
     else
       notify-send -u critical "GPU mode failed" "$out"
     fi
@@ -237,6 +245,7 @@ in {
         sleep 1
       done
       echo "victus-gpu-mode: could not set Cardwire mode to $target" >&2
+      exit 1
     '';
   };
 
