@@ -55,6 +55,31 @@
     echo "$(date '+%F %T') opencode-telegram: opencode API is up, starting bot"
   '';
 
+  # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
+  # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
+  # already holds 127.0.0.1:13420 — the interactive TUI holds it for as long as
+  # its session lives. Modelling that conflict with systemd's restart loop
+  # (start, exit, retry in 10 s) was pure churn: 108 restarts on 2026-10-22,
+  # 28 on 2026-10-23, each costing a journal write and a memory peak for a bind
+  # it could not win.
+  #
+  # The wait has to live in the MAIN process, not in ExecStartPre. First attempt
+  # (same day) put it in ExecStartPre with TimeoutStartSec=infinity: the unit
+  # then sits in `activating`, and `systemctl start` waits for EVERY job in its
+  # transaction — so the bot's `Wants=opencode-serve` hung
+  # switch-to-configuration for 18 minutes at "starting the following units:
+  # opencode-telegram.service". Type=simple marks the unit active the instant
+  # THIS script is forked, so start returns immediately however long it sleeps,
+  # and systemd keeps the same PID through `exec`, so once the port frees the
+  # main process really is opencode. One sleeping process, zero restarts, and it
+  # takes over within 5 s of the TUI letting go.
+  opencodeServe = pkgs.writeShellScript "opencode-serve-wait" ''
+    while ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:13420 '; do
+      ${pkgs.coreutils}/bin/sleep 5
+    done
+    exec ${pkgs.opencode}/bin/opencode serve --service
+  '';
+
   # The bot launcher, NIXIFIED 2026-10-15. It used to be a hand-written
   # ~/.local/bin/opencode-telegram-start; when that file was missing systemd
   # reported 203/EXEC (not a crash — the file is simply not there) and
@@ -93,9 +118,12 @@
 in {
   # ─── OpenCode server — the singleton the Telegram bot attaches to ───────────
   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
-  # already holds 127.0.0.1:13420. There is no unit edge to model a conflicting
-  # manual instance, so systemd's restart loop IS the retry construct: it exits,
-  # we back off, we take over within RestartSec of the manual instance dying.
+  # already holds 127.0.0.1:13420 — the interactive TUI holds it for as long as
+  # its session lives. Instead of fighting that with a restart loop, the unit
+  # WAITS for the port (opencodeServe above) and binds it within 5 s of the TUI
+  # releasing it. Telegram is unaffected either way: the bot's own waitOpencode
+  # only cares that SOMETHING answers 13420, and it does not order on this unit
+  # (see below) — so a serve that is still waiting never holds the bot off.
   systemd.services.opencode-serve = {
     description = "OpenCode V2 serve (singleton the Telegram bot attaches to)";
     wantedBy = ["multi-user.target"];
@@ -117,17 +145,29 @@ in {
         "LOGNAME=${username}"
         "PATH=${ocPath}"
       ];
-      ExecStart = "${pkgs.opencode}/bin/opencode serve --service";
+      # A wrapper, NOT the binary: it waits for 13420 to free and then execs
+      # into opencode (full reasoning at opencodeServe). Keep it as the MAIN
+      # process — moving the wait back into ExecStartPre re-creates the
+      # `activating` deadlock that hung a rebuild for 18 minutes.
+      ExecStart = opencodeServe;
       Restart = "always";
       RestartSec = "10s";
     };
   };
 
   # ─── Telegram bot ──────────────────────────────────────────────────────────
-  # Wants=/After= on opencode-serve — deliberately NOT Requires=. Requires
-  # propagates STOP, so every opencode restart would take the bot down with it;
-  # the donor kept the bot up and re-attaching, and that is the behaviour worth
-  # preserving. After= only orders; the ExecStartPre covers readiness.
+  # Wants= on opencode-serve, but NOT Requires= and — since 2026-10-23 — not
+  # After= either. Requires propagates STOP, so every opencode restart would
+  # take the bot down with it; the donor kept the bot up and re-attaching, and
+  # that is the behaviour worth preserving.
+  #
+  # After= earns nothing here. opencode-serve is Type=simple, so it reports
+  # active the instant its wrapper is forked — long before 13420 is actually
+  # bound — which means the ordering completes without guaranteeing the thing it
+  # looks like it waits for. waitOpencode below is the check that matters: it
+  # polls the port itself and bounds at 90 s. Dropping After= also removes the
+  # hazard the FIRST fix for the restart loop hit the same day, where serve
+  # parked in `activating` and ordering could not be satisfied at all.
   systemd.services.opencode-telegram = {
     description = "opencode-telegram bot (waits for the OpenCode API)";
     # Until sops-nix has rendered the config the bot cannot run: with no config
@@ -143,10 +183,9 @@ in {
       config.sops.templates."opencode-telegram.env".path;
     wantedBy = ["multi-user.target"];
     wants = ["opencode-serve.service"];
-    after = [
-      "opencode-serve.service"
-      "sops-install-secrets.service"
-    ];
+    # sops-install-secrets ONLY — opencode-serve is deliberately absent, see the
+    # comment above this unit.
+    after = ["sops-install-secrets.service"];
     serviceConfig = {
       Type = "simple";
       User = username;
