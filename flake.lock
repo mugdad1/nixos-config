@@ -108,26 +108,6 @@
         "type": "github"
       }
     },
-    "opencode": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1792816232,
-        "narHash": "sha256-weKgJ0Oq9RrTBUe5feeHTkeK0UxQL+uhI/0llsIJowc=",
-        "owner": "sst",
-        "repo": "opencode",
-        "rev": "dbd99a940b8d92b403a77a0ce169e9a6861ba073",
-        "type": "github"
-      },
-      "original": {
-        "owner": "sst",
-        "repo": "opencode",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
@@ -135,7 +115,6 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "nixpkgs-hplip": "nixpkgs-hplip",
-        "opencode": "opencode",
         "sops-nix": "sops-nix",
         "zen-browser": "zen-browser"
       }
