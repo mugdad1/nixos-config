@@ -26,11 +26,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Official opencode flake — nixpkgs' opencode is stale (v1); this is v2
-    opencode = {
-      url = "github:sst/opencode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     # Secrets. The repo is PUBLIC (github.com/mugdad1/nixos-config), so a
     # credential can never be written inline in Nix — see .sops.yaml for the
