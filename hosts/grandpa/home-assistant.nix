@@ -44,12 +44,15 @@
     # appear on the previous boot as on this one.
     #   async_upnp_client -> ssdp      aiodhcpwatcher -> dhcp
     #   go2rtc_client      -> go2rtc   (stream rides along)
+    #   gtts               -> google_translate (dad's TTS, added after the
+    #   first pass fixed default_config but left this entry erroring)
     extraComponents = [
       "esphome"
       "ssdp"
       "dhcp"
       "go2rtc"
       "stream"
+      "google_translate"
     ];
   };
 
