@@ -112,14 +112,14 @@
       #
       # CORRECTION 2026-10-25: this comment used to say "the compose launcher now
       # lives at scripts/grandpa/docker-stack.sh and is read by
-      # hosts/grandpa/default.nix". The `docker-stack` UNIT was removed that day
-      # with the whole compose stack — seven projects, their data and their
-      # configs — so nothing reads that script any more. scripts/thinkcentre/ is
-      # empty, and scripts/grandpa/docker-stack.sh is an orphan on disk: it is
-      # not in scripts/default.nix's package list either, so it is not on PATH.
-      # Left in place rather than deleted because it is the only surviving
-      # description of how the stack used to come up at boot; git history holds
-      # it regardless if he calls it trash.
+      # hosts/grandpa/default.nix". Both halves went that day: the `docker-stack`
+      # UNIT was removed with the whole compose stack — seven projects, their
+      # data and their configs — and he then chose to delete the orphaned script
+      # too ("2 do it"), so `scripts/grandpa/` holds only `ac.sh` and
+      # scripts/thinkcentre/ is empty. Nothing sweeps ~/projects/servers and
+      # nothing can come back at boot. The design is still worth remembering if a
+      # stack ever returns — compose files as source of truth, one oneshot as the
+      # *when* — and both the script and its unit are in git history.
       # Grandpa's box — Intel i3-2120 (Sandy Bridge), 6 GiB, single 298 GiB HDD,
       # headless server / CLI box. NixOS **installed 2026-10-16** and
       # `hardware-configuration.nix` is the real generated file from that day

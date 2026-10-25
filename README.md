@@ -64,7 +64,7 @@ nixos-config/
 ├── pkgs/                     # callPackage files: filen-cli.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
 │   ├── *.sh                  # checkup, mcli, hm-find, desktop helpers
-│   └── grandpa/              # ac.sh, docker-stack.sh — grandpa's own
+│   └── grandpa/              # ac.sh — grandpa's own
 ├── secrets/                  # ENCRYPTED sops files (committed, useless without a key)
 └── assets/
     ├── fonts/                # SCHLBKB.TTF (century-schoolbook)
@@ -280,4 +280,6 @@ The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 made recursive, `fonts/` + `wallpapers/` moved under `assets/`, and the
 ThinkCentre's shell scripts moved to `scripts/thinkcentre/`; after the host was
 retired, `docker-stack.sh` moved to `scripts/grandpa/` and the rest were
-removed.
+removed. **`docker-stack.sh` was then deleted on 2026-10-25** along with its
+unit — the compose stack it launched was destroyed with its data that day, so
+the launcher had nothing left to launch.
