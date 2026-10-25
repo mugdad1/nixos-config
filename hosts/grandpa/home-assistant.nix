@@ -31,9 +31,26 @@
   # the account, add the ESPHome device) happens in the browser as usual.
   services.home-assistant = {
     enable = true;
-    # Pull the ESPHome integration's python deps into the environment so the
-    # device can be added without a component-missing surprise.
-    extraComponents = ["esphome"];
+    # Pull each integration's python deps into the environment so no component
+    # dies on import. This list must track configuration.yaml's `default_config:`
+    # — 2026-10-25, post-reboot check: it only held "esphome", while
+    # `default_config:` (line 2 of configuration.yaml, marked "Do not remove")
+    # also demands ssdp, dhcp, go2rtc and stream. Their deps were therefore
+    # absent, and HA fails them one by one and then fails `default_config`
+    # ITSELF as a whole: "Setup failed for 'default_config': Could not setup
+    # dependencies: ['dhcp','go2rtc','ssdp','stream']". Every component under
+    # default_config goes with it — not just the four that started it.
+    # Pre-existing, not a reboot casualty: the same two ModuleNotFoundErrors
+    # appear on the previous boot as on this one.
+    #   async_upnp_client -> ssdp      aiodhcpwatcher -> dhcp
+    #   go2rtc_client      -> go2rtc   (stream rides along)
+    extraComponents = [
+      "esphome"
+      "ssdp"
+      "dhcp"
+      "go2rtc"
+      "stream"
+    ];
   };
 
   # Builds and flashes the ESP32 firmware. Same YAML either way: the IR
