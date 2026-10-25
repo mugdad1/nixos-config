@@ -1,15 +1,23 @@
 # Grandpa's custom desktop — Intel i3-2120 (Sandy Bridge, 2 cores / 4 threads),
-# 6 GiB RAM, a GeForce GT 210, a single 298 GiB spinning HDD, UEFI. Headless: it
+# 6 GiB RAM, a single 298 GiB spinning HDD, UEFI, NO DISCRETE GPU. Headless: it
 # is a server / CLI box, not a workstation, so it imports modules/core only and
 # never modules/desktop.
 #
-# THE GT 210 (why there is no driver line anywhere in this host): it is a 2009
-# Tesla-era card (GT218) whose only NVIDIA driver was the 340.x legacy branch,
-# and that branch no longer exists in nixpkgs — nvidiaLegacy340/390 are gone
-# (checked against this flake's nixpkgs 2026-10-16). It does not matter: a
-# headless box wants no GPU driver at all, so nouveau/nvidia are blacklisted and
-# the card sits idle. If a screen is ever wanted, the fix is a cheap GT 710/1030,
-# never the dead 340 blob.
+# THE GT 210 WAS PULLED 2026-10-25 — physically removed, and that is the whole
+# story of this paragraph. It could not be silenced: a 2-pin DC fan on the
+# card's header has no PWM line, and with no driver bound there was no register
+# to write, so no OS on earth could have stopped it — the answer to "can i from
+# nixos" was no, and unplugging was the only lever. Nothing is connected to the
+# card and nothing used it: its only NVIDIA driver, the nvidiaLegacy340 branch,
+# no longer exists in nixpkgs (checked 2026-10-16), so it had never rendered a
+# single frame here.
+#
+# WHAT CHANGED, all measured after that day's reboot: no 0x10de device on the
+# bus any more (root port 0000:00:1c.0 logs "retraining failed" — an empty
+# slot, not a fault); the display role moved to the CPU's own Intel HD 2000,
+# i915 binds 0000:00:02.0, and /dev/dri gains card1 + renderD128. A render node
+# did not exist before and is free now if anything ever wants one. /dev/fb0 is
+# gone with the card (see the display note below).
 #
 # ON THE HARDWARE SINCE 2026-10-16 — the placeholder warning this header used to
 # carry is gone, because install day happened: system profiles system-1 (16:08)
@@ -22,15 +30,15 @@
 # Verified 2026-10-17: 0 failed units, booted from the current flake.lock
 # (nixpkgs 6510408, 2026-10-10).
 #
-# A "Display" LINE THAT IS NOT A DISPLAY — read this before chasing it: `fastfetch`
-# here reports `Display (Unknown-1): 1024x768` and lists the GT 210 as a "GPU".
-# Both come from the firmware framebuffer, not from any monitor. At boot the UEFI
-# firmware lights the card and hands the kernel a linear framebuffer; the builtin
-# simpledrm driver binds it (card0's driver is simple-framebuffer), and its one
-# connector — literally named Unknown-1 — always reports connected/enabled at the
-# firmware's default mode with no EDID, which is also why the physical size is a
-# guess. fastfetch then follows that card up to PCI 0000:01:00.0 and names the GPU
-# behind it. Nothing is attached and nothing is wrong.
+# THERE IS NO DISPLAY LINE TO CHASE ANY MORE. The old note here spent nine lines
+# explaining why `fastfetch` reported `Display (Unknown-1): 1024x768` with no
+# monitor attached — that was the UEFI firmware's linear framebuffer, bound by
+# the builtin simpledrm driver, gone with the card on 2026-10-25. Since then:
+# no /dev/fb0, no card0, and one stale by-path symlink pointing at the old
+# firmware framebuffer left dangling in /dev/dri/by-path/. What remains is
+# i915's connector `card1-VGA-1` reporting `disconnected`, which is simply
+# true. A headless box with no discrete GPU has no phantom display to
+# apologise for.
 #
 # WHAT IT IS (his word, 2026-10-16): a **lightweight server** — headless, and
 # that part is a decision, not a placeholder. It runs the core set (sshd,
@@ -101,15 +109,14 @@
   # boot the old loader — a failure documented in git history).
   boot.loader.efi.efiSysMountPoint = "/boot";
 
-  # No display is ever attached. Blacklist the whole NVIDIA stack so neither
-  # nouveau nor the blob claims the text console or costs a few hundred MB of
-  # 6 GiB for nothing; the console still comes up on efifb.
-  boot.blacklistedKernelModules = [
-    "nouveau"
-    "nvidia"
-    "nvidia_drm"
-    "nvidiafb"
-  ];
+  # boot.blacklistedKernelModules listed nouveau / nvidia / nvidia_drm /
+  # nvidiafb until 2026-10-25, to keep the NVIDIA stack from claiming the text
+  # console on a box that would never use it. Deleted WITH the card, not after:
+  # four lines of config matching zero devices on the bus is noise, and the
+  # next person reading this host would reasonably assume an NVIDIA card was
+  # still fitted. (The old comment also credited `efifb` for the console — it
+  # was simpledrm, and it went with the card.) If a GPU ever comes back,
+  # blacklisting it again is one block, not one to preserve.
 
   # Time: a literal-IPv4 NTP list, so the clock can be fixed even when DNS is
   # down. The full deadlock reasoning is in git history. Nothing here assumes
