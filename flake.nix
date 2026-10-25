@@ -16,6 +16,17 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
+    # BACK 2026-10-25, and the reason is worth one line: af010f2 removed this
+    # input on 2026-10-23 as "unused" — which was true for exactly one day,
+    # because hosts/t480s/ had been deleted the day before. Its only consumer
+    # is hosts/t480s/default.nix (lenovo-thinkpad-t480s), so removing the host
+    # and keeping the input would have been dead weight and removing the input
+    # and bringing the host back is this. Both now move together.
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -92,12 +103,29 @@
     };
 
     nixosConfigurations = {
-      # Lenovo ThinkPad T480s — REMOVED 2026-10-22, the day the Victus arrived
-      # (his "rm thinkpad"). It carried the fleet's daily-laptop role since
-      # 2026-10-11; hosts/t480s/ is deleted and the Victus took over. Its home
-      # directory lives on as a backup at grandpa:~/backup/t480s/. Git history
-      # is the record.
+      # Lenovo ThinkPad T480s — BACK 2026-10-25, after three days as a ghost.
+      # Timeline worth keeping straight, because this line has flipped twice:
+      #   2026-10-11  t480s added, the fleet's daily laptop
+      #   2026-10-22  his "rm thinkpad" — hosts/t480s/ deleted (c1bb20e), the
+      #               day the Victus arrived, and install.sh was made to refuse
+      #               this DMI rather than sed a variables.nix that was gone
+      #   2026-10-25  "bring him back to nixos-config and he will be aside with
+      #               victus" — restored from c1bb20e^ by git checkout
+      # The fleet is THREE: grandpa + victus + t480s. The flake declares what
+      # exists, so a machine in his hands that is not here would be a lie of
+      # the same kind the removal was fixing — only in the other direction.
       #
+      # Its home directory was never deleted and lives as a backup at
+      # grandpa:~/backup/t480s/ — that is a copy, NOT a restore; nothing here
+      # pulls it back.
+      #
+      # hardware-configuration.nix is the file nixos-generate-config wrote on
+      # this machine (root c0e89f41 ext4, ESP 56B8-0DD5). IT IS THE ONE THING
+      # TO RE-CHECK BEFORE A BUILD ON THAT HARDWARE: if the ThinkPad was
+      # reinstalled or had a disk swap between 10-22 and 10-25, those UUIDs are
+      # stale and the generated file must be re-taken from the machine. An eval
+      # will happily build a system that cannot find its root.
+      t480s = mkHost "t480s";
       # HP Victus 15 — i5-12th-gen H + RTX 3050 Laptop, the new daily laptop.
       # Created 2026-10-22. hardware-configuration.nix is the real generated
       # file; install.sh overwrites it on a fresh install.

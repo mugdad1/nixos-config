@@ -6,15 +6,17 @@ Forked from [Frost-Phoenix/nixos-config](https://github.com/Frost-Phoenix/nixos-
 
 ## Hosts
 
-Two active hosts, both deploying from `main`:
+Three active hosts, all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
 | `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
+| `t480s`     | Laptop — Sway desktop, home-manager, Intel iGPU only | ThinkPad T480s |
 | `grandpa`   | Headless lightweight server — Docker, blocky, tailscale, sshd, sops | Custom i3-2120 box |
 
-Installed: `grandpa` (NixOS since 2026-10-16), `victus` (2026-10-22, took over
-the laptop role from the ThinkPad). The ThinkCentre M900x that used
+Installed: `t480s` (NixOS since 2026-10-11 — **removed 2026-10-22, restored
+2026-10-25**), `grandpa` (2026-10-16), `victus` (2026-10-22). The ThinkCentre
+M900x that used
 to be the second server went back to its owner on 2026-10-22 and its host is
 gone from the flake — git history is the record. The server imports **no**
 desktop and **no** home-manager stack: its `variables.nix` declares no
@@ -46,6 +48,10 @@ nixos-config/
 │   ├── victus/
 │   │   ├── default.nix       # Laptop host config: NVIDIA + Intel, gpu-mode switch
 │   │   ├── hardware-configuration.nix   # real generated file; install.sh overwrites it
+│   │   └── variables.nix     # username, timezone, browser/terminal/launcher
+│   ├── t480s/
+│   │   ├── default.nix       # ThinkPad host config: intel iGPU, throttled/tlp off, battery threshold
+│   │   ├── hardware-configuration.nix   # generated — never hand-edited (re-check the UUIDs if the disk moved)
 │   │   └── variables.nix     # username, timezone, browser/terminal/launcher
 │   └── grandpa/
 │       ├── default.nix       # identity: imports, boot, zram, Docker stack, index
@@ -113,6 +119,7 @@ mcli update                  # nix flake update + rebuild
 
 # Or explicitly:
 sudo nixos-rebuild switch --flake .#victus
+sudo nixos-rebuild switch --flake .#t480s
 sudo nixos-rebuild switch --flake .#grandpa
 ```
 
@@ -161,8 +168,10 @@ went at his order ("no more telegram and whatsapp") — script, template unit,
 `telegram/*` secrets and every caller in one commit — after the ntfy container
 had already gone and WhatsApp with it. The age key is therefore now only about
 decrypting the credentials that remain (`filen`, `searx`, `opencode`), and what
-is left of failure reporting is `smartd`'s `wall` notification plus the
-journal: a failing disk or unit is **logged, not telephoned**. Restoring a
+is left of failure reporting is **the journal and `systemctl --failed`**: a
+failing disk or unit is **logged, not telephoned**. Even `smartd`'s `wall`
+notification went on 2026-10-25, once it had no transport left — see the
+history below. Restoring a
 transport is his call; when it happens it should bring back both halves, not
 just one.
 
@@ -188,9 +197,12 @@ nix flake check      # evaluate all outputs
 
 `install.sh` is a whiptail-guided installer for a fresh machine. It detects the
 host from DMI (`product_name`/`product_family`: `victus`/`HP` → `victus`,
-anything unrecognised → `victus`, since that is the only machine in the house
-being installed; `HOST=grandpa ./install.sh` overrides, and a ThinkPad DMI is
-refused outright since that host left the flake on 2026-10-22), rewrites
+`thinkpad`/`t480s`/`20L8` → `t480s`, anything unrecognised → `victus`, since
+that is the machine in the house most likely being installed; `HOST=grandpa
+./install.sh` overrides. **A ThinkPad DMI was refused outright from 2026-10-22
+to 2026-10-25**, while `hosts/t480s/` was out of the flake and the sed on its
+`variables.nix` would have failed after the whiptail prompt — it detects
+normally again now the host is back), rewrites
 `username` in `hosts/<host>/variables.nix`, installs the sops age key from
 `age-key.txt` if it is lying around, copies
 `/etc/nixos/hardware-configuration.nix` into the host directory, links
@@ -198,13 +210,14 @@ refused outright since that host left the flake on 2026-10-22), rewrites
 `nixos-rebuild switch --flake .#<host>`. Regenerate
 `hardware-configuration.nix` on the target box at install time and diff — never
 hand-write it. `hosts/victus/` ships the real generated file; install.sh
-overwrites it on a fresh install. GPU is fixed per host, not templated: Intel +
+overwrites it on a fresh install. GPU is fixed per host, not templated: Intel
+on `t480s` (Intel iGPU only, no NVIDIA branch for that machine), Intel +
 NVIDIA on `victus`.
 
 ## Features
 
-- **Two active hosts from one flake** (`grandpa`, `victus`), desktop opt-in
-  per host
+- **Three active hosts from one flake** (`grandpa`, `victus`, `t480s`), desktop
+  opt-in per host
 - **Home Manager** for user packages and dotfiles (laptops only)
 - **Intel + NVIDIA hybrid** on `victus` — open modules, PRIME offload, and
   `gpu-mode intel|hybrid|nvidia` to switch what renders
@@ -233,12 +246,19 @@ Worth knowing so they are not mistaken for oversights:
   `41641` (`modules/core/tailscale.nix`, `openFirewall = true`). grandpa opens
   its service ports explicitly, and Docker-published ports bypass the NixOS
   firewall entirely.
-- **grandpa service boundaries** — Vaultwarden binds `127.0.0.1:8082` and is
-  served as HTTPS at `https://grandpa.tailbc99bb.ts.net:8443`; Forgejo,
-  Immich, metube, Home Assistant, Glances and study are tailnet-only;
-  Jellyfin listens on both the tailnet and the LAN for the TV; the index page
-  is tailnet-only on `:80`. The two Tailscale Serve routes are pinned in Nix
-  (`systemd.services.tailscale-serve`), not just CLI state.
+- **grandpa service boundaries** — short since 2026-10-25, because the box lost
+  seven of its services that day. What remains: **the index page is nginx on
+  `:80`, bound to `tailscale0` only**; **`opencode-serve` binds
+  `127.0.0.1:13420`** and is reached with `ssh -L`, never a published port;
+  Home Assistant `:8123`, study `:8091` and SearXNG `:8888` answer over the
+  tailnet; blocky is DNS `:53`. **Everything the old bullet listed is gone** —
+  Vaultwarden `:8082`/`:8443`, Forgejo, Immich, metube, Glances and Jellyfin
+  were destroyed with their data that day — and so is the mechanism, not just
+  the entries: `systemd.services.tailscale-serve` no longer exists, and the
+  two stale CLI routes it left behind (`:444`, `:8443`, both pointing at
+  deleted targets) were reset by hand. Zero containers means the
+  Docker-publishes-bypass-the-firewall caveat below is currently a note about
+  nothing.
 - **No swap partition on any host** — `zramSwap` (RAM-backed, zstd) covers it:
   `modules/desktop/services.nix` for the laptops, `hosts/grandpa/default.nix`
   for the server.
@@ -273,6 +293,36 @@ stack and the three-way GPU switch described above. The ThinkPad arrived at the
 end of the day and its host was removed at once ("rm thinkpad"), so the flake
 declares exactly two machines; its home directory survives as a backup at
 `grandpa:~/backup/t480s/`.
+
+**2026-10-25: grandpa was stripped to eight things — and brought nginx back
+within the hour.** Started from his *"rm all services keep home assistant
+only"*, which churned until it settled on home-assistant, blocky, tailscaled,
+study, searx, opencode-serve and filen-sync (openssh/fail2ban kept silently, so
+he could not lock himself out). **Seven compose projects — forgejo, gitea-mirror,
+immich, jellyfin, metube, vaultwarden, vikunja — were destroyed with their
+data** on his *"rm data and config"* → `a`, and there is no backup of any of it
+on that box; four more units went (`docker-stack`, `tailscale-serve`, `glances`,
+`smartd`). **nginx went with them and was restored the same hour**: with no
+listener on `:80` the index page answered `ERR_CONNECTION_REFUSED`, and from a
+browser a sparse box and a dead box are the same picture — his *"bring it back
+nginx i want the stuff how can i access to my services"*. **The docker engine
+deliberately stays**: `virtualisation.docker.enable` was never on the list he
+confirmed, and pulling a runtime out is a different decision from pulling a
+stack out. The same day the **GT 210 was physically removed** from that machine
+(a 2-pin fan no OS could stop), taking the four `boot.blacklistedKernelModules`
+lines and the whole phantom-display note in `hosts/grandpa/default.nix` with it.
+
+**2026-10-25: the ThinkPad came back and the fleet is three again.** His word,
+in two parts: *"thinkpad is coming back"* then *"bring him back to nixos-config
+and he will be aside with victus"* — i.e. a peer of `victus`, not a replacement
+for it, so `hosts/t480s/` was restored from `c1bb20e^` with `git checkout`,
+`t480s = mkHost "t480s"` re-added, and `install.sh` flipped from refusing this
+DMI back to detecting it. **Nothing was rewritten by hand** — the whole host
+came back out of history, which is the point of having deleted it as a commit
+rather than as an edit. The one thing worth re-checking before a build *on that
+machine* is `hardware-configuration.nix`: it still carries the UUIDs generated
+on 2026-10-11, and if the ThinkPad was reinstalled since, a perfectly valid
+eval would build a system that cannot find its root.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,

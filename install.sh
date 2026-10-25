@@ -51,6 +51,7 @@ DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 gpu_for() {
     case "$1" in
         victus) echo "nvidia" ;;
+        t480s) echo "intel" ;;
         *) echo "none" ;;
     esac
 }
@@ -59,22 +60,23 @@ if [ -n "${HOST:-}" ]; then
     GPU="$(gpu_for "$HOST")"
     echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
 elif grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
-    # The ThinkPad's host was removed from the flake on 2026-10-22 when the
-    # Victus took over as the laptop ("rm thinkpad"). Refuse loudly instead of
-    # sed-ing a variables.nix that no longer exists.
-    echo -e "${ERROR}This is the retired ThinkPad t480s."
-    echo "Its configuration was removed from the flake on 2026-10-22."
-    echo "Nothing to install here; reinstall grandpa or victus with HOST=<host>."
-    exit 1
+    # BACK 2026-10-25 — this branch refused for three days (his "rm thinkpad",
+    # 2026-10-22) because hosts/t480s/ was deleted and sed-ing its
+    # variables.nix would have failed after the whiptail prompt. The host is
+    # back in the flake ("bring him back to nixos-config"), so detection is
+    # detection again. Intel iGPU: no nvidia branch for this machine.
+    HOST="t480s"
+    GPU="intel"
 elif grep -qi 'victus\|hp' <<<"$DMI_NAME$DMI_FAMILY"; then
     HOST="victus"
     GPU="nvidia"
 else
-    # His call, 2026-10-22: the fleet is grandpa + victus and grandpa is already
-    # installed, so a machine the DMI cannot name is the one being installed
-    # now — the Victus. Deliberately NOT grandpa: a miss here used to hand the
-    # laptop the headless server's config. Reinstalling the server or the old
-    # laptop takes the HOST= override above.
+    # His call, 2026-10-22: a machine the DMI cannot name defaults to the
+    # Victus. Deliberately NOT grandpa — a miss here used to hand the laptop
+    # the headless server's config. Reinstalling the server takes the HOST=
+    # override above; **the ThinkPad needs no override any more** (2026-10-25),
+    # because its own DMI branch above catches it again. Fleet is grandpa +
+    # victus + t480s.
     HOST="victus"
     GPU="nvidia"
     echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
