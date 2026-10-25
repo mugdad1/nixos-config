@@ -1,15 +1,21 @@
 # The fleet's service list, declared ONCE and rendered to an HTML index.
 #
-# RETURNED-BOX CLEANUP 2026-10-22: the ThinkCentre left the fleet. The
-# nix-native layer (study, home assistant, searxng) moved to grandpa the same
-# day; the compose trio that had merely been commented out (immich,
-# vaultwarden, vikunja) was then MOVED too — his order "mv immich and vault
-# and vik and index page chnage it to new stuff also rebuild" — so their rows
-# point at grandpa now and only caddy still has no home. One table, headed by
-# grandpa.
+# THE 2026-10-25 STRIP. The box was cut down to the set he confirmed keeping —
+# study, home assistant, searxng, blocky, tailscaled, opencode-serve,
+# filen-sync — and the seven compose projects (forgejo, gitea-mirror, immich,
+# jellyfin, metube, vaultwarden, vikunja) went out WITH their data and config
+# ("rm data and config" → "a"), together with glances. So the live table is
+# three rows now. That is a real number, not a broken page: the index exists to
+# say what is running, and what is running is this much.
 #
-# immich carried no data ("immich got 0 data" — his word), so its move was
-# config only; vaultwarden and vikunja carried their ./data and ./db dirs.
+# Removed rows are COMMENTED, never deleted — same treatment stirling/paperless
+# got on 2026-10-20 — because the date and the reason are the point of this
+# file. What the port numbers were, and the day they stopped answering, stay.
+#
+# SERVICES WITH NO PAGE are prose under the table, not rows: blocky (DNS :53),
+# tailscaled, opencode-serve (loopback-only :13420) and filen-sync (a timer).
+# A row here is a promise that the link answers; prose cannot break that
+# promise, which is the drift this file exists to prevent.
 #
 # Why this lives here and not on the server: Mugdad's rule, 2026-10-11 —
 # *"i dont want thing that goes after i re install nix ok? this is the main
@@ -44,7 +50,7 @@
   # switches link bases by machine, and both point at grandpa now.
   grandpa ? "http://100.106.116.60",
 }: let
-  inherit (builtins) concatStringsSep filter map;
+  inherit (builtins) concatStringsSep filter length map;
   optionalString = cond: str:
     if cond
     then str
@@ -75,119 +81,90 @@
       desc = "local home automation — the ac, dashboards, sensors";
       machine = "grandpa";
     }
-    # immich moved thinkcentre -> grandpa 2026-10-22 with the compose trio
-    # (his "mv immich and vault and vik"). It carried NO data — "immich got 0
-    # data" — so this was a config move: the compose dir + .env were rsynced
-    # and the database/media paths repointed at grandpa's tree. Plain http
-    # :2283, tailnet-reachable like it was on the old box.
-    {
-      name = "immich";
-      port = "2283";
-      desc = "photos &amp; video backup";
-      machine = "grandpa";
-    }
-    # jellyfin moved thinkcentre -> grandpa 2026-10-21 (his "mv jellyfin"), the
-    # same move metube made the day before. There was nothing to carry: the
-    # config was 900K, the cache 12K and /home/mugdad/media was empty (8K) on
-    # both boxes, so this was a config move, not a data migration — his word
-    # "there is no account nor data so just clean and mv the nixfile u dont
-    # haveto backup".
-    #
-    # WHAT WAS LOST, and it is worth writing down because it is silent: the
-    # thinkcentre is a Skylake i7-6700T and its compose file passed
-    # /dev/dri/card0 + /dev/dri/renderD128 through for VAAPI transcoding. Grandpa
-    # is a Sandy Bridge i3-2120: it has card0 but NO renderD128, and Intel
-    # dropped the i965 driver that Sandy Bridge needs, so there is no hardware
-    # transcoding path on that box at all. Direct play still works; anything
-    # that needs transcoding now falls to software on a 2011 CPU, which means
-    # 1080p will not survive it. `machine = grandpa` switches the link base to
-    # grandpa's tailnet IP.
-    {
-      name = "jellyfin";
-      port = "8096";
-      desc = "media server";
-      machine = "grandpa";
-    }
-    # `url` overrides the generated host:port link — the vault is HTTPS-only
-    # (web vault needs a secure context, decisions.md row 86) and reachable
-    # only through tailscale serve, so its plain :8082 link would just throw
-    # the Subtle Crypto error again.
-    #
-    # FIXED 2026-10-21: this url was `https://thinkcentre.tailbc99bb.ts.net`
-    # with NO port, which means :443 — and Caddy owns 0.0.0.0:443 with
-    # `auto_https off`, i.e. that listener speaks plain HTTP, not TLS. So the
-    # link returned 000 forever, a dead password-manager link on the front
-    # page. The comment above it was also a lie: it said the vault was
-    # "reachable only through tailscale serve" when no such serve had ever
-    # been configured — only vikunja had one (on :444, same reason).
-    # Fixed by adding the missing serve, `tailscale serve --bg --https=8443
-    # http://100.88.29.31:8082`, and pointing this row at :8443. Chose 8443
-    # because :443 is Caddy's and :444 is vikunja's — tailscaled's listener
-    # cannot bind over Caddy's (row 158). Verified live: :8443 returns 200
-    # and serves "Vaultwarden", /api/config 200, while the old no-port link
-    # still returns 000.
-    #
-    # Both Serve routes are now pinned by systemd.services.tailscale-serve in
-    # hosts/grandpa/default.nix, so a fresh install recreates them instead of
-    # relying on tailscaled's CLI state.
-    #
-    # MOVED thinkcentre -> grandpa 2026-10-22 with the compose trio. Vaultwarden
-    # now binds 127.0.0.1:8082, so the serve target is localhost too, same port
-    # (:443 is free there now, but :8443 was kept so only the hostname in his
-    # saved links changes).
-    {
-      name = "vaultwarden";
-      port = "8082";
-      desc = "password manager";
-      url = "https://grandpa.tailbc99bb.ts.net:8443/";
-      note = "tailnet https";
-    }
-    # vikunja, added 2026-10-20 with the task store's close (decisions.md row
-    # 152). Same shape as vaultwarden: HTTPS-only, because his phone refused
-    # cleartext to the tailnet IP ("err cleartext comm to ts ip not permiitted
-    # by securtity policy"). Served by tailscale serve on :444, NOT :443 —
-    # Caddy holds 0.0.0.0:443 and tailscaled's listener cannot bind over it
-    # (row 158).
-    # MOVED thinkcentre -> grandpa 2026-10-22 with the same serve shape:
-    # `tailscale serve --bg --https=444 http://100.106.116.60:3456`. The phone's
-    # saved URL changes host only, thinkcentre.* -> grandpa.*.
-    {
-      name = "vikunja";
-      port = "3456";
-      desc = "task store — caldav + web ui, synced from the phone";
-      url = "https://grandpa.tailbc99bb.ts.net:444/";
-      note = "tailnet https";
-    }
-    # gitea dropped 2026-10-18 ~15:55 — his word: "rm gitea and it mirror cuz its bad".
-    # Forgejo on grandpa is the replacement git host; :3000/:2222 back in the pool.
-    # grandpa's services, added the same day gitea died (2026-10-18). Every
-    # row now carries `machine = "grandpa"` or is commented out — the
-    # generator's default base is grandpa's tailnet IP since 2026-10-22.
-    {
-      name = "forgejo";
-      port = "3000";
-      desc = "git, self-hosted — replaced gitea, docker compose on grandpa";
-      machine = "grandpa";
-    }
-    {
-      name = "gitea mirror";
-      port = "4321";
-      desc = "github → forgejo mirroring, back on grandpa 2026-10-19";
-      note = "tailnet only";
-      machine = "grandpa";
-    }
-    # glances on grandpa, added the same day he asked for it (2026-10-19) —
-    # NixOS-native service (hosts/grandpa/glances.nix), unlike the docker
-    # container on thinkcentre. Both are :61208, one per table.
-    {
-      name = "glances";
-      port = "61208";
-      desc = "cpu / temp / mem / disk, live — on grandpa";
-      machine = "grandpa";
-    }
+    # REMOVED 2026-10-25 with the strip ("rm data and config" → "a"): the
+    # compose dir, ./data and the 55M photo library under ~/projects/servers/data
+    # are gone from disk, no backup anywhere on the box. immich had arrived here
+    # 2026-10-22 from the ThinkCentre carrying NO data ("immich got 0 data"),
+    # so it lived a few days as a fresh install and then took its library with
+    # it. Was :2283.
+    # {
+    #   name = "immich";
+    #   port = "2283";
+    #   desc = "photos &amp; video backup";
+    #   machine = "grandpa";
+    # }
+    # REMOVED 2026-10-25 with the strip — config, cache and image all deleted,
+    # ~/media was empty anyway. Its record is worth keeping for one line: this
+    # box is a Sandy Bridge i3-2120 with card0 but NO renderD128, and Intel
+    # dropped the i965 driver Sandy Bridge needs, so grandpa never had a
+    # hardware transcode path at all — anything needing transcoding fell to a
+    # 2011 CPU. If media ever returns, that constraint is unchanged. Was :8096.
+    # {
+    #   name = "jellyfin";
+    #   port = "8096";
+    #   desc = "media server";
+    #   machine = "grandpa";
+    # }
+    # REMOVED 2026-10-25 with the strip. The vault went with its data —
+    # ~/projects/servers/vaultwarden/data/db.sqlite3 and rsa_key.pem are deleted
+    # off the disk, no copy exists anywhere on this box. The passwords he had
+    # saved there are gone; he read the read-back naming both files and answered
+    # "a". Nothing to link to, and no `tailscale serve` route either: the
+    # systemd.services.tailscale-serve unit that pinned these HTTPS routes was
+    # removed in the same commit, so :8443 and :444 are dead listeners in
+    # tailscaled's state until `tailscale serve reset`. Was https :8443.
+    # {
+    #   name = "vaultwarden";
+    #   port = "8082";
+    #   desc = "password manager";
+    #   url = "https://grandpa.tailbc99bb.ts.net:8443/";
+    #   note = "tailnet https";
+    # }
+    # REMOVED 2026-10-25 with the strip, along with the task DB (./db) and its
+    # compose file. The phone's saved URL (https://grandpa.*:444/) is dead and
+    # stays dead — the serve route that fronted it went with the
+    # tailscale-serve unit. Was https :444.
+    # {
+    #   name = "vikunja";
+    #   port = "3456";
+    #   desc = "task store — caldav + web ui, synced from the phone";
+    #   url = "https://grandpa.tailbc99bb.ts.net:444/";
+    #   note = "tailnet https";
+    # }
+    # REMOVED 2026-10-25 with the strip: forgejo, gitea-mirror and their configs
+    # deleted from ~/projects/servers, so the git host is gone from this box and
+    # GitHub is the only remote left (it already was — nixos-config, wiki and
+    # study all push there). Note that the images (forgejo:15.0.9,
+    # gitea-mirror) were pruned the same day; nothing in this row comes back
+    # without a re-pull. Was :3000, mirror :4321.
+    # {
+    #   name = "forgejo";
+    #   port = "3000";
+    #   desc = "git, self-hosted — replaced gitea, docker compose on grandpa";
+    #   machine = "grandpa";
+    # }
+    # {
+    #   name = "gitea mirror";
+    #   port = "4321";
+    #   desc = "github → forgejo mirroring, back on grandpa 2026-10-19";
+    #   note = "tailnet only";
+    #   machine = "grandpa";
+    # }
+    # REMOVED 2026-10-25 with the strip — hosts/grandpa/glances.nix deleted,
+    # the module un-imported. It was the one nix-native monitoring view on this
+    # box; with smartd out of modules/core the same day there is no monitoring
+    # of any kind left on the fleet, by his order. Was :61208.
+    # {
+    #   name = "glances";
+    #   port = "61208";
+    #   desc = "cpu / temp / mem / disk, live — on grandpa";
+    #   machine = "grandpa";
+    # }
     # wiki (mkdocs-material on grandpa) dropped 2026-10-19 — row 128, the md
-    # service was removed on his "idont care that much". Port 80 on grandpa
-    # refuses now, so the row would ship a dead link. Read the wiki on GitHub.
+    # service was removed on his "idont care that much". Read the wiki on GitHub.
+    # (The old note here said ":80 on grandpa refuses now" — true until
+    # 2026-10-25, when nginx was restored and :80 began serving THIS page. A
+    # live port still does not bring the wiki back; it is a repo, not a row.)
     # uptime kuma dropped 2026-10-11 ~22:36 — his `ucan rm uptimekuma fully`,
     # hours after upgrading it v1 -> v2 (wiki row 74). Container gone, :3001
     # dead, so it came off this list too or the index ships a dead link.
@@ -227,8 +204,9 @@
     # exact drift this file exists to prevent, recurring a day after the
     # uptime-kuma entry was fixed in f1ebc12. Verified: every other port in
     # this list answers.
-    # The thinkcentre's glances container row is gone with the box 2026-10-22;
-    # its grandpa twin (above) is the only glances entry now.
+    # The thinkcentre's glances container row left with the box 2026-10-22;
+    # its grandpa twin was removed 2026-10-25 (commented above), so no glances
+    # is running anywhere in the fleet.
     # searxng moved thinkcentre -> grandpa 2026-10-22 — NIX-NATIVE now, not a
     # container: hosts/grandpa/searxng.nix (`services.searx`), port 8888,
     # tailscale-only bind. The old compose dir stayed on the ThinkCentre's
@@ -240,21 +218,20 @@
       desc = "private metasearch, json api enabled — zen's search engine";
       machine = "grandpa";
     }
-    # metube moved thinkcentre -> grandpa 2026-10-20 (his "mv metube to
-    # grandpa"). Downloads go to grandpa's ~/media/videos now, not the
-    # thinkcentre's; the old dir on the thinkcentre was empty (12K), so
-    # nothing had to be carried over. `machine = grandpa` switches the link
-    # base to grandpa's tailnet IP.
-    {
-      name = "metube";
-      port = "8081";
-      desc = "yt-dlp web ui, downloads to the box";
-      machine = "grandpa";
-    }
+    # REMOVED 2026-10-25 with the strip — compose dir and config deleted;
+    # ~/media was empty, so nothing was carried or lost. Was :8081.
+    # {
+    #   name = "metube";
+    #   port = "8081";
+    #   desc = "yt-dlp web ui, downloads to the box";
+    #   machine = "grandpa";
+    # }
     # caddy commented out 2026-10-22 — it reverse-proxied on the ThinkCentre
-    # and was this page's host there; the box left the fleet, so :80 has
-    # nothing behind it any more. The index page itself now ships wherever
-    # grandpa serves one, if a server for it is ever decided.
+    # and was this page's host there; the box left the fleet. It has NO home
+    # here and never had: when the page needed a host again on 2026-10-25 he
+    # was asked caddy or nginx and said, verbatim, "i dont want caddy". nginx
+    # serves :80. Leave this row commented — a caddy row would advertise a
+    # reverse proxy this box does not run.
     # {
     #   name = "caddy";
     #   port = "80";
@@ -305,9 +282,13 @@ in ''
   <h1>mugdad &mdash; Server</h1>
   <p class="m">generated from <b>~/nixos-config/lib/server-index.nix</b> &mdash; do not edit by hand; nginx on grandpa serves this page (a rebuild is the publish).</p>
   <h2>grandpa &mdash; 100.106.116.60</h2>
+  <p class="m">${toString (length sorted)} of the fleet's services have a page. Everything he keeps that does NOT is written out below the table &mdash; a link only appears here if the port actually answers.</p>
   <table>
   ${table sorted}
   </table>
+  <hr>
+  <p class="m"><b>opencode-serve</b> &mdash; the persistent opencode on <b>127.0.0.1:13420</b>. Loopback only, on purpose, so it is prose and not a row: a link would dead-end from your laptop. Reach it with <b>ssh -L 13420:127.0.0.1:13420 mugdad@100.106.116.60</b> and then open <b>localhost:13420</b>.</p>
+  <p class="m"><b>filen-sync</b> &mdash; a systemd timer, not a web service: it bisyncs the Filen drive root into <b>~/filen</b> every 30 minutes (10 min after boot, 60 min cap per run). No port and no ui; check it with <b>systemctl status filen-sync.timer</b>.</p>
   <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
   <hr>
   <p class="m">blocky is dns on <b>0.0.0.0:53</b> on grandpa — bound on every interface so loopback and the tailnet both answer; the firewall, not the bind, is what keeps the LAN out. Never web-published.</p>

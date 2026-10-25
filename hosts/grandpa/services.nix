@@ -16,10 +16,17 @@
 #                  with a config change. The disk, the mount, the timer and the
 #                  fstab-gated check in checkup.sh move together or not at all.
 #   glances        was ./glances.nix; DELETED 2026-10-25 at his order.
-#   tailscale-serve / nginx / smartd
-#                  also gone 2026-10-25 — the first two because the service
-#                  index page they fronted has no services left to list, the
-#                  third because it had no transport left to report through.
+#   tailscale-serve / glances / smartd
+#                  all gone 2026-10-25 — the first two because their targets
+#                  (vaultwarden :8443, vikunja :444, the glances page) were
+#                  removed with the compose stack, the third because it had no
+#                  transport left to report through.
+#   nginx          removed 2026-10-25 in the strip commit and RESTORED the same
+#                  day, an hour later: killing :80 did not read as "sparse
+#                  box", it read as "box is down" — he hit it in a browser and
+#                  got ERR_CONNECTION_REFUSED. nginx lives in ./default.nix and
+#                  serves the index; it is NOT declared here, because this file
+#                  is the service layer and the web server fronts it.
 #   blocky         already on this host via modules/core; only its tailnet
 #                  exposure moved, and that is in ./overrides.nix.
 #

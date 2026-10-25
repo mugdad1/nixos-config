@@ -175,4 +175,41 @@
   # and taking the runtime out is a separate decision from taking the stack out.
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
+
+  # ── THE SERVICE INDEX PAGE ────────────────────────────────────────────────
+  #
+  # nginx, :80 on tailscale0, serving lib/server-index.nix. RESTORED
+  # 2026-10-25 after being removed the same afternoon in the strip commit
+  # (0d08aca), where the reasoning was "the index has no services left to
+  # list". He hit the box in a browser, got ERR_CONNECTION_REFUSED and asked
+  # for it back — *"bring it back nginx i want the stuff how can i access to my
+  # services"*. The reasoning was right about the page and wrong about the
+  # consequence: with no listener on :80 the box does not look sparse, it looks
+  # DOWN, and there is no other place that tells him what is running. A short
+  # honest index beats a silent port. He was offered caddy and declined it
+  # explicitly ("i dont want caddy") — this box's web server has been nginx
+  # since 2026-10-19 and stays that way.
+  #
+  # The page itself was rewritten in the same pass: the rows for the seven
+  # removed containers and glances are commented out in lib/server-index.nix,
+  # so what answers is study, home assistant and searxng, with blocky,
+  # tailscaled, opencode-serve and filen-sync described in prose below the
+  # table (they are services without a page — a row would be a dead link).
+  #
+  # DECLARATIVE ON PURPOSE, unlike the old `push-server-index` rsync: the page
+  # is the store path below, so the index cannot drift from the service list —
+  # a rebuild IS the publish. `push-server-index` stays on disk as the record
+  # of how it used to ship (see modules/home/apps/homepage.nix).
+  #
+  # :80 on tailscale0 only — every link the page emits is a tailnet address,
+  # so LAN exposure buys nothing (the standing "always Tailscale IPs" rule).
+  services.nginx = {
+    enable = true;
+    virtualHosts.index = {
+      default = true;
+      root = pkgs.writeTextDir "index.html" (import ../../lib/server-index.nix {});
+      extraConfig = "index index.html;";
+    };
+  };
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [80];
 }
