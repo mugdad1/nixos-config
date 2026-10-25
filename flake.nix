@@ -106,11 +106,20 @@
       # first NixOS server after the Void migration, but it went back to its
       # owner (his "rm thinkcentre host"), so hosts/thinkcentre/ is gone and
       # nothing here declares it any more. The service layer it carried lives
-      # on grandpa (see the MOVED FROM notes in hosts/grandpa/); the compose
-      # launcher now lives at scripts/grandpa/docker-stack.sh and is read by
-      # hosts/grandpa/default.nix. sv-watch.sh, its http-endpoints and
-      # postboot-verify.sh went 2026-10-23 with sv-watch itself. Git history
-      # is the record.
+      # on grandpa (see the MOVED FROM notes in hosts/grandpa/). sv-watch.sh,
+      # its http-endpoints and postboot-verify.sh went 2026-10-23 with sv-watch
+      # itself. Git history is the record.
+      #
+      # CORRECTION 2026-10-25: this comment used to say "the compose launcher now
+      # lives at scripts/grandpa/docker-stack.sh and is read by
+      # hosts/grandpa/default.nix". The `docker-stack` UNIT was removed that day
+      # with the whole compose stack — seven projects, their data and their
+      # configs — so nothing reads that script any more. scripts/thinkcentre/ is
+      # empty, and scripts/grandpa/docker-stack.sh is an orphan on disk: it is
+      # not in scripts/default.nix's package list either, so it is not on PATH.
+      # Left in place rather than deleted because it is the only surviving
+      # description of how the stack used to come up at boot; git history holds
+      # it regardless if he calls it trash.
       # Grandpa's box — Intel i3-2120 (Sandy Bridge), 6 GiB, single 298 GiB HDD,
       # headless server / CLI box. NixOS **installed 2026-10-16** and
       # `hardware-configuration.nix` is the real generated file from that day
