@@ -58,14 +58,7 @@
   pkgs,
   username,
   ...
-}: let
-  dockerStack = pkgs.writeShellApplication {
-    name = "docker-stack";
-    runtimeInputs = with pkgs; [docker coreutils gnugrep];
-    # Sweeps ~/projects/servers; kept under scripts/grandpa/ now.
-    text = builtins.readFile ../../scripts/grandpa/docker-stack.sh;
-  };
-in {
+}: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
@@ -78,9 +71,6 @@ in {
     # host learned this the expensive way; git history has the warning.
     ./packages.nix
     ./overrides.nix
-    # GLANCES (2026-10-19, his "can we have glances for grandpa") — NixOS-native
-    # service on :61208, unlike thinkcentre's docker container. See glances.nix.
-    ./glances.nix
 
     # ── THE SERVICE LAYER, MOVED FROM hosts/thinkcentre 2026-10-22 ──────────
     # His order: "move the services from thinkcentre to grandpa … nix work
@@ -177,89 +167,12 @@ in {
   #   stateDir = "/var/lib/forgejo";
   # };
 
-  # Docker (2026-10-19, his "why dont u dockerize grandpa" → "ok do it i want
-  # forgero and mirror in docker now") — grandpa's "no docker" posture (row
-  # 103) was a moment, not a rule (his own correction the same week). Same
-  # shape as thinkcentre: engine only in Nix, compose files under
-  # ~/projects/servers are the source of truth for what runs, docker-stack is
-  # the boot launcher so nixos-rebuild + reboot brings the stack back.
+  # Docker engine, kept 2026-10-25: the seven compose projects and their data
+  # were removed at his order that day ("rm data and config" → "a"), and the
+  # `docker-stack` launcher went with them — nothing sweeps ~/projects/servers
+  # any more, so no container comes back at boot or on a switch. The engine is
+  # left installed deliberately: it was never on the removal list he confirmed,
+  # and taking the runtime out is a separate decision from taking the stack out.
   virtualisation.docker.enable = true;
   users.users.${username}.extraGroups = ["docker"];
-
-  systemd.services.docker-stack = {
-    description = "Bring the compose stack under ~/projects/servers up";
-    requires = ["docker.service"];
-    # tailscaled too: gitea-mirror publishes 100.106.116.60:4321, and a bind to
-    # an address that does not exist yet is a dead container at boot.
-    after = ["docker.service" "tailscaled.service"];
-    wants = ["tailscaled.service"];
-    wantedBy = ["multi-user.target"];
-    unitConfig.ConditionPathExists = "/home/${username}/projects/servers";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = username;
-      WorkingDirectory = "/home/${username}/projects/servers";
-      ExecStart = "${dockerStack}/bin/docker-stack";
-      TimeoutStartSec = "15min"; # first boot pulls the images
-    };
-  };
-
-  # Forgejo is Docker, so the compose file owns the bind. It publishes
-  # 100.106.116.60:3000 (tailnet only); Docker bypasses the NixOS firewall, so
-  # there is no host firewall rule for :3000 any more.
-
-  # Tailscale Serve was historically CLI state only, so a fresh install lost
-  # both HTTPS routes. Pin them here; reset+re-add is idempotent, and the reset
-  # also clears stale paths from an older manual setup. The service runs as
-  # root (tailscale serve requires it) and retries if tailscaled is not ready.
-  systemd.services.tailscale-serve = {
-    description = "Tailscale Serve HTTPS proxies";
-    wantedBy = ["multi-user.target"];
-    after = ["tailscaled.service"];
-    wants = ["tailscaled.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
-    script = ''
-      for _ in {1..30}; do
-        if ${pkgs.tailscale}/bin/tailscale status >/dev/null 2>&1; then
-          break
-        fi
-        sleep 1
-      done
-      ${pkgs.tailscale}/bin/tailscale serve reset
-      ${pkgs.tailscale}/bin/tailscale serve --bg --https=444 http://100.106.116.60:3456
-      ${pkgs.tailscale}/bin/tailscale serve --bg --https=8443 http://127.0.0.1:8082
-    '';
-  };
-
-  # ── THE SERVICE INDEX PAGE (2026-10-22) ────────────────────────────────────
-  #
-  # His order: "mv immich and vault and vik and index page chnage it to new
-  # stuff also rebuild". The page itself was never the problem — it is
-  # generated from lib/server-index.nix — but its HOST left with the
-  # ThinkCentre (Caddy on :80). nginx was already this box's web server until
-  # the md service was removed on 2026-10-19; wiki.nix has since been removed
-  # in cleanup, so git history has the rationale.
-  #
-  # DECLARATIVE ON PURPOSE, unlike the old `push-server-index` rsync: the page
-  # is the store path below, so the index cannot drift from the service list —
-  # a rebuild IS the publish. `push-server-index` stays on disk as the record
-  # of how it used to ship (see modules/home/apps/homepage.nix).
-  #
-  # :80 on tailscale0 only — every link the page emits is a tailnet address,
-  # so LAN exposure buys nothing (the standing "always Tailscale IPs" rule).
-  services.nginx = {
-    enable = true;
-    virtualHosts.index = {
-      default = true;
-      root = pkgs.writeTextDir "index.html" (import ../../lib/server-index.nix {});
-      extraConfig = "index index.html;";
-    };
-  };
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [80];
 }

@@ -6,14 +6,20 @@
 # came from.
 #
 # WHAT IS NOT IN THIS FILE, deliberately:
-#   docker-stack   grandpa already declares its own in ./default.nix (same
-#                  script, same shape) — a second definition here would be a
-#                  duplicate-option conflict, not a migration.
+#   docker-stack   was in ./default.nix and is GONE as of 2026-10-25 — the seven
+#                  compose projects and their data were removed at his order,
+#                  so there is no launcher to declare. Same reason no second
+#                  definition belongs here: a duplicate option is a conflict,
+#                  not a migration.
 #   backup-daily   ./backup.nix is not moved: it mounts /srv/backup, a physical
 #                  240G disk that is bolted to the ThinkCentre and cannot travel
 #                  with a config change. The disk, the mount, the timer and the
 #                  fstab-gated check in checkup.sh move together or not at all.
-#   glances        ./glances.nix already exists here, native (:61208).
+#   glances        was ./glances.nix; DELETED 2026-10-25 at his order.
+#   tailscale-serve / nginx / smartd
+#                  also gone 2026-10-25 — the first two because the service
+#                  index page they fronted has no services left to list, the
+#                  third because it had no transport left to report through.
 #   blocky         already on this host via modules/core; only its tailnet
 #                  exposure moved, and that is in ./overrides.nix.
 #

@@ -1,35 +1,29 @@
-# Disk health + the fleet's sops wiring, shared by every host.
+# The fleet's sops wiring, shared by every host. Disk health WAS here too and
+# is gone — see the note at the bottom of this file.
 #
-# WHY (2026-10-18): every host could detect a failure and none could report one.
-# The detectors were already there - a unit/container/endpoint/DNS sweep
-# (sv-watch, on the thinkcentre; removed at his order 2026-10-23, see below),
-# and nothing at all for disk failure on any host (`smartctl` was installed,
-# the `smartd` daemon was not) - while
-# delivery had been off since 2026-10-12, when the ntfy container was removed on
-# his "just rm notify". The result he hit: a box can lose a disk or a container
-# and the only trace is journald, which nobody reads unasked.
+# SMART MONITORING REMOVED 2026-10-25 at his order ("rm smartd"). It was added
+# 2026-10-18 because every host could detect a failure and none could report
+# one, and it is being taken out for the same reason it stopped mattering: the
+# reporting never had anywhere to go. Both transports tried since October are
+# gone — the ntfy container (2026-10-12, "just rm notify") and Telegram itself,
+# removed wholesale 2026-10-23 (row 207): the bot, the `notify-telegram`
+# script, the `notify-telegram@` OnFailure= template and its `telegram/*` sops
+# keys all went in one commit. smartd was left running afterwards to `wall`
+# only, which is a log nobody reads unasked on a headless box.
 #
-# DELIVERY, or the lack of it. Two transports were tried and BOTH are gone now:
-# the ntfy container (2026-10-12, "just rm notify") and then Telegram itself,
-# removed wholesale at his order on 2026-10-23 (row 207) - the bot, the
-# `notify-telegram` script, the `notify-telegram@` OnFailure= template, its
-# sops secrets and the `telegram/*` key pair all went in one commit.
+# So the state to expect, stated plainly: no disk daemon, no unit/container
+# sweep (sv-watch went 2026-10-23 too), no delivery path of any kind. A failing
+# disk or a failing unit is journald and `systemctl --failed`, and that is all.
+# Re-adding a detector before adding a TRANSPORT would repeat the mistake this
+# file was written to fix — build the delivery half first.
 #
-# WHAT IS LEFT is `smartd`, still worth running on its own: it is the one thing
-# that notices a disk going bad BEFORE it takes the box with it, and it was
-# simply not enabled anywhere. Autodetect covers sda/nvme0n1 without naming
-# devices that move between boots (their /dev paths do - see hosts/thinkcentre's
-# hardware comment). SMART was last configured by hand on the donor Void
-# install; this is the NixOS replacement.
+# This module is in modules/core, so victus imports it: the laptop loses disk
+# monitoring in the same commit as the server. Flagged to him before it was done.
 #
-# Its notifications now go to `wall` only. `notifications.mail` went with
-# Telegram: smartd calls a sendmail-compatible binary as `<mailer> -i
-# <recipient>` and pipes the report to stdin, and with no such binary left on
-# the box there is nothing for it to call - an MTA would be the only
-# alternative and there will not be one. `wall` still stays on - the journal
-# copy is what you find when you eventually look, and on a headless box it
-# costs nothing. Net effect to be explicit about: a failing disk is logged,
-# not telephoned. Nothing on this box pushes a message anywhere now.
+# The sops block below is the fleet wiring, not a credential. It names the
+# ciphertext file and the age key path for every host except victus (see the
+# comment there). Its last entries were the `telegram/*` secrets; what remains
+# is what the surviving services still read — `filen/*` and `sear/secret_key`.
 #
 # The sops block below is the fleet wiring, not the credential it used to
 # carry: it names the ciphertext file and the age key path for every host
@@ -95,24 +89,16 @@
   # path at all, only journald and `systemctl --failed`. Recorded here rather
   # than left silent, because the hook's absence is a real regression and the
   # next person to add a transport should re-add it.
-  services.smartd = {
-    enable = true;
-    autodetect = true;
-    notifications = {
-      # NO MAIL, since 2026-10-23 (row 207). `notifications.mail` was never the
-      # generic option here: it was `enable = true` with our own
-      # `notify-telegram` as the `mailer`, because smartd calls a
-      # sendmail-compatible binary as `<mailer> -i <recipient>` and pipes the
-      # report to stdin, which is the interface that script implemented. With
-      # Telegram gone there is no such binary left on the box, and `enable`
-      # without one would point smartd at a sendmail that does not exist. The
-      # default for this option is `sendmailSetuidWrapper != null`, which is
-      # false — there is no MTA on any of these boxes and there will not be
-      # one — so dropping the block is the honest spelling of "no delivery".
-      #
-      # An attrset with `enable`, not a bool (the first draft of this file set
-      # `wall = true;` and the eval refused it - which is the good kind of loud).
-      wall.enable = true;
-    };
-  };
+  # REMOVED 2026-10-25 at his order ("rm smartd"). smartd was the last watcher
+  # on the box; with it gone this host has no disk monitoring and no unit
+  # sweep, and the failure surface is journald plus `systemctl --failed`.
+  # Worth stating because the removal reads as an oversight otherwise: it is
+  # not. Nothing here delivers anywhere — the Telegram mailer went 2026-10-23
+  # (row 207), the template unit went the same day, and the container/unit
+  # sweep (sv-watch) was deleted before that — so smartd was reporting to a
+  # log nobody reads. Taking the daemon out is the honest version of a
+  # notification path with no transport.
+  #
+  # NOTE: this file is in modules/core, which victus imports too — the laptop
+  # loses disk monitoring in the same commit. Flagged before it was done.
 }
