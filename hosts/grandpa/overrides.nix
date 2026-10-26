@@ -75,7 +75,10 @@
     "quic:2b44bd66.d.adguard-dns.com"
   ];
 
-  # ── blocky: reachable from the tailnet, plain DNS only ──────────────────────
+  # ── blocky: reachable from the LAN and the tailnet, plain DNS only ─────────
+  # OPENED TO THE LAN 2026-10-26 (see the firewall note below): the section
+  # header used to read "reachable from the tailnet" and that was the bug —
+  # he pointed the house router here the same day.
   # MOVED HERE 2026-10-22 with the rest of the service layer: the ThinkCentre
   # is being returned to its owner, and it has held this since 2026-10-21
   # (decisions row 177). Same posture, new address.
@@ -90,15 +93,35 @@
   #
   # Why 0.0.0.0 rather than the tailnet address alone: core/network.nix points
   # /etc/resolv.conf at 127.0.0.1, because blocky IS this box's resolver, so
-  # binding only the tailnet IP would take DNS away from the box itself. All
-  # interfaces keeps loopback answering; what makes it tailnet-only is the
-  # firewall rule below, which never opens the LAN.
+  # binding only the tailnet IP would take DNS away from the box itself.
+  # (This comment used to continue "what makes it tailnet-only is the firewall
+  # rule below, which never opens the LAN" — that stopped being true the day
+  # the house router started pointing here. See below.)
   services.blocky.settings.ports.dns = lib.mkForce "0.0.0.0:53";
 
-  # tailscale0 only, the pattern home-assistant.nix (8123) already uses. BOTH
-  # transports: tcp is what a resolver falls back to when the answer is too big
-  # for one UDP packet — any large or DNSSEC-signed response — so opening udp
-  # alone breaks the big answers and only then.
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [53];
-  networking.firewall.interfaces."tailscale0".allowedUDPPorts = [53];
+  # OPENED TO EVERY INTERFACE 2026-10-26 — this rule was the outage.
+  # Two hours earlier he had pointed the HOUSE router's DNS at this box
+  # (*"i just changed my home dns to grandpa"*), but the rule below only ever
+  # accepted 53 on tailscale0. So every device on the LAN was sending
+  # queries to 192.168.8.254 and getting the firewall's refusal: the house
+  # had no DNS at all, and it was invisible from inside the box because a
+  # query from grandpa to its own address never traverses the input chain.
+  #
+  # That last part is why this was missed — the obvious test (dig
+  # @192.168.8.254) passes from here while failing from the couch. The only
+  # evidence that would have caught it early is a non-127.0.0.1 client_ip in
+  # blocky's query log, which appears only once something off-box asks.
+  #
+  # "make it 0.0.0.0" — global rather than enp2s0-scoped, which is safe
+  # because this box has NO WAN interface: lo, enp2s0 (LAN), tailscale0,
+  # docker0, and NAT lives in the router. Nothing here is reachable from the
+  # internet without a port forward, so the wider rule costs no exposure and
+  # does not depend on an interface name — enp2s0 is already misdescribed as
+  # enp3s0 in default.nix's header, which is exactly how a scoped rule rots.
+  #
+  # BOTH transports: tcp is what a resolver falls back to when the answer is
+  # too big for one UDP packet — any large or DNSSEC-signed response — so
+  # opening udp alone breaks only the big answers, and only then.
+  networking.firewall.allowedTCPPorts = [53];
+  networking.firewall.allowedUDPPorts = [53];
 }
