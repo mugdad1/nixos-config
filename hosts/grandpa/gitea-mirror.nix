@@ -10,7 +10,10 @@
 # Tailnet-only: port 4321 opens on tailscale0 only, not on the LAN — the app
 # has a login (Better Auth) and no reason to answer the flat network.
 #
-# BEFORE FIRST START create /var/lib/gitea-mirror/env (root:root, 600):
+# The unit needs /var/lib/gitea-mirror/env (mode 600, owner gitea-mirror — the
+# header used to say root:root, which was never true: it is uid 1001, and the
+# uid is pinned below so the service can actually read it). It already exists
+# on this box from the 2026-10-19 run, with:
 #   BETTER_AUTH_URL=http://100.106.116.60:4321
 #   BETTER_AUTH_TRUSTED_ORIGINS=http://100.106.116.60:4321
 #   PUBLIC_BETTER_AUTH_URL=http://100.106.116.60:4321
@@ -25,9 +28,29 @@ in {
     group = "gitea-mirror";
     home = "/var/lib/gitea-mirror";
     createHome = true;
+
+    # PINNED TO 1001 — this is the fix for a real failure, not decoration.
+    # NixOS allocates service uids dynamically, so when af010f2 removed this
+    # module and 77069f1 brought it back, the id came back as 991 instead of
+    # the 1001 the data was written under. The tmpfiles `d` rule below chowned
+    # the top directory only — `d` is not recursive — so the service owned the
+    # folder but not its contents, and the first start died with:
+    #
+    #   ln: failed to create symbolic link
+    #       '/var/lib/gitea-mirror/.workdir/dist': Permission denied
+    #
+    # All 151 files under here are uid 1001, and 1001 was free, so pinning the
+    # identity to the data costs no mutation at all — the alternative was a
+    # chown -R that only papers over the next time the module is removed and
+    # re-added. Considered systemd-tmpfiles' recursive `z` rule instead and
+    # tested it against a scratch dir first: it changed nothing, so it is not
+    # to be relied on here without evidence.
+    uid = 1001;
   };
 
-  users.groups.gitea-mirror = {};
+  users.groups.gitea-mirror = {
+    gid = 1001;
+  };
 
   systemd.tmpfiles.rules = [
     "d /var/lib/gitea-mirror 0750 gitea-mirror gitea-mirror -"
