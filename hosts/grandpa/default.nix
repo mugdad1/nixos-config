@@ -43,8 +43,10 @@
 # WHAT IT IS (his word, 2026-10-16): a **lightweight server** — headless, and
 # that part is a decision, not a placeholder. It runs the core set (sshd,
 # tailscaled, blocky, systemd-networkd, systemd-timesyncd, zram) plus what he
-# has chosen since: Forgejo + gitea-mirror, and since 2026-10-19 docker as the
-# engine under them (see the block below).
+# has chosen since: Home Assistant, opencode-serve, study, filen-sync, and —
+# back as of 2026-10-26 — Forgejo and gitea-mirror, both native NixOS this
+# time rather than the docker compose they ran as 2026-10-19..25. The docker
+# engine itself stays installed; only the stack under it went.
 #
 # SINCE 2026-10-22 it is also the box the fleet's services live on: the
 # ThinkCentre is being returned to its owner, so Home Assistant, opencode-serve,
@@ -87,6 +89,13 @@
     # why this drive is a BACKUP target and not a performance one.
     ./backup.nix
 
+    # The daily 03:13 router reboot — grandpa's, not modules/core's. The
+    # *command* is in modules/core so every host can run it; the *timer* is
+    # here because a shared timer would fire on all three machines at once.
+    # That file's header carries the reasoning, including why a missed run is
+    # skipped rather than caught up.
+    ./router-reboot.nix
+
     # ── THE SERVICE LAYER, MOVED FROM hosts/thinkcentre 2026-10-22 ──────────
     # His order: "move the services from thinkcentre to grandpa … nix work
     # only". The ThinkCentre went back to its owner, so what it was the server
@@ -108,6 +117,13 @@
     ./services.nix
     ./secrets.nix
     ./searxng.nix
+
+    # gitea-mirror — GitHub → Forgejo, native systemd, tailnet-only :4321.
+    # Restored from ae10cf5 on 2026-10-26 (same day as forgejo above); the file
+    # was un-imported by af010f2. Its package was never removed, and
+    # /var/lib/gitea-mirror/env already exists (600, 3 lines) which the unit
+    # requires — so it starts on first try rather than failing on a missing file.
+    ./gitea-mirror.nix
   ];
 
   # The ESP lives at /boot (systemd-boot writes there; NixOS's default is already
@@ -149,37 +165,61 @@
 
   # ─── THE FIRST REAL SERVICE: Forgejo (2026-10-18) ────────────────────────
   # His order: "rm gitea and it mirror cuz its bad ... u can use forjero" —
-  # gitea + gitea-mirror came off the thinkcentre (see its server-index and
-  # README), and the git host role moves here. It was declared native at first
-  # because this box had no docker; a day later he dockerized it (below). GitHub
-  # stays the remote; this is the local web UI + LAN clone endpoint.
+  # gitea + gitea-mirror came off the thinkcentre, and the git host role moved
+  # here. GitHub stays the remote; this is the local web UI + LAN clone
+  # endpoint.
   #
-  # Port 3000 is free again (gitea held it until today); git-ssh :2222 left
-  # with gitea too.
+  # LIFECYCLE, so the next reader does not have to archaeology it:
+  #   2026-10-18  declared native in this file (grandpa was containerless).
+  #   2026-10-19  moved to docker compose ("i want forgero and mirror in docker
+  #               now"), data still /var/lib/forgejo bind-mounted.
+  #   2026-10-25  strip (0d08aca): compose dir and images deleted, this block
+  #               commented out, gitea-mirror.nix un-imported.
+  #   2026-10-26  NATIVE AGAIN, at *"in the end i want clean system with
+  #               forgero and giteamirror enalbed"*. The compose route is not
+  #               coming back: ~/projects/servers/ is empty, forgejo:15.0.9 and
+  #               the mirror image were pruned, and the docker-stack launcher
+  #               was removed — so re-enabling would mean re-pulling and
+  #               hand-recreating files. The data never moved: /var/lib/forgejo
+  #               is 873M and was last written 2026-10-25, and stateDir below
+  #               points straight at it, so this is a service *re-adoption* of
+  #               existing state, not a fresh install.
   #
-  # MOVED TO DOCKER same day (2026-10-19, his "i want forgero and mirror in
-  # docker now") — compose file at ~/projects/servers/forgejo/, data still
-  # /var/lib/forgejo bind-mounted at the same path. COMMENT OUT, DON'T DELETE:
-  # this block is the record of the settings the container now carries in its
-  # own compose file (tailnet ROOT_URL, signups open, sqlite, :3000).
-  # services.forgejo = {
-  #   enable = true;
-  #   settings = {
-  #     server = {
-  #       DOMAIN = "100.106.116.60";
-  #       ROOT_URL = "http://100.106.116.60:3000/";
-  #       HTTP_PORT = 3000;
-  #       LANDING_PAGE = "explore";
-  #     };
-  #     service = {
-  #       DISABLE_REGISTRATION = false;
-  #       REQUIRE_SIGNIN_VIEW = false;
-  #     };
-  #     repository.DEFAULT_BRANCH = "main";
-  #   };
-  #   database.type = "sqlite3";
-  #   stateDir = "/var/lib/forgejo";
-  # };
+  # Docker engine stays installed (see below) — it was never on the removal
+  # list, and taking the runtime out is a separate decision from the stack.
+  services.forgejo = {
+    enable = true;
+    settings = {
+      server = {
+        # Tailnet canonical (his pick 2026-10-18): he browses forgejo as
+        # 100.106.116.60:3000, and the old LAN pin threw Forgejo's "you are
+        # viewing through a different URL" banner on every page. Tailnet IP
+        # answers from every box on the network, LAN included.
+        DOMAIN = "100.106.116.60";
+        ROOT_URL = "http://100.106.116.60:3000/";
+        HTTP_PORT = 3000;
+        LANDING_PAGE = "explore";
+      };
+      service = {
+        # Same posture gitea had on day one: signups open so the FIRST account
+        # becomes admin, then close it — his README rule: "create, then close
+        # it". Flip DISABLE_REGISTRATION to true right after first login.
+        DISABLE_REGISTRATION = false;
+        REQUIRE_SIGNIN_VIEW = false;
+      };
+      repository.DEFAULT_BRANCH = "main";
+    };
+    # SQLite: 6 GiB box, a handful of repos — no postgres, no redis.
+    database.type = "sqlite3";
+    stateDir = "/var/lib/forgejo";
+  };
+
+  # The module has no openFirewall (checked 2026-10-18 in nixpkgs 6510408), and
+  # modules/core/network.nix turns the firewall on for every host — so without
+  # this line forgejo listens but nobody can reach it. Verified live back then:
+  # active + LISTEN :3000 with a curl from the thinkcentre still timing out
+  # (000/exit 28) until the port was allowed. Plain http, same as gitea was.
+  networking.firewall.allowedTCPPorts = [3000];
 
   # Docker engine, kept 2026-10-25: the seven compose projects and their data
   # were removed at his order that day ("rm data and config" → "a"), and the

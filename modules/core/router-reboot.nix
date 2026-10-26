@@ -1,5 +1,12 @@
 # ─── router-reboot — one command to reboot the house router ──────────────────
 #
+# The COMMAND lives here, in modules/core, so every host gets it: being able to
+# bounce the router from a laptop when the internet dies is exactly when it
+# matters, and that is not a moment to be on the server. The SCHEDULED run does
+# not live here — it is in hosts/grandpa/router-reboot.nix, because a timer in
+# this file would fire on all three hosts at once, and two of them would lose
+# the race and go red every night.
+#
 # His word, 2026-10-19, after I went hunting for credentials that were never
 # lost: *"i just did it / simple run the cmd router-reboot no params"*. And
 # 2026-10-26, *"bring it to grandpa"* — the original left with the ThinkCentre
@@ -101,54 +108,54 @@
             continue
     sys.exit("router-reboot: NOT BACK after 120s — check it physically")
   '';
-in {
-  environment.systemPackages = [
-    (pkgs.writeShellScriptBin "router-reboot" ''
-      set -euo pipefail
 
-      # ~ expansion at runtime, not at build: $HOME differs per user and a
-      # build-time /home/mugdad would be wrong on the laptops.
-      PASS_FILE="$HOME/${passFile}"
+  routerReboot = pkgs.writeShellScriptBin "router-reboot" ''
+    set -euo pipefail
 
-      # First run: ask once, save it, and from then on it is one command with
-      # no params — which is the whole point of row 133 (*"simple run the cmd
-      # router-reboot no params"*). Prompting here instead of demanding a
-      # pre-made file means the credential is captured without ever being
-      # typed into a chat, a commit, or a file outside $HOME.
-      if [ ! -f "$PASS_FILE" ]; then
-        if [ -t 0 ]; then
-          echo "router-reboot: first run — storing the router password once in" >&2
-          echo "  $PASS_FILE (mode 600, not in git, never in a commit)." >&2
-          mkdir -p "$(dirname "$PASS_FILE")"
-          umask 077
-          read -rsp "  router password: " PW; echo >&2
-          if [ -z "$PW" ]; then
-            echo "  empty — nothing saved." >&2
-            exit 1
-          fi
-          # printf, not echo: no trailing newline to trip over later, and no
-          # shell interpretation of a password containing backslashes.
-          printf '%s' "$PW" > "$PASS_FILE"
-          unset PW
-          echo "  saved." >&2
-        else
-          echo "router-reboot: no password file, and stdin is not a terminal." >&2
-          echo "  run 'router-reboot' interactively once to record it," >&2
-          echo "  or create $PASS_FILE yourself (chmod 600)." >&2
+    # ~ expansion at runtime, not at build: $HOME differs per user and a
+    # build-time /home/mugdad would be wrong on the laptops.
+    PASS_FILE="$HOME/${passFile}"
+
+    # First run: ask once, save it, and from then on it is one command with
+    # no params — which is the whole point of row 133 (*"simple run the cmd
+    # router-reboot no params"*). Prompting here instead of demanding a
+    # pre-made file means the credential is captured without ever being
+    # typed into a chat, a commit, or a file outside $HOME.
+    if [ ! -f "$PASS_FILE" ]; then
+      if [ -t 0 ]; then
+        echo "router-reboot: first run — storing the router password once in" >&2
+        echo "  $PASS_FILE (mode 600, not in git, never in a commit)." >&2
+        mkdir -p "$(dirname "$PASS_FILE")"
+        umask 077
+        read -rsp "  router password: " PW; echo >&2
+        if [ -z "$PW" ]; then
+          echo "  empty — nothing saved." >&2
           exit 1
         fi
-      fi
-      if [ ! -s "$PASS_FILE" ]; then
-        echo "router-reboot: $PASS_FILE exists but is empty." >&2
+        # printf, not echo: no trailing newline to trip over later, and no
+        # shell interpretation of a password containing backslashes.
+        printf '%s' "$PW" > "$PASS_FILE"
+        unset PW
+        echo "  saved." >&2
+      else
+        echo "router-reboot: no password file, and stdin is not a terminal." >&2
+        echo "  run 'router-reboot' interactively once to record it," >&2
+        echo "  or create $PASS_FILE yourself (chmod 600)." >&2
         exit 1
       fi
+    fi
+    if [ ! -s "$PASS_FILE" ]; then
+      echo "router-reboot: $PASS_FILE exists but is empty." >&2
+      exit 1
+    fi
 
-      # Exported rather than passed as an argv, so the password never appears
-      # in `ps` output — which is the one way a credential leaks on a shared
-      # box without anyone reading a file.
-      export HUAWEI_ROUTER_PASS="$(cat "$PASS_FILE")"
+    # Exported rather than passed as an argv, so the password never appears
+    # in `ps` output — which is the one way a credential leaks on a shared
+    # box without anyone reading a file.
+    export HUAWEI_ROUTER_PASS="$(cat "$PASS_FILE")"
 
-      exec ${py}/bin/python3 ${reboot} "$@"
-    '')
-  ];
+    exec ${py}/bin/python3 ${reboot} "$@"
+  '';
+in {
+  environment.systemPackages = [routerReboot];
 }

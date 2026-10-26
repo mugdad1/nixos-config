@@ -131,25 +131,25 @@
     #   url = "https://grandpa.tailbc99bb.ts.net:444/";
     #   note = "tailnet https";
     # }
-    # REMOVED 2026-10-25 with the strip: forgejo, gitea-mirror and their configs
-    # deleted from ~/projects/servers, so the git host is gone from this box and
-    # GitHub is the only remote left (it already was — nixos-config, wiki and
-    # study all push there). Note that the images (forgejo:15.0.9,
-    # gitea-mirror) were pruned the same day; nothing in this row comes back
-    # without a re-pull. Was :3000, mirror :4321.
-    # {
-    #   name = "forgejo";
-    #   port = "3000";
-    #   desc = "git, self-hosted — replaced gitea, docker compose on grandpa";
-    #   machine = "grandpa";
-    # }
-    # {
-    #   name = "gitea mirror";
-    #   port = "4321";
-    #   desc = "github → forgejo mirroring, back on grandpa 2026-10-19";
-    #   note = "tailnet only";
-    #   machine = "grandpa";
-    # }
+    # forgejo + gitea-mirror — REMOVED 2026-10-25 with the strip (compose dir
+    # and images pruned), then RESTORED 2026-10-26 as native NixOS, at his
+    # *"in the end i want clean system with forgero and giteamirror enalbed"*.
+    # The data was never lost — 873M still at /var/lib/forgejo, last written
+    # the day before the strip — so these point at live ports again. They are
+    # nix-native now, not the compose project the original row described.
+    {
+      name = "forgejo";
+      port = "3000";
+      desc = "git, self-hosted — replaced gitea, native NixOS on grandpa";
+      machine = "grandpa";
+    }
+    {
+      name = "gitea mirror";
+      port = "4321";
+      desc = "github → forgejo mirroring, native systemd";
+      note = "tailnet only";
+      machine = "grandpa";
+    }
     # REMOVED 2026-10-25 with the strip — hosts/grandpa/glances.nix deleted,
     # the module un-imported. It was the one nix-native monitoring view on this
     # box; with smartd out of modules/core the same day there is no monitoring
