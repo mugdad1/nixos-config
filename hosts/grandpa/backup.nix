@@ -70,7 +70,14 @@
 # one invocation per source makes --delete's scope exactly one subtree.
 {pkgs, ...}: let
   dest = "/srv/backup";
-  keepRuns = 7;
+  # THREE, at his word 2026-10-26: *"7 backups is to much / keep only last 3"*.
+  # Was 7. The cost of keeping more was never disk — --link-dest hardlinks
+  # unchanged files, so extra runs are nearly free — it is *clutter*: more
+  # snapshots to reason about when the question is "which one do I restore".
+  # At 3 the answer is obvious and the oldest is still yesterday.
+  # Peak usage is momentary: the new run lands first (the 4th, briefly) and
+  # only then does the prune drop back to $KEEP, so provision for $KEEP+1.
+  keepRuns = 3;
 
   sources = [
     "/var/lib/hass"
