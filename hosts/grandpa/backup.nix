@@ -80,18 +80,36 @@
     "/var/lib/docker"
     "/var/lib/sops-nix"
     "/var/lib/tailscale"
-    "/var/lib/searxng"
     "/etc/ssh"
     "/etc/machine-id"
     "/home/mugdad/.ssh"
     "/home/mugdad/.gnupg"
     "/home/mugdad/.config/gh"
-    "/home/mugdad/.config/sops"
     "/home/mugdad/.gitconfig"
     "/home/mugdad/.local/share"
     "/home/mugdad/opencode.db"
     "/home/mugdad/projects"
   ];
+
+  # DROPPED 2026-10-26 after the first real run, both of which printed
+  # "skip (gone)" and would have done so every single day:
+  #
+  #   /var/lib/searxng          never existed. Searx is NOT a container and
+  #                            NOT stateful here — :8888 is held by a wrapper
+  #                            script, docker ps shows no containers and no
+  #                            volumes, and /var/cache/searx is 0 bytes. Its
+  #                            config lives in hosts/grandpa/searxng.nix, so it
+  #                            is rebuilt from git like everything else. The
+  #                            entry was written on the assumption it followed
+  #                            the usual NixOS stateful-service shape.
+  #   ~/.config/sops           the LAPTOP path for sops keys. On this box the
+  #                            key is /var/lib/sops-nix/key.txt, which is in
+  #                            the list above. .sops.yaml documents both.
+  #
+  # A source list is a claim about the machine, and every run re-checks it —
+  # so a wrong claim does not corrupt anything, it just prints noise until
+  # someone removes it. Left here rather than silently deleted because the
+  # reasoning for each absence is the useful part.
 
   # Built as Nix, not passed through the environment: the script indexes the
   # list as a shell array ("''${SOURCES[@]}") and an exported variable is a
