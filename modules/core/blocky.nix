@@ -1,19 +1,42 @@
-_: {
-  # Blocky owns 127.0.0.1:53 as local resolver, raced in parallel (blocky races
-  # all upstreams of a group and takes the first answer):
-  #   at home the NextDNS/AdGuard encrypted upstreams answer, the unreachable
-  #   work resolvers simply lose the race; at work 192.168.44.187/.188 answer
-  #   and the blocked encrypted upstreams are ignored. No per-network switching.
-  #
-  # Both machines run parallel_best as of 2026-10-12 (AGH removed 2026-10-11,
-  # so both run blocky). The ThinkCentre races the encrypted pair alone; this
-  # host adds 192.168.44.187/.188 so it also resolves on the work LAN, still
-  # with no per-network switching.
-  #
-  # Quad9 and strategy: strict were both added on 2026-10-12 and both taken back
-  # out the same day: a strict queue would stall behind the unreachable work
-  # resolvers here, and Quad9 went from both machines on his word — this host in
-  # 64827ce (reverting 1b415e8), the ThinkCentre in /etc/blocky/config.yml.
+{
+  host,
+  lib,
+  ...
+}:
+# Blocky owns 127.0.0.1:53 as the local resolver and races every upstream of a
+# group in parallel, taking the first answer. That is the whole design: no
+# per-network switching and no "which wifi am I on" logic.
+#
+# Transport rewritten 2026-10-26 (wiki decisions row 222). The university's
+# Fortinet drops udp/53, tcp/53 AND tcp/853 to every external resolver, so the
+# old NextDNS DoT + AdGuard DoQ pair worked at home and was stone dead on
+# campus. The two work resolvers that used to paper over that gap
+# (192.168.44.187/.188) are the university's own and are deliberately NOT
+# listed — his words: "these dnses are for uni". What is left:
+#
+#   1. DoH on 443 to the same two filtered profiles, so the ad/tracker/malware
+#      blocking is unchanged: NextDNS keeps its profile id in the path, AdGuard
+#      keeps its device id in the hostname. Verified on 2026-10-26 through a
+#      throwaway blocky: doubleclick.net and googleadservices.com came back
+#      0.0.0.0, example.com resolved normally.
+#   2. Plain DNS to grandpa over the tailnet. WireGuard traffic matches no DPI
+#      rule, and grandpa races the same two profiles from home, so the answers
+#      are the same — including the blocking (verified: doubleclick.net ->
+#      0.0.0.0 through 100.106.116.60). This is the path that survives even if
+#      every public DoH endpoint is blackholed, which is why it is an upstream
+#      and not just a bootstrap entry.
+#   3. Quad9 DoH as a neutral third opinion for when the filtered pair is slow.
+#      It was removed on 2026-10-12 because a `strict` strategy stalled behind
+#      dead upstreams; with `fast` it cannot stall anything.
+#
+# grandpa is the server being asked, so it must not ask itself: entry 2 is
+# gated on host. Its own blocky already binds 0.0.0.0:53 and its firewall
+# accepts :53 on tailscale0 only (hosts/grandpa/overrides.nix).
+let
+  # Only the two laptops tunnel home for DNS. grandpa keeps the encrypted pair
+  # it has always raced, with no tailnet hop.
+  asked = host != "grandpa";
+in {
   services.blocky = {
     enable = true;
     settings = {
@@ -21,26 +44,34 @@ _: {
 
       upstreams = {
         init.strategy = "fast"; # don't block startup on upstream probes
-        # blocky (0.33, the same build the ThinkCentre runs) rejects the bare
-        # tls:// and quic:// forms — tls:// dies on the empty port. Native form
-        # only: tcp-tls:host:port / quic:host. Proven on the server 2026-10-11.
-        groups.default = [
-          "tcp-tls:cbf8aa.dns.nextdns.io:853" # NextDNS, DoT
-          "quic:2b44bd66.d.adguard-dns.com" # AdGuard DNS, DoQ
-          "192.168.44.187" # work resolver — only reachable at work
-          "192.168.44.188" # work resolver — only reachable at work
-        ];
+        groups.default =
+          [
+            # Both filtered profiles, now over DoH (443) instead of DoT (853)
+            # and DoQ. Same accounts, same blocklists, transport that campus
+            # does not drop on sight.
+            "https://dns.nextdns.io/cbf8aa"
+            "https://2b44bd66.d.adguard-dns.com/dns-query"
+            "https://dns9.quad9.net/dns-query"
+          ]
+          ++ lib.optionals asked [
+            # The bypass that cannot be filtered: DNS inside WireGuard, answered
+            # by grandpa at home with the same profile pair.
+            "tcp+udp:100.106.116.60"
+          ];
       };
 
-      bootstrapDns = {
-        # Resolves the DoT/DoQ upstream hostnames above (a resolver can't ask
-        # itself). Used only at bootstrap, never for general queries.
-        upstream = "tcp-tls:dns.adguard-dns.com";
-        ips = [
-          "94.140.14.14"
-          "94.140.15.15"
+      # Used only to resolve the DoH hostnames above, never for queries. Every
+      # entry is an IP-literal DoH endpoint or a plain-DNS address, so bootstrap
+      # itself needs no resolver — which matters when the only working resolver
+      # is the one being bootstrapped.
+      bootstrapDns =
+        [
+          { upstream = "https://9.9.9.11/dns-query"; } # Quad9, cert has IP SAN
+          { upstream = "https://94.140.14.14/dns-query"; } # AdGuard
+        ]
+        ++ lib.optionals asked [
+          { upstream = "tcp+udp:100.106.116.60"; }
         ];
-      };
 
       caching = {
         minTime = "5m";
