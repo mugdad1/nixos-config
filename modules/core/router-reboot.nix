@@ -81,11 +81,14 @@
         with Connection(URL, USER, PW, timeout=15) as conn:
             client = Client(conn)
             # Cosmetic only, and strictly guarded: if a firmware revision
-            # renames the field, that must NOT stop the reboot from firing.
+            # renames a field, that must NOT stop the reboot from firing.
+            # Keys confirmed live 2026-10-26 against the real unit — the first
+            # version asked for ProductName, which this device does not return,
+            # so it would have logged "model unknown" every single night.
             try:
                 info = client.device.information()
-                name = info.get("ProductName") or info.get("productName") or "model unknown"
-                print(f"router : {name} @ {URL}")
+                bits = [info[k] for k in ("ProductFamily", "HardwareVersion", "SoftwareVersion") if info.get(k)]
+                print(f"router : {' / '.join(bits) or 'model unknown'} @ {URL}")
             except Exception:
                 pass
             # Named constant, never a literal — see the header: RESET is 2.
