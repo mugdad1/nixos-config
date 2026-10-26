@@ -80,6 +80,13 @@
     ./packages.nix
     ./overrides.nix
 
+    # The second drive (sdb): 100G /srv/backup + 376G /srv/data, and the daily
+    # hardlinked-snapshot unit that mirrors everything irreplaceable onto it.
+    # 2026-10-26. Listed here for exactly the reason above — it is a sibling
+    # file and would otherwise be silently ignored. Header in that file explains
+    # why this drive is a BACKUP target and not a performance one.
+    ./backup.nix
+
     # ── THE SERVICE LAYER, MOVED FROM hosts/thinkcentre 2026-10-22 ──────────
     # His order: "move the services from thinkcentre to grandpa … nix work
     # only". The ThinkCentre went back to its owner, so what it was the server
