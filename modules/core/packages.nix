@@ -88,6 +88,22 @@ in {
     # flutter
     # heimdall
     usbutils
+    # ─── hardware identification — EVERY host, by his instruction ──────────
+    # "any new host must have these". A box that cannot describe its own
+    # board, RAM, disks and NIC gets its specs guessed instead of read; that
+    # is exactly what happened to grandpa's RAM and motherboard on 2026-10-27.
+    # All of these are read-only probes, and all are tiny next to a desktop
+    # closure. dmidecode needs root (SMBIOS); the rest do not.
+    # usbutils above and lm_sensors below belong to the same set, they just
+    # predate this list.
+    pciutils # lspci — GPU, NIC, SATA, and what is on which bus
+    dmidecode # board model, RAM slots/speed, chassis (sudo)
+    fastfetch # the one-screen summary
+    hwinfo # deep probe: disks, NICs, buses
+    lshw # structured hardware tree
+    smartmontools # smartctl -a /dev/sdX — disk health
+    nvme-cli # nvme smart-log /dev/nvme0
+    ethtool # link speed, driver, wake-on-lan
     # lm-sensors: DECLARED, NOT INHERITED. It has no NixOS module in current
     # nixpkgs at all (neither services.lm_sensors nor hardware.temperatures
     # exists - checked against this flake's nixpkgs 2026-10-21), so this

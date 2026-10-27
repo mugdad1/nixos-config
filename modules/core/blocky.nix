@@ -51,7 +51,12 @@ in {
             # does not drop on sight.
             "https://dns.nextdns.io/cbf8aa"
             "https://2b44bd66.d.adguard-dns.com/dns-query"
-            "https://dns9.quad9.net/dns-query"
+            # Quad9 used to sit here as a "neutral third opinion". It was
+            # removed within hours of the switch: blocky races every upstream
+            # in the group and takes the FIRST answer, so an unfiltered
+            # resolver in the same group makes ad-blocking a coin flip.
+            # Measured: doubleclick.net resolved to a real address because
+            # Quad9 won the race. Speed is not worth losing the filtering.
           ]
           ++ lib.optionals asked [
             # The bypass that cannot be filtered: DNS inside WireGuard, answered
