@@ -13,10 +13,10 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-info()  { echo -e "${CYAN}[INFO]${NC} $*"; }
-ok()    { echo -e "${GREEN}[OK]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
-err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
+info() { echo -e "${CYAN}[INFO]${NC} $*"; }
+ok() { echo -e "${GREEN}[OK]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+err() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
 usage() {
   cat <<EOF
@@ -55,7 +55,7 @@ cmd_update() {
   # rust-overlay are gone from the flake entirely.
   nix flake update \
     nixpkgs home-manager nix-flatpak nix-index-database \
-    zen-browser opencode sops-nix
+    zen-browser sops-nix
   popd >/dev/null
   info "Rebuilding with updated inputs..."
   cmd_rebuild
@@ -98,11 +98,15 @@ cmd_trim() {
 }
 
 case "${1:-help}" in
-  rebuild)  cmd_rebuild ;;
-  update)   cmd_update ;;
-  diag)     cmd_diag ;;
-  cleanup)  cmd_cleanup "${2:-1}" ;;
-  trim)     cmd_trim ;;
-  help|-h|--help) usage ;;
-  *) err "Unknown command: $1"; usage; exit 1 ;;
+rebuild) cmd_rebuild ;;
+update) cmd_update ;;
+diag) cmd_diag ;;
+cleanup) cmd_cleanup "${2:-1}" ;;
+trim) cmd_trim ;;
+help | -h | --help) usage ;;
+*)
+  err "Unknown command: $1"
+  usage
+  exit 1
+  ;;
 esac

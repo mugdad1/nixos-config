@@ -70,7 +70,6 @@
     # same reason hosts/thinkcentre/packages.nix can reference it bare.
     # packages.nix's header used to say "the agent is not part of a bare CLI
     # box"; he decided otherwise 2026-10-16.
-    opencode
     # The one real gap against thinkcentre's list (his "see the thinkcentre"):
     # the runtime for hand tools and quick scripts, same as on the server.
     # Wrapped with pyserial (Midea dongle probing, 2026-10-17) — withPackages

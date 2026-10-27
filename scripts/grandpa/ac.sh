@@ -30,7 +30,6 @@
 # so any real change re-transmits it.
 set -euo pipefail
 
-TOKEN_FILE="${AC_TOKEN_FILE:-$HOME/.local/state/opencode/ha-token}"
 # Home Assistant runs on THIS box, so loopback is the endpoint. The default used
 # to be http://100.88.29.31:8123 — the ThinkCentre's tailscale IP, dead since the
 # box was returned to its owner (2026-10-22, decisions row 188), which left every
@@ -42,7 +41,10 @@ POWER="switch.bedroom_ac_control_ac"
 SWING="switch.bedroom_ac_control_ac_swing"
 TEMP="number.bedroom_ac_control_ac_temperature"
 
-die() { echo "ac: $*" >&2; exit 1; }
+die() {
+  echo "ac: $*" >&2
+  exit 1
+}
 
 [ -s "$TOKEN_FILE" ] || die "no token at $TOKEN_FILE — put a long-lived HA token there (HA > profile > Security > Long-Lived Access Tokens)."
 TK=$(cat "$TOKEN_FILE")
@@ -56,14 +58,14 @@ api() { # api <service> <json>
 }
 
 state() { # state <entity> -> just the state string
-  curl -s -m 10 -H "Authorization: Bearer $TK" "$HA/api/states/$1" \
-    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("state","?"))'
+  curl -s -m 10 -H "Authorization: Bearer $TK" "$HA/api/states/$1" |
+    python3 -c 'import json,sys; print(json.load(sys.stdin).get("state","?"))'
 }
 
 snap() { # snap <entity> -> HA last_updated, "" if it cannot be read
-  curl -s -m 10 -H "Authorization: Bearer $TK" "$HA/api/states/$1" \
-    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("last_updated",""))' \
-    2>/dev/null || true
+  curl -s -m 10 -H "Authorization: Bearer $TK" "$HA/api/states/$1" |
+    python3 -c 'import json,sys; print(json.load(sys.stdin).get("last_updated",""))' \
+      2>/dev/null || true
 }
 
 send() { # send <entity> <service> <json> -> "changed" | "unchanged"
@@ -106,7 +108,7 @@ set_temp() { # set_temp <value> -> "changed" | "unchanged"
 force() { # force — nothing registered, so re-send for real
   local t n
   t=$(state "$TEMP")
-  case "$t" in ''|'?') return 0 ;; esac
+  case "$t" in '' | '?') return 0 ;; esac
   n=$(python3 -c "t=float('$t'); print(int(t-1) if t > 16 else int(t+1))")
   set_temp "$n" >/dev/null || true
   set_temp "$t" >/dev/null || true
@@ -114,72 +116,72 @@ force() { # force — nothing registered, so re-send for real
 
 cmd="${1:-status}"
 case "$cmd" in
-  status)
-    printf 'power: %s\n' "$(state "$POWER")"
-    printf 'temp:  %s\n' "$(state "$TEMP")"
-    printf 'swing: %s\n' "$(state "$SWING")"
-    ;;
-  on)
-    if [ "$(set_power on)" = changed ]; then
-      echo "ac on"
+status)
+  printf 'power: %s\n' "$(state "$POWER")"
+  printf 'temp:  %s\n' "$(state "$TEMP")"
+  printf 'swing: %s\n' "$(state "$SWING")"
+  ;;
+on)
+  if [ "$(set_power on)" = changed ]; then
+    echo "ac on"
+  else
+    force
+    echo "ac on (HA already read on — nudged and re-sent so a frame actually went out)"
+  fi
+  ;;
+off)
+  if [ "$(set_power off)" = changed ]; then
+    echo "ac off"
+  else
+    force
+    echo "ac off (HA already read off — nudged and re-sent so a frame actually went out)"
+  fi
+  ;;
+swing)
+  case "${2:-}" in
+  on | off)
+    action="$2"
+    if [ "$(set_swing "$action")" = changed ]; then
+      echo "swing $action"
     else
       force
-      echo "ac on (HA already read on — nudged and re-sent so a frame actually went out)"
+      echo "swing $action (HA already read $action — nudged and re-sent so a frame actually went out)"
     fi
     ;;
-  off)
-    if [ "$(set_power off)" = changed ]; then
-      echo "ac off"
-    else
-      force
-      echo "ac off (HA already read off — nudged and re-sent so a frame actually went out)"
-    fi
-    ;;
-  swing)
-    case "${2:-}" in
-      on|off)
-        action="$2"
-        if [ "$(set_swing "$action")" = changed ]; then
-          echo "swing $action"
-        else
-          force
-          echo "swing $action (HA already read $action — nudged and re-sent so a frame actually went out)"
-        fi
-        ;;
-      *) die "usage: ac swing on|off" ;;
-    esac
-    ;;
-  up|down|+|-)
-    n="${2:-1}"
-    case "$cmd" in up|+) dir=1 ;; *) dir=-1 ;; esac
-    case "$n" in
-      ''|*[!0-9]*) die "nudge must be a whole number, got '$n'" ;;
-    esac
-    cur=$(state "$TEMP")
-    tgt=$(python3 -c "
+  *) die "usage: ac swing on|off" ;;
+  esac
+  ;;
+up | down | + | -)
+  n="${2:-1}"
+  case "$cmd" in up | +) dir=1 ;; *) dir=-1 ;; esac
+  case "$n" in
+  '' | *[!0-9]*) die "nudge must be a whole number, got '$n'" ;;
+  esac
+  cur=$(state "$TEMP")
+  tgt=$(python3 -c "
 c, d, n = float('$cur'), $dir, int('$n')
 t = c + d * n
 print(int(min(30, max(16, t))))")
-    if [ "$(set_temp "$tgt")" = changed ]; then
-      echo "temp $tgt"
-    else
-      force
-      echo "temp $tgt (clamped — HA already read $tgt, nudged and re-sent so a frame actually went out)"
-    fi
-    ;;
-  [0-9]*)
-    case "$cmd" in
-      1[6-9]|2[0-9]|30) ;;
-      *) die "temp must be 16..30 (the protocol's real span)" ;;
-    esac
-    if [ "$(set_temp "$cmd")" = changed ]; then
-      echo "temp $cmd"
-    else
-      force
-      echo "temp $cmd (HA already read $cmd — nudged and re-sent so a frame actually went out)"
-    fi
-    ;;
-  *)
-    die "usage: ac [status|on|off|<16-30>|up [n]|down [n]|swing on|off]"
-    ;;
+  if [ "$(set_temp "$tgt")" = changed ]; then
+    echo "temp $tgt"
+  else
+    force
+    echo "temp $tgt (clamped — HA already read $tgt, nudged and re-sent so a frame actually went out)"
+  fi
+  ;;
+[0-9]*)
+  case "$cmd" in
+  1[6-9] | 2[0-9] | 30) ;;
+  *) die "temp must be 16..30 (the protocol's real span)" ;;
+  esac
+  if [ "$(set_temp "$cmd")" = changed ]; then
+    echo "temp $cmd"
+  else
+    force
+    echo "temp $cmd (HA already read $cmd — nudged and re-sent so a frame actually went out)"
+  fi
+  ;;
+*)
+  die "usage: ac [status|on|off|<16-30>|up [n]|down [n]|swing on|off]"
+  ;;
 esac

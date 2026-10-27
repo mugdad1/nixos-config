@@ -47,7 +47,7 @@
 }: let
   # opencode v2 via the sst/opencode overlay (modules/core/opencode.nix).
   # nixpkgs' own opencode is v1 and stale — this is why the input exists.
-  ocPath = "${pkgs.opencode}/bin:${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
+  ocPath = "${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
   # ─── OpenCode server — the fleet's persistent opencode on :13420 ───────────
   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
@@ -71,12 +71,6 @@
   # It USED to exist for the Telegram bot (removed 2026-10-23, row 207). What
   # keeps it now is that it is the only thing that answers :13420 after a reboot
   # — sessions and any agent talking to opencode need it, TUI or not.
-  opencodeServe = pkgs.writeShellScript "opencode-serve-wait" ''
-    while ${pkgs.iproute2}/bin/ss -ltn 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q '127.0.0.1:13420 '; do
-      ${pkgs.coreutils}/bin/sleep 5
-    done
-    exec ${pkgs.opencode}/bin/opencode serve --service
-  '';
 
   # The recurring Filen 2-WAY sync. bisync and not `sync`: rclone's `sync` is
   # strictly one-directional and would delete remote files on a local delete,
@@ -104,37 +98,6 @@ in {
   # The reasoning for the wait-wrapper lives at opencodeServe above; this is
   # just the unit. It outlived the Telegram bot (removed 2026-10-23) because it
   # is what answers :13420 after a reboot, TUI or not.
-  systemd.services.opencode-serve = {
-    description = "OpenCode V2 serve (persistent :13420, waits for a free port)";
-    wantedBy = ["multi-user.target"];
-    after = ["network.target"];
-    serviceConfig = {
-      Type = "simple";
-      User = username;
-      # NO `Group =` here, on purpose: NixOS gives a normal user the primary
-      # group `users` and does NOT create a group matching the username, so
-      # `Group = "mugdad"` resolved to nothing — the unit failed with
-      # "Failed to determine credentials for group 'mugdad'" (exit 216/GROUP)
-      # and because a unit was failing, switch-to-configuration exited 4 and
-      # the whole rebuild reported failure. With Group= omitted systemd uses
-      # the user's primary group, which always exists. HOME matters: opencode
-      # resolves its state under it, and a root run would look in /root.
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-        "PATH=${ocPath}"
-      ];
-      # A wrapper, NOT the binary: it waits for 13420 to free and then execs
-      # into opencode (full reasoning at opencodeServe). Keep it as the MAIN
-      # process — moving the wait back into ExecStartPre re-creates the
-      # `activating` deadlock that hung a rebuild for 18 minutes.
-      ExecStart = opencodeServe;
-      Restart = "always";
-      RestartSec = "10s";
-    };
-  };
-
   # ─── study PWA ─────────────────────────────────────────────────────────────
   # Runs in place, not from the store: serve.py computes
   # ROOT = dirname(dirname(__file__)), so copying it into the Nix store would

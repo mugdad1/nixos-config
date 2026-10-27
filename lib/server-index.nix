@@ -287,7 +287,6 @@ in ''
   ${table sorted}
   </table>
   <hr>
-  <p class="m"><b>opencode-serve</b> &mdash; the persistent opencode on <b>127.0.0.1:13420</b>. Loopback only, on purpose, so it is prose and not a row: a link would dead-end from your laptop. Reach it with <b>ssh -L 13420:127.0.0.1:13420 mugdad@100.106.116.60</b> and then open <b>localhost:13420</b>.</p>
   <p class="m"><b>filen-sync</b> &mdash; a systemd timer, not a web service: it bisyncs the Filen drive root into <b>~/filen</b> every 30 minutes (10 min after boot, 60 min cap per run). No port and no ui; check it with <b>systemctl status filen-sync.timer</b>.</p>
   <p class="m">tailscaled runs as a system service (systemd, <b>tailscaled.service</b>), no web ui.</p>
   <hr>

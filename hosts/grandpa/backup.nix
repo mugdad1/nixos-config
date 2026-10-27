@@ -94,7 +94,6 @@
     "/home/mugdad/.config/gh"
     "/home/mugdad/.gitconfig"
     "/home/mugdad/.local/share"
-    "/home/mugdad/opencode.db"
     "/home/mugdad/projects"
   ];
 
