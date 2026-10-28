@@ -201,8 +201,9 @@ in {
       # kernel-matched .ko directly instead of using boot.extraModulePackages.
       preStart = ''
         if ! grep -q '^acpi_call ' /proc/modules; then
-          ${pkgs.kmod}/bin/insmod ${acpiCallModule}
+          ${pkgs.kmod}/bin/modprobe acpi_call
         fi
+
       '';
       serviceConfig = {
         Type = "simple";
