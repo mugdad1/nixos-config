@@ -5,7 +5,6 @@
   ...
 }: let
   cfg = config.services.victus.batteryChargeLimit;
-  acpiCallModule = "${config.boot.kernelPackages.acpi_call}/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/misc/acpi_call.ko";
 
   # The EC has no percentage register.  This is a userspace policy loop around
   # HP's ACPI "Battery Health Manager" mode: SBCO 0x05 inhibits charging,
@@ -181,6 +180,8 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    boot.extraModulePackages = [ config.boot.kernelPackages.acpi_call ];
+    boot.kernelModules = [ "acpi_call" ];
     assertions = [
       {
         assertion = cfg.resumeAt < cfg.stopAt;
