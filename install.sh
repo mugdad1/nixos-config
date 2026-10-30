@@ -23,16 +23,16 @@ ERROR="[${RED}ERROR${RESET}]\t"
 #--- Root check ---#
 
 if [[ $EUID -eq 0 ]]; then
-    echo -e "${ERROR}Do not run as root!"
-    exit 1
+  echo -e "${ERROR}Do not run as root!"
+  exit 1
 fi
 
 #--- whiptail check ---#
 
-if ! command -v whiptail &> /dev/null; then
-    echo -e "${INFO}Installing whiptail..."
-    nix-shell -p newt --run "$(realpath "$0")"
-    exit $?
+if ! command -v whiptail &>/dev/null; then
+  echo -e "${INFO}Installing whiptail..."
+  nix-shell -p newt --run "$(realpath "$0")"
+  exit $?
 fi
 
 #--- Confirm ---#
@@ -49,37 +49,37 @@ DMI_NAME="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
 DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2>/dev/null || true)"
 
 gpu_for() {
-    case "$1" in
-        victus) echo "nvidia" ;;
-        t480s) echo "intel" ;;
-        *) echo "none" ;;
-    esac
+  case "$1" in
+  victus) echo "nvidia" ;;
+  t480s) echo "intel" ;;
+  *) echo "none" ;;
+  esac
 }
 
 if [ -n "${HOST:-}" ]; then
-    GPU="$(gpu_for "$HOST")"
-    echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
+  GPU="$(gpu_for "$HOST")"
+  echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
 elif grep -qi 't480s\|thinkpad\|20L8' <<<"$DMI_NAME"; then
-    # BACK 2026-10-25 — this branch refused for three days (his "rm thinkpad",
-    # 2026-10-22) because hosts/t480s/ was deleted and sed-ing its
-    # variables.nix would have failed after the whiptail prompt. The host is
-    # back in the flake ("bring him back to nixos-config"), so detection is
-    # detection again. Intel iGPU: no nvidia branch for this machine.
-    HOST="t480s"
-    GPU="intel"
+  # BACK 2026-10-25 — this branch refused for three days (his "rm thinkpad",
+  # 2026-10-22) because hosts/t480s/ was deleted and sed-ing its
+  # variables.nix would have failed after the whiptail prompt. The host is
+  # back in the flake ("bring him back to nixos-config"), so detection is
+  # detection again. Intel iGPU: no nvidia branch for this machine.
+  HOST="t480s"
+  GPU="intel"
 elif grep -qi 'victus\|hp' <<<"$DMI_NAME$DMI_FAMILY"; then
-    HOST="victus"
-    GPU="nvidia"
+  HOST="victus"
+  GPU="nvidia"
 else
-    # His call, 2026-10-22: a machine the DMI cannot name defaults to the
-    # Victus. Deliberately NOT grandpa — a miss here used to hand the laptop
-    # the headless server's config. Reinstalling the server takes the HOST=
-    # override above; **the ThinkPad needs no override any more** (2026-10-25),
-    # because its own DMI branch above catches it again. Fleet is grandpa +
-    # victus + t480s.
-    HOST="victus"
-    GPU="nvidia"
-    echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
+  # His call, 2026-10-22: a machine the DMI cannot name defaults to the
+  # Victus. Deliberately NOT grandpa — a miss here used to hand the laptop
+  # the headless server's config. Reinstalling the server takes the HOST=
+  # override above; **the ThinkPad needs no override any more** (2026-10-25),
+  # because its own DMI branch above catches it again. Fleet is grandpa +
+  # victus + t480s.
+  HOST="victus"
+  GPU="nvidia"
+  echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
 fi
 
 SUMMARY="\
@@ -89,7 +89,7 @@ GPU:        ${GPU:-unknown}
 DMI seen:   name='${DMI_NAME:-}' family='${DMI_FAMILY:-}'"
 
 if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "NixOS Installer"); then
-    exit 0
+  exit 0
 fi
 
 #--- Set username ---#
@@ -106,7 +106,7 @@ sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${H
 
 echo -e "${INFO}Preparing environment"
 mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
-ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
+ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2>/dev/null || true
 
 #--- sops age key ---#
 # Hosts that declare ANY sops secret decrypt it on the first switch.
@@ -120,31 +120,31 @@ ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2>
 # victus is exempt: it declares no secrets at all, and monitoring.nix gates its
 # whole sops block off there on purpose, so it has nothing to decrypt and must
 # not be blocked by a missing key.
-if [ "$HOST" = "victus" ]; then
-    echo -e "${INFO}${GREEN}victus${RESET} declares no sops secrets; no age key needed."
+if [ "$HOST" = "t480s" ]; then
+  echo -e "${INFO}${GREEN}victus${RESET} declares no sops secrets; no age key needed."
 elif [ ! -f /var/lib/sops-nix/key.txt ]; then
-    KEY_SRC=""
-    for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
-        if [ -f "$candidate" ]; then
-            KEY_SRC="$candidate"
-            break
-        fi
-    done
-    if [ -n "$KEY_SRC" ]; then
-        echo -e "${INFO}Installing sops age key from ${KEY_SRC}"
-        sudo install -D -m 600 -o root -g root "$KEY_SRC" /var/lib/sops-nix/key.txt
-    else
-        echo -e "${ERROR}No sops age key found."
-        echo -e "${INFO}Put it at /var/lib/sops-nix/key.txt (or ~/age-key.txt) and re-run; see README, 'sops secrets'."
-        exit 1
+  KEY_SRC=""
+  for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
+    if [ -f "$candidate" ]; then
+      KEY_SRC="$candidate"
+      break
     fi
+  done
+  if [ -n "$KEY_SRC" ]; then
+    echo -e "${INFO}Installing sops age key from ${KEY_SRC}"
+    sudo install -D -m 600 -o root -g root "$KEY_SRC" /var/lib/sops-nix/key.txt
+  else
+    echo -e "${ERROR}No sops age key found."
+    echo -e "${INFO}Put it at /var/lib/sops-nix/key.txt (or ~/age-key.txt) and re-run; see README, 'sops secrets'."
+    exit 1
+  fi
 fi
 
 #--- Hardware config ---#
 
 if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
-    echo -e "${ERROR}/etc/nixos/hardware-configuration.nix not found! Aborting."
-    exit 1
+  echo -e "${ERROR}/etc/nixos/hardware-configuration.nix not found! Aborting."
+  exit 1
 fi
 cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.nix"
 
