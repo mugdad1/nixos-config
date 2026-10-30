@@ -10,7 +10,7 @@ Three active hosts, all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
-| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
+| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050, Ollama | HP Victus 15 (i5-12th gen H) |
 | `t480s`     | Laptop — Sway desktop, home-manager, Intel iGPU only | ThinkPad T480s |
 | `grandpa`   | Headless lightweight server — Docker, blocky, tailscale, sshd, sops | Custom i3-2120 box |
 
@@ -30,7 +30,11 @@ there is a decision, not a default; see `hosts/grandpa/default.nix`.
 `victus` is the old laptop config minus everything ThinkPad-specific (battery
 threshold unit, TrackPoint quirk, `mem_sleep_default=deep`, throttled/tlp) plus
 the NVIDIA stack: open kernel modules, modesetting, PRIME offload and a
-three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only).
+three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only). It also runs
+**Ollama** (`hosts/victus/ollama.nix`) on `:11434`, tailnet-only, with the
+CUDA build and a small model set pulled in the background on activation. GPU
+inference needs `gpu-mode hybrid` — Cardwire's default `intel` mode removes the
+RTX 3050 from the PCI bus, so CUDA cannot see it.
 
 ## Structure
 
@@ -221,6 +225,11 @@ NVIDIA on `victus`.
 - **Home Manager** for user packages and dotfiles (laptops only)
 - **Intel + NVIDIA hybrid** on `victus` — open modules, PRIME offload, and
   `gpu-mode intel|hybrid|nvidia` to switch what renders
+- **Ollama** on `victus` — CUDA on the RTX 3050, `:11434` on the tailnet only,
+  models declared in `hosts/victus/ollama.nix` and pulled after the server
+  starts
+- **OpenCode v2** installed system-wide on every host
+  (`modules/core/packages.nix`)
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
 - **Gruvbox** theme throughout
 - **Tailscale** tailnet, with MagicDNS explicitly refused (`--accept-dns=false`)
@@ -323,6 +332,18 @@ rather than as an edit. The one thing worth re-checking before a build *on that
 machine* is `hardware-configuration.nix`: it still carries the UUIDs generated
 on 2026-10-11, and if the ThinkPad was reinstalled since, a perfectly valid
 eval would build a system that cannot find its root.
+
+**2026-10-30: Ollama on the Victus, OpenCode on every host.** His ask: *"add
+ollama to victus with open to tailscale and others … also add opencode to all
+hosts"*. Ollama lives in `hosts/victus/ollama.nix` — the CUDA package, bound to
+`0.0.0.0:11434` but firewalled to `tailscale0` only, with `lfm3:1.7b`,
+`granite4.2:3b`, `qwen3.5:2b`, `nemotron-3-nano:4b` and
+`nemotron-3.5-bolt` declared for the model loader. The GPU half was verified on
+the box, not assumed: `nvidia-smi` reports the RTX 3050 Laptop (4 GiB, driver
+595.112.07, CUDA 13.2) once `gpu-mode hybrid` removes Cardwire's PCI block.
+OpenCode moved into `modules/core/packages.nix`, which is the one layer all
+three hosts import; nixpkgs already carries v2 (2.1.4 in this lock), so the old
+`sst/opencode` overlay references are now history.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,

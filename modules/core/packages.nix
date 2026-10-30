@@ -76,6 +76,16 @@ in {
   };
 
   environment.systemPackages = with pkgs; [
+    # ─── opencode — EVERY host (his ask 2026-10-30) ─────────────────────────
+    # The agent/TUI, system-wide rather than a home package: grandpa imports no
+    # home-manager stack at all, so modules/core is the only layer that reaches
+    # all three hosts from one line. nixpkgs now ships v2 (2.1.4 in this lock),
+    # which is why this is the plain package — the old sst/opencode overlay and
+    # modules/core/opencode.nix it was reached through are both gone, and
+    # re-adding an input for a version nixpkgs already carries would be dead
+    # weight.
+    opencode
+
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
     sops

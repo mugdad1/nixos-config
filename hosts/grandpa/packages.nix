@@ -66,8 +66,9 @@
     # ── asked for by name ────────────────────────────────────────────────────
     gh
     git
-    # v2 via the sst/opencode overlay that modules/core/opencode.nix installs —
-    # same reason hosts/thinkcentre/packages.nix can reference it bare.
+    # opencode is NOT listed here any more: it moved to
+    # modules/core/packages.nix on 2026-10-30 so all three hosts get v2 from
+    # one line (nixpkgs carries 2.1.4; the old sst/opencode overlay is gone).
     # packages.nix's header used to say "the agent is not part of a bare CLI
     # box"; he decided otherwise 2026-10-16.
     # The one real gap against thinkcentre's list (his "see the thinkcentre"):
@@ -143,6 +144,5 @@
     traceroute
 
     sqlite
-
   ];
 }

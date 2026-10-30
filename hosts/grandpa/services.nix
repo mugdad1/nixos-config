@@ -45,8 +45,9 @@
   username,
   ...
 }: let
-  # opencode v2 via the sst/opencode overlay (modules/core/opencode.nix).
-  # nixpkgs' own opencode is v1 and stale — this is why the input exists.
+  # opencode v2 now comes from modules/core/packages.nix (nixpkgs 2.1.4, same
+  # place every host gets it since 2026-10-30). The old sst/opencode overlay
+  # and modules/core/opencode.nix are gone with the input that carried them.
   ocPath = "${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
 
   # ─── OpenCode server — the fleet's persistent opencode on :13420 ───────────
