@@ -29,7 +29,6 @@
 
       ## Office / Productivity
       onlyoffice-desktopeditors
-      filen-desktop
       libreoffice-stable
       # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
       ## System / Utility
