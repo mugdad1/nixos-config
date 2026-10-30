@@ -15,7 +15,7 @@
 #   nmcli connection up Hotspot
 #
 # Everything below is the part NM cannot do for itself.
-lib.mkIf (host == "victus") {
+lib.mkIf (host == "victus" || host == "t480s") {
   # `ipv4.method shared` turns this on while the AP is up, but it does not
   # survive a reboot with the hotspot down — and a hotspot that associates
   # without forwarding is the confusing kind of broken: clients get a 10.42.0.x
