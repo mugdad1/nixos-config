@@ -164,7 +164,7 @@ in {
     enable = lib.mkEnableOption "HP Victus battery charge limiting via ACPI GBCO/SBCO";
     stopAt = lib.mkOption {
       type = lib.types.ints.between 20 100;
-      default = 80;
+      default = 85;
       description = "Battery percentage at which AC charging is inhibited.";
     };
     resumeAt = lib.mkOption {
