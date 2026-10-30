@@ -39,7 +39,7 @@ in {
   # NetworkManager manages wifi via iwd (don't also run the legacy dhcpcd-style
   # wireless config). networking.wireless.iwd.enable is activated by the nixos
   # module when wifi.backend = "iwd". Off on grandpa — no wifi there.
-  networking.wireless.iwd.enable = lib.mkIf (host == "victus") true;
+  networking.wireless.iwd.enable = lib.mkIf (host == "victus" || host == "t480s") true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;
@@ -61,7 +61,7 @@ in {
   '';
 
   environment.systemPackages = with pkgs;
-    lib.optionals (host == "victus") [
+    lib.optionals (host == "victus" || host == "t480s") [
       networkmanagerapplet
       iw # nl80211 wifi diagnostics
     ];
