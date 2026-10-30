@@ -18,7 +18,7 @@ in {
     # iwd and ModemManager along even though that box has no modem and no
     # 802.11 interface. The gate is keyed on host rather than on an option the
     # shared module cannot see.
-    networkmanager = lib.mkIf (host == "victus") {
+    networkmanager = lib.mkIf (host == "victus" "t480s") {
       enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
       # on Intel: the previous laptop was flapping between two BSSIDs of one
