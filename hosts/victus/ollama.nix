@@ -41,10 +41,13 @@
 
     # Pulled in the background by ollama-model-loader.service after the server
     # starts. First activation therefore downloads them asynchronously and does
-    # NOT hold up switch-to-configuration. Sizes (2026-10-30): granite4.2 3b
-    # ~2G, qwen3.5 2b ~1.4G, nemotron-3-nano 4b ~2.8G, nemotron-3.5-bolt
-    # latest ~22G — the last one spills past the 4 GiB VRAM and runs partly on
-    # CPU by design.
+    # NOT hold up switch-to-configuration.
+    #
+    # qwen3:8b (q4, ~5.2G) is the one model sized for this laptop: 16G of RAM
+    # with partial offload to the 4G RTX 3050. The earlier 2–4B set was removed
+    # on 2026-10-31 — too weak for OpenCode's tool loop, they hallucinated tool
+    # names and file paths. qwen3:14b also fits RAM but runs ~2–3x slower; the
+    # old nemotron-3.5-bolt (74B, ~22G) spilled almost entirely onto CPU.
     #
     # `lfm3:1.7b` is deliberately absent: upstream requires ollama >= 0.40.13,
     # while nixpkgs 26.11 pins 0.40.6, so the pull fails with
@@ -52,15 +55,14 @@
     # makes ollama-model-loader exit 123 and restart forever. Add it back once
     # nixpkgs carries a newer ollama.
     loadModels = [
-      "granite4.2:3b"
-      "qwen3.5:2b"
-      "nemotron-3-nano:4b"
-      "nemotron-3.5-bolt"
+      "qwen3:8b"
     ];
 
-    # Do not silently delete anything pulled by hand with `ollama pull`;
-    # declaring models here is additive.
-    syncModels = false;
+    # Sync the store to loadModels: on activation ollama-model-loader pulls
+    # qwen3:8b and removes every model not listed above (granite4.2:3b,
+    # qwen3.5:2b, nemotron-3-nano:4b, nemotron-3.5-bolt were the old set).
+    # Set back to false if you ever want hand-pulled models to survive.
+    syncModels = true;
   };
 
   # Tailnet only — not networking.firewall.allowedTCPPorts (see header).
