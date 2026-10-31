@@ -25,7 +25,15 @@
     # The option is `package`, not `acceleration`: nixpkgs removed
     # services.ollama.acceleration, so naming ollama-cuda is the supported way
     # to pick the CUDA build. It is what makes the RTX 3050 usable at all.
-    package = pkgs.ollama-cuda;
+    #
+    # `cudaArches` defaults to cudaPackages.flags.realArches, which is every
+    # architecture nixpkgs knows about (sm_75/80/86/89/90/100/103/107/120/121).
+    # Nothing is cached, so all ten get compiled locally — on this laptop that
+    # pinned every core and made the machine unusable. The RTX 3050 Laptop
+    # (GA107) is sm_86, so build for that one arch only. ~10x less work.
+    package = pkgs.ollama-cuda.override {
+      cudaArches = ["sm_86"];
+    };
 
     # Reachable from the tailnet; the firewall rule below keeps it off the LAN.
     host = "0.0.0.0";
