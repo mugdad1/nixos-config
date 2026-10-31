@@ -66,14 +66,21 @@ in {
           ];
       };
 
-      # Used only to resolve the DoH hostnames above, never for queries. Every
-      # entry is an IP-literal DoH endpoint or a plain-DNS address, so bootstrap
-      # itself needs no resolver — which matters when the only working resolver
-      # is the one being bootstrapped.
+      # Used only to resolve the DoH/DoT hostnames above, never for queries. Every
+      # entry is a bare IP, so bootstrap itself needs no resolver — which matters
+      # when the only working resolver is the one being bootstrapped.
+      # PLAIN DNS, not DoH — deliberately. These only resolve the DoH/DoT
+      # hostnames above, so they carry no filtering and need no TLS. The old
+      # https://9.9.9.11 and https://94.140.14.14 entries were dead on arrival:
+      # blocky dialed them by IP, and neither Quad9's nor AdGuard's cert has an
+      # IP SAN, so every bootstrap attempt died on
+      # `x509: ... doesn't contain any IP SANs`. Plain DNS to the same IPs has
+      # no certificate to validate, so it cannot fail that way — verified
+      # 2026-10-31: both resolve dns.nextdns.io and the AdGuard profile fine.
       bootstrapDns =
         [
-          { upstream = "https://9.9.9.11/dns-query"; } # Quad9, cert has IP SAN
-          { upstream = "https://94.140.14.14/dns-query"; } # AdGuard
+          { upstream = "tcp+udp:9.9.9.11"; } # Quad9
+          { upstream = "tcp+udp:94.140.14.14"; } # AdGuard
         ]
         ++ lib.optionals asked [
           { upstream = "tcp+udp:100.106.116.60"; }
