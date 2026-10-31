@@ -137,6 +137,7 @@ in {
     ghostscript
     trash-cli
     onefetch
+    opencode
     # supertuxkart   # DISABLED 2026-10-13 on his word. Commented, not deleted.
     # whisper-cpp    # DISABLED 2026-10-13 on his word. Also dropped the ~1.2G
     #                # of voice/model data it pulled (mbrola-voices, models-dev).
