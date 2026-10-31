@@ -41,12 +41,17 @@
 
     # Pulled in the background by ollama-model-loader.service after the server
     # starts. First activation therefore downloads them asynchronously and does
-    # NOT hold up switch-to-configuration. Sizes (2026-10-30): lfm3 1.7b ~1.2G,
-    # granite4.2 3b ~2G, qwen3.5 2b ~1.4G, nemotron-3-nano 4b ~2.8G,
-    # nemotron-3.5-bolt latest ~22G — the last one spills past the 4 GiB VRAM
-    # and runs partly on CPU by design.
+    # NOT hold up switch-to-configuration. Sizes (2026-10-30): granite4.2 3b
+    # ~2G, qwen3.5 2b ~1.4G, nemotron-3-nano 4b ~2.8G, nemotron-3.5-bolt
+    # latest ~22G — the last one spills past the 4 GiB VRAM and runs partly on
+    # CPU by design.
+    #
+    # `lfm3:1.7b` is deliberately absent: upstream requires ollama >= 0.40.13,
+    # while nixpkgs 26.11 pins 0.40.6, so the pull fails with
+    # "model requires ollama version v0.40.13 or newer". Leaving it in the list
+    # makes ollama-model-loader exit 123 and restart forever. Add it back once
+    # nixpkgs carries a newer ollama.
     loadModels = [
-      "lfm3:1.7b"
       "granite4.2:3b"
       "qwen3.5:2b"
       "nemotron-3-nano:4b"
