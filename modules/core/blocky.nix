@@ -31,7 +31,8 @@
 #
 # grandpa is the server being asked, so it must not ask itself: entry 2 is
 # gated on host. Its own blocky already binds 0.0.0.0:53 and its firewall
-# accepts :53 on tailscale0 only (hosts/grandpa/overrides.nix).
+# accepts :53 on EVERY interface (hosts/grandpa/overrides.nix) — the house
+# router points at it, so it answers the LAN, the tailnet and loopback alike.
 let
   # Only the two laptops tunnel home for DNS. grandpa keeps the encrypted pair
   # it has always raced, with no tailnet hop.
