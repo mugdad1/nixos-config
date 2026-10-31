@@ -11,8 +11,11 @@
 # (a placeholder errors out at eval until its secret is declared, which is how
 # this was caught: the grandpa rebuild failed on exactly that).
 #
-#   filen-sync.env          EnvironmentFile for the filen-sync bisync unit
 #   searxng.env             EnvironmentFile for the searxng container
+#
+# filen-sync.env MOVED to modules/core/filen-sync.nix on 2026-10-31, together
+# with the unit that reads it: all three hosts run filen-sync now, so its keys
+# and template are no longer grandpa-local.
 #
 # A third, opencode-telegram.env, went with the Telegram bot on 2026-10-23
 # (row 207) — along with the `opencode/server_password` secret, which existed
@@ -45,8 +48,8 @@
     # values live in the encrypted file; this only says "decrypt this key for
     # this host". Moved here from hosts/thinkcentre/secrets.nix (now inert).
     secrets = {
-      "filen/email" = {}; # filen-sync.env
-      "filen/password" = {}; # filen-sync.env
+      # filen/email + filen/password are declared in
+      # modules/core/filen-sync.nix (all three hosts run it since 2026-10-31).
       "searx/secret_key" = {}; # searxng.env, added 2026-10-22
     };
 
@@ -56,25 +59,8 @@
     # /var/lib states plainly that this is machine state, not user state.
     age.keyFile = "/var/lib/sops-nix/key.txt";
 
-    # Credentials for the recurring Filen 2-WAY bisync (./services.nix).
-    #
-    # Its own template rather than reusing one above: EnvironmentFile wants
-    # plain KEY=value lines, while a template is free to render whatever shape
-    # its unit reads. Both render at activation into /run/secrets/rendered/,
-    # so no Filen credential exists as plaintext outside this encrypted file
-    # and that root-owned runtime directory.
-    #
-    # Owner `username` (default would be root:root 0400): the bisync unit runs
-    # as this user — it must write into ~/filen, which is that user's — and a
-    # root-owned EnvironmentFile gives the unit "Permission denied" at start.
-    templates."filen-sync.env" = {
-      owner = username;
-      mode = "0400";
-      content = ''
-        FILEN_CLI_EMAIL=${config.sops.placeholder."filen/email"}
-        FILEN_CLI_PASSWORD=${config.sops.placeholder."filen/password"}
-      '';
-    };
+    # filen-sync.env moved to modules/core/filen-sync.nix on 2026-10-31, with
+    # the unit that reads it. Its owner/template reasoning lives there now.
 
     # SearXNG's session key (2026-10-22, "Declare it inside grandpa"). The
     # VALUE is fleet.sops.yaml's `searx/secret_key` — it came from the old

@@ -160,9 +160,11 @@ in boot, before homes are necessarily useful, and a root-owned path under
 `t480s` and `grandpa` on 2026-10-18**, and it is the one thing `install.sh`
 cannot fetch for a new host: it looks for `~/age-key.txt` / `./age-key.txt`,
 installs it at that path, and refuses to start the build if neither exists.
-`victus` is the deliberate exception: it installs with no key, because its
-secrets are gated off by hostname (`sops = lib.mkIf (host != "victus")` in
-`modules/core/monitoring.nix`) so a missing key cannot fail the first switch.
+
+**`victus` is no longer the exception (2026-10-31).** `filen-sync` moved into
+`modules/core`, so every host now declares the `filen/*` credentials and the
+`host != "victus"` gate in `modules/core/monitoring.nix` is gone. All three
+hosts need the age key in place before their next switch, `victus` included.
 
 **Alerting is gone, and the key no longer implies any.** Until 2026-10-23 the
 key's second job was turning Telegram on: `notify-telegram` read a bot token
@@ -332,6 +334,15 @@ rather than as an edit. The one thing worth re-checking before a build *on that
 machine* is `hardware-configuration.nix`: it still carries the UUIDs generated
 on 2026-10-11, and if the ThinkPad was reinstalled since, a perfectly valid
 eval would build a system that cannot find its root.
+
+**2026-10-31: filen-sync on every host, from one place.** His ask: *"do u see
+filen-sync for grandpa i want it same here same env same everything"* — the
+unit, its 30-minute timer and the `filen-sync.env` sops template moved out of
+`hosts/grandpa/{services,secrets}.nix` into `modules/core/filen-sync.nix`, so
+`victus` and `t480s` get the identical bisync setup. Because every host now
+declares the `filen/*` secrets, the old `host != "victus"` sops gate was
+removed and the age key is required on all three. The `filen-desktop` GUI app
+that was the first half of the ask was dropped at his word ("ignore that").
 
 **2026-10-30: Ollama on the Victus, OpenCode on every host.** His ask: *"add
 ollama to victus with open to tailscale and others … also add opencode to all

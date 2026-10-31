@@ -109,20 +109,15 @@ mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
 ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2>/dev/null || true
 
 #--- sops age key ---#
-# Hosts that declare ANY sops secret decrypt it on the first switch.
+# EVERY host declares sops secrets now: filen-sync moved into modules/core on
+# 2026-10-31, so its `filen/*` credentials decrypt on all three hosts.
 # modules/core/monitoring.nix supplies the default ciphertext file and the key
-# path; the declarations themselves live in the host's own secrets.nix. Without
-# the private key, activation fails
-# part-way through a fresh install, which is the worst possible moment to find
-# out. Look for the key beside the installer or in $HOME and install it; if it
-# is nowhere, stop before building a system that cannot activate.
-#
-# victus is exempt: it declares no secrets at all, and monitoring.nix gates its
-# whole sops block off there on purpose, so it has nothing to decrypt and must
-# not be blocked by a missing key.
-if [ "$HOST" = "t480s" ]; then
-  echo -e "${INFO}${GREEN}victus${RESET} declares no sops secrets; no age key needed."
-elif [ ! -f /var/lib/sops-nix/key.txt ]; then
+# path; the declarations live in modules/core/filen-sync.nix and the hosts'
+# own secrets.nix. Without the private key, activation fails part-way through
+# a fresh install, which is the worst possible moment to find out. Look for
+# the key beside the installer or in $HOME and install it; if it is nowhere,
+# stop before building a system that cannot activate.
+if [ ! -f /var/lib/sops-nix/key.txt ]; then
   KEY_SRC=""
   for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
     if [ -f "$candidate" ]; then

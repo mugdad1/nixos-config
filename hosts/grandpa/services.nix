@@ -40,16 +40,10 @@
 # package built fine — that failure mode is why ConditionPathExists exists on
 # three of these.
 {
-  config,
   pkgs,
   username,
   ...
-}: let
-  # opencode v2 now comes from modules/core/packages.nix (nixpkgs 2.1.4, same
-  # place every host gets it since 2026-10-30). The old sst/opencode overlay
-  # and modules/core/opencode.nix are gone with the input that carried them.
-  ocPath = "${pkgs.coreutils}/bin:${pkgs.iproute2}/bin:${pkgs.gnugrep}/bin";
-
+}: {
   # ─── OpenCode server — the fleet's persistent opencode on :13420 ───────────
   # OPENCODE IS A SINGLETON: a second `serve --service` exits at once if one
   # already holds 127.0.0.1:13420 — the interactive TUI holds it for as long as
@@ -73,29 +67,11 @@
   # keeps it now is that it is the only thing that answers :13420 after a reboot
   # — sessions and any agent talking to opencode need it, TUI or not.
 
-  # The recurring Filen 2-WAY sync. bisync and not `sync`: rclone's `sync` is
-  # strictly one-directional and would delete remote files on a local delete,
-  # while `bisync` is genuinely bidirectional. --resync ONLY when no baseline
-  # exists — re-running it would silently re-baseline and mask a real conflict.
-  filenSync = pkgs.writeShellApplication {
-    name = "filen-sync";
-    runtimeInputs = [
-      (pkgs.callPackage ../../pkgs/filen-cli.nix {})
-      pkgs.coreutils
-    ];
-    text = ''
-      state="$HOME/.cache/rclone/bisync/filen_..home_mugdad_filen.path1.lst"
-      args=(bisync "filen:" "$HOME/filen")
-
-      if [ ! -f "$state" ]; then
-        echo "[filen-sync] no baseline at $state — establishing it with --resync"
-        args+=(--resync)
-      fi
-
-      exec filen --skip-update rclone "''${args[@]}"
-    '';
-  };
-in {
+  # filen-sync moved to modules/core/filen-sync.nix on 2026-10-31, when he
+  # asked for the same setup on the laptops. The unit, timer and its sops
+  # template now live in the shared layer; this host file keeps only the units
+  # that are grandpa-specific.
+  #
   # The reasoning for the wait-wrapper lives at opencodeServe above; this is
   # just the unit. It outlived the Telegram bot (removed 2026-10-23) because it
   # is what answers :13420 after a reboot, TUI or not.
@@ -129,62 +105,6 @@ in {
   # 0.0.0.0 so loopback also works, and let the firewall expose it on
   # tailscale0 only.
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [8091];
-
-  # ─── filen-sync — the 2-way drive mirror ───────────────────────────────────
-  # Periodic bidirectional sync of the Filen drive root into ~/filen, so the
-  # local copy (all KFU material, cv, obsidian, projects, wiki-private) tracks
-  # changes made from the phone/web and vice versa.
-  #
-  # Runs as `username`, not root: it writes into ~/filen, which belongs to that
-  # user, and a root run would stamp root-owned files into a directory the user
-  # then cannot edit. HOME is set explicitly rather than assumed: the bisync
-  # baseline and rclone's own cache/config both resolve under it, and a wrong
-  # HOME makes every run look like a first run.
-  systemd.services.filen-sync = {
-    description = "Two-way bisync: Filen drive root <-> ~/filen";
-    # Ordering only. Needs network (it talks to api.filen.io) and the secrets
-    # rendered, otherwise the EnvironmentFile below is absent and the unit fails
-    # instead of skipping.
-    after = ["network-online.target" "sops-install-secrets.service"];
-    wants = ["network-online.target"];
-    unitConfig = {
-      # Skip cleanly when ~/filen has not been created/restored yet, rather than
-      # landing in --failed. It will start on its own the moment the directory
-      # exists — which it does NOT as of 2026-10-22, so this one is expected to
-      # read "condition failed" until the data is migrated.
-      ConditionPathExists = "/home/${username}/filen";
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      User = username;
-      Environment = [
-        "HOME=/home/${username}"
-        "USER=${username}"
-        "LOGNAME=${username}"
-      ];
-      # Filen credentials, rendered from sops at activation (./secrets.nix).
-      EnvironmentFile = [config.sops.templates."filen-sync.env".path];
-      ExecStart = "${filenSync}/bin/filen-sync";
-      # Generous but bounded: the very first run pulled 2.1 GiB. Bounded so a
-      # hung connection fails the unit instead of wedging it forever.
-      TimeoutStartSec = "60min";
-    };
-  };
-
-  systemd.timers.filen-sync = {
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      # Wait out boot: tailscale/network come up first, and an immediate sync
-      # would just fail and burn a retry.
-      OnBootSec = "10min";
-      # Cadence for an idle box. AccuracySec matters — the default of 1 min
-      # would smear a 30 min cadence into something erratic.
-      OnUnitActiveSec = "30min";
-      AccuracySec = "1min";
-      # NOT Persistent=: that only applies to OnCalendar timers. Missed runs
-      # while the box was off are recovered by OnBootSec instead.
-    };
-  };
 
   # journald defaults to `auto` — volatile unless /var/log/journal exists — so
   # without this the logs those runit units wrote to /var/log/*.log would not

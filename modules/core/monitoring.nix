@@ -20,23 +20,22 @@
 # This module is in modules/core, so victus imports it: the laptop loses disk
 # monitoring in the same commit as the server. Flagged to him before it was done.
 #
-# The sops block below is the fleet wiring, not a credential. It names the
-# ciphertext file and the age key path for every host except victus (see the
-# comment there). Its last entries were the `telegram/*` secrets; what remains
-# is what the surviving services still read — `filen/*` and `sear/secret_key`.
+# The sops block below is the fleet wiring, not a credential: it names the
+# ciphertext file and the age key path for every host. Its last entries were
+# the `telegram/*` secrets; what remains is what the surviving services still
+# read — `filen/*`, `sear/secret_key`, and `opencode/*`.
 #
-# The sops block below is the fleet wiring, not the credential it used to
-# carry: it names the ciphertext file and the age key path for every host
-# except victus (see the comment there). The `telegram/*` secrets it declared
-# were the last entries in it.
+# EVERY HOST, INCLUDING VICTUS, since 2026-10-31: filen-sync moved into
+# modules/core and every host now decrypts its `filen/*` credentials. The old
+# `host != "victus"` gate existed only because that laptop declared no secrets
+# at all; it cannot stay now that it does. Consequence: the age key
+# (/var/lib/sops-nix/key.txt, the same one the other two hosts use) MUST be in
+# place BEFORE the first switch on victus, or activation fails while decrypting.
 {
-  pkgs,
-  config,
   lib,
-  host,
   ...
 }: {
-  # ── the fleet's sops wiring, for every host except victus ──────────────────
+  # ── the fleet's sops wiring, for every host ─────────────────────────────────
   #
   # WHAT THIS BLOCK IS. It used to exist to carry the Telegram credential
   # fleet-wide: it started in hosts/thinkcentre/secrets.nix because until
@@ -57,15 +56,12 @@
   # .sops.yaml's `path_regex` is generic (`secrets/[^/]+\.sops\.yaml$`), so it
   # keeps covering the new name.
   #
-  # NOT ON victus (2026-10-22, "can we skip on it"): that host is set up without
-  # the age key, and sops-install-secrets fails the whole activation when a
-  # declared secret cannot be decrypted — so declaring a secret there would
-  # block its very first switch. The gate is by hostname, not by key presence,
-  # because activation is exactly where the absence would bite. Consequence:
-  # grandpa's secrets decrypt from here, the Victus's own host file does not
-  # participate. To change that, copy the key to /var/lib/sops-nix/key.txt and
-  # delete the `host != "victus"` condition.
-  sops = lib.mkIf (host != "victus") {
+  # The `host != "victus"` gate was removed 2026-10-31: filen-sync moved into
+  # modules/core and every host now declares its `filen/*` credentials. That
+  # gate existed only because victus had no secrets to decrypt; it cannot stay
+  # now that it does. Every host therefore needs the age key at the path below
+  # BEFORE its first switch, victus included.
+  sops = {
     defaultSopsFile = lib.mkDefault ../../secrets/fleet.sops.yaml;
 
     # The private key, at the one path every host uses now:
