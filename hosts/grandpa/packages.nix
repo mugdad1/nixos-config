@@ -119,7 +119,7 @@
     unzip
     wget
     zip
-
+opencode
     # ── usb/serial probing (Midea dongle work, 2026-10-17) ──────────────────
     # The Midea AC Wi-Fi dongle is not a USB device (no data lines — lsusb
     # stays empty in every port), so detection is: confirm that with lsusb,
