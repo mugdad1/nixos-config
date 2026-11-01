@@ -133,7 +133,9 @@
 in {
   imports = [
     ./battery-charge-limit.nix
-    # ./ollama.nix  # removed 2026-10-31 — too slow for local agent use on the 4G 3050
+    # Back 2026-11-01 — the "too slow" verdict was about a 22 GB model on a
+    # 4 GB card, not about the card. See the header of ollama.nix.
+    ./ollama.nix
     ./hardware-configuration.nix
     ../../modules/core
     ../../modules/desktop

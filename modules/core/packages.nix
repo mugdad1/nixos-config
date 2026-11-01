@@ -76,12 +76,15 @@ in {
   };
 
   environment.systemPackages = with pkgs; [
-    # ─── opencode — REMOVED 2026-10-31 on his word ──────────────────────────
+    # ─── opencode — REMOVED 2026-10-31, BACK 2026-11-01 ─────────────────────
     # It was here (his ask 2026-10-30, one line for all three hosts) so every
-    # host got v2 from nixpkgs. He no longer wants it, so the package is gone
-    # from the fleet; the binary disappears on the next switch. Restore by
-    # putting `opencode` back in this list.
-    # opencode
+    # host got v2 from nixpkgs. It left the next day ("He no longer wants it")
+    # and returned the day after that, when the ask became "run opencode
+    # against a model on this laptop" — which needs the binary on the fleet
+    # again. The provider block that points it at Ollama is not here; it is
+    # modules/home/apps/opencode.nix, so the package and its config move
+    # together from now on.
+    opencode
 
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
