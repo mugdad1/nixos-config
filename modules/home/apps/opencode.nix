@@ -25,6 +25,10 @@
 #     The model that actually fits the 4 GiB card. Same guardrails: 32k
 #     advertised context (matching the server), thinking off. Replaces
 #     nemotron-3.5-bolt:e4b, which is 7.2–7.9 GB and runs mostly on the CPU.
+#   nemotron-3-nano:4b (A/B, 2026-11-02)
+#     Text-only, 2.8 GB, tiny KV cache. Benchmarks say it is much faster than
+#     the 4b Qwen; it is listed so it can be selected in opencode and compared
+#     on the Victus, not as the default (it once hallucinated tool names).
 #
 # Web search is NOT wired here: opencode's websearch tool needs one of Exa,
 # Tavily, Firecrawl, Parallel or TinyFish, and none is configured. The house
@@ -49,6 +53,21 @@
               "capabilities": {
                 "tools": true,
                 "input": ["text", "image"],
+                "output": ["text"]
+              }
+            },
+            "nemotron-3-nano:4b": {
+              "name": "Nemotron 3 Nano 4B (local, A/B)",
+              "limit": {
+                "context": 32768,
+                "output": 8192
+              },
+              "body": {
+                "reasoning_effort": "none"
+              },
+              "capabilities": {
+                "tools": true,
+                "input": ["text"],
                 "output": ["text"]
               }
             },

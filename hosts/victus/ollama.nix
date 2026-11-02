@@ -31,8 +31,12 @@
 #                in practice it confused `execute` with `shell`, retried, and
 #                never finished the same task the 4b did in 24s. It stays for
 #                `ollama run` quick questions, NOT as an opencode fallback.
-# Deliberately gone: nemotron-3-nano:4b — it has the tools capability but in
-# practice hallucinated tool names instead of calling them.
+#   nemotron-3-nano:4b  2.8 GB, text only, 256K context, tiny KV cache (hybrid
+#                Mamba/attention). RE-ADDED 2026-11-02 for an A/B against
+#                qwen3.5:4b: current benchmarks put it at 95% tool-calling and
+#                45-55 tok/s on 4 GB, but it was removed once for hallucinating
+#                tool names on this box. Not the default until it proves itself
+#                with the current 32k/flash-attention/q8-KV flags.
 # REMOVED 2026-11-02 ("find me other model … not slow"): nemotron-3.5-bolt:e4b.
 # At 7.2–7.9 GB against 3.7 GiB of usable VRAM it ran mostly on the CPU — the
 # same failure mode as the old 22 GB model. qwen3.5:4b is the replacement.
@@ -100,6 +104,7 @@
     loadModels = [
       "qwen3.5:4b"
       "qwen3.5:2b"
+      "nemotron-3-nano:4b"
     ];
 
     # Do not silently delete anything pulled by hand with `ollama pull`;
