@@ -7,7 +7,7 @@
   gitEmail = "mugdad02@tutamail.com";
 
   browser = "zen-beta";
-  terminal = "ghostty";
+  terminal = "foot";
   launcher = "rofi";
 
   keyboardLayout = "us,ara";
