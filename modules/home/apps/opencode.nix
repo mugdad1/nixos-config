@@ -30,6 +30,25 @@
 #     the 4b Qwen; it is listed so it can be selected in opencode and compared
 #     on the Victus, not as the default (it once hallucinated tool names).
 #
+# WHY LOCAL MODELS "CAN'T USE SHELL" (2026-11-02)
+#   opencode advertises two ways to run a command: `shell`, and `execute`
+#   (Code Mode — a JavaScript sandbox that calls tools from inside JS). A small
+#   model sees both, picks `execute`, and fills it with a shell-shaped call:
+#     {"command": "ls -la"}        what 2b sends
+#     -> Invalid arguments for tool "execute": - code: Missing key
+#   It retries the same wrong shape until the step budget runs out, then tells
+#   the user "I can't run shell commands" / "I can't edit files". This is
+#   reproducible: 2b did it five times in a row on "run the cmd ls".
+#   `permissions` below denies `execute` for every model. Denying it removes
+#   Code Mode, and every tool reachable only through it, from the tool list —
+#   so the model has exactly one way to run a command and one way to edit.
+#   Re-measured after the change, 2026-11-02:
+#     qwen3.5:2b  "run the cmd ls"          -> shell, correct output
+#     qwen3.5:4b  "create notes.md"         -> write, file on disk
+#     qwen3.5:4b  "append a line to it"     -> read + edit, diff correct
+#   If a cloud model is ever connected, it loses Code Mode too; re-enable by
+#   scoping the deny to an agent instead of the root `permissions`.
+#
 # Web search is NOT wired here: opencode's websearch tool needs one of Exa,
 # Tavily, Firecrawl, Parallel or TinyFish, and none is configured. The house
 # SearXNG on grandpa answers /search?format=json and can be exposed as an MCP
@@ -38,6 +57,10 @@
   xdg.configFile."opencode/opencode.json".text = ''
     {
       "$schema": "https://opencode.ai/config.json",
+      "model": "ollama/qwen3.5:4b",
+      "permissions": [
+        {"action": "execute", "resource": "*", "effect": "deny"}
+      ],
       "providers": {
         "ollama": {
           "models": {
@@ -90,5 +113,22 @@
         }
       }
     }
+  '';
+
+  # Global instructions. Short on purpose: a 4B model follows five bullets, not
+  # a style guide. These are the behaviours that actually failed in practice —
+  # picking the wrong tool, describing a call instead of making it, and
+  # refusing a task the tool list already allows ("I can't edit files").
+  xdg.configFile."opencode/AGENTS.md".text = ''
+    # Tool use
+
+    - Run commands with the `shell` tool. Set `workdir` instead of `cd`.
+    - Find paths with `glob`, find text with `grep`, then read with `read`.
+    - Change files with `edit` for a focused change, `write` for a new file or
+      a full replacement. You are able to edit files; never say you cannot.
+    - Call the tool. Do not describe the call you would make or ask whether to
+      make it.
+    - After changing something, run the command that proves it worked
+      (`cat FILE`, the test, the build) and report the real output.
   '';
 }
