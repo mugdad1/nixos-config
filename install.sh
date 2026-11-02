@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-CURRENT_USERNAME=$(whoami)
-
 # Colour setup. These used to be bare `tput` calls, which meant the installer
 # died instantly over ssh from kitty or ghostty: those set TERM=xterm-kitty /
 # xterm-ghostty, a fresh box has no terminfo entry for either, tput exits
@@ -82,8 +80,9 @@ else
   echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
 fi
 
+CONFIG_USER="$(sed -n 's/.*username = "\([^"]*\)".*/\1/p' "hosts/${HOST}/variables.nix" 2>/dev/null | head -1)"
 SUMMARY="\
-Username:   $CURRENT_USERNAME
+Username:   ${CONFIG_USER:-unknown} (from variables.nix)
 Host:       ${HOST:-unknown}
 GPU:        ${GPU:-unknown}
 DMI seen:   name='${DMI_NAME:-}' family='${DMI_FAMILY:-}'"
@@ -94,9 +93,21 @@ fi
 
 #--- Set username ---#
 
-echo -e "${INFO}Setting username to ${GREEN}$CURRENT_USERNAME${RESET}"
-# variables.nix is the single source of truth; no repo-wide sed needed.
-sed -i -e "s/username = \"[^\"]*\"/username = \"$CURRENT_USERNAME\"/" "hosts/${HOST}/variables.nix"
+# variables.nix is the single source of truth: all three hosts ship
+# username = "mugdad", and the account the NixOS installer creates must match
+# it. Do NOT take the name from `whoami`: on the live ISO that is "nixos",
+# and running the installer from there would silently rewrite the fleet user
+# to "nixos" and build a system with no matching home directory.
+#
+# Only an explicit override changes it:
+#   TARGET_USER=someone ./install.sh
+TARGET_USER="${TARGET_USER:-}"
+if [ -n "$TARGET_USER" ]; then
+  echo -e "${INFO}Overriding username to ${GREEN}$TARGET_USER${RESET}"
+  sed -i -e "s/username = \"[^\"]*\"/username = \"$TARGET_USER\"/" "hosts/${HOST}/variables.nix"
+else
+  echo -e "${INFO}Using username from hosts/${HOST}/variables.nix"
+fi
 
 # GPU is fixed per host, not templated: the Intel media/compute packages and
 # the NVIDIA stack are declared in the host's default.nix, and there is no `gpu`
