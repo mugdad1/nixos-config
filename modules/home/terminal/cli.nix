@@ -19,6 +19,7 @@
 
   home.packages = with pkgs; [
     ## File management
+    yazi # TUI file manager (added 2026-11-02 for the low-RAM T480s)
     eza # ls replacement
     ncdu # disk usage analyzer
     duf # friendlier `df`
