@@ -16,14 +16,20 @@ in {
         font = "Iosevka Nerd Font:size=12";
         pad = "4x4 center-when-maximized-and-fullscreen";
         initial-color-theme = "dark";
-        # Keep the terminal usable when a remote box emits a huge paste.
-        scrollback-lines = 10000;
+      };
+
+      # foot keeps its scrollback in a dedicated [scrollback] section
+      # (foot.ini(5)); there is no [main] "scrollback-lines" option.
+      scrollback = {
+        lines = 10000;
       };
 
       "colors-dark" = {
         background = c.bg0_h;
         foreground = c.fg0;
-        cursor = c.fg2;
+        # foot expects TWO space-separated RRGGBB values here: the
+        # foreground (text) and the background (cursor) color.
+        cursor = "${c.fg0} ${c.fg2}";
 
         regular0 = c.bg0;
         regular1 = c.red;
