@@ -7,7 +7,7 @@
 # 200k-token prompt on a 4 GB card.
 #
 # The JSON is deliberately plain and tiny. What it does:
-#   providers.ollama.models."qwen3.5:4b".limit.context = 32768
+#   providers.ollama.models."qwen3.5:2b".limit.context = 32768
 #     Overrides the context Ollama reports (262144) with the 32k the server is
 #     actually configured for in hosts/victus/ollama.nix. The two numbers MUST
 #     match; if you raise one, raise the other (OLLAMA_CONTEXT_LENGTH).
@@ -21,6 +21,10 @@
 #     "think": false; "reasoning_effort": "none" is what actually switches it
 #     off. Measured 2026-11-01. Remove this line when a faster box makes
 #     thinking affordable, not before.
+#   qwen3.5:4b (default 2026-11-02)
+#     The model that actually fits the 4 GiB card. Same guardrails: 32k
+#     advertised context (matching the server), thinking off. Replaces
+#     nemotron-3.5-bolt:e4b, which is 7.2–7.9 GB and runs mostly on the CPU.
 #
 # Web search is NOT wired here: opencode's websearch tool needs one of Exa,
 # Tavily, Firecrawl, Parallel or TinyFish, and none is configured. The house

@@ -20,12 +20,20 @@ in {
       efi.canTouchEfiVariables = true;
     };
 
+    # Kernel tuning, decided 2026-11-02 ("optimize my systems"):
+    #   page_poison=1     gone — zeroes every freed page for a benefit that is
+    #                     not worth the cost; init_on_free supersedes it.
+    #   page_alloc.shuffle=1  gone — per-allocation page-list shuffling is
+    #                     allocator hot-path work for memory-layout entropy,
+    #                     not speed.
+    #   randomize_kstack_offset=on  gone — already the compiled default on
+    #                     x86_64 (RANDOMIZE_KSTACK_OFFSET_DEFAULT=y), so the
+    #                     parameter changed nothing.
+    # slab_nomerge is KEPT: measurements put it within noise of merged slabs,
+    # so it costs nothing measurable and retains the hardening.
     kernelParams = lib.mkBefore [
       "quiet"
       "slab_nomerge"
-      "page_poison=1"
-      "page_alloc.shuffle=1"
-      "randomize_kstack_offset=on"
     ];
 
     kernelPackages = pkgs.linuxPackages_latest;

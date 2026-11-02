@@ -15,7 +15,10 @@
   # servers import no home-manager stack, so a systemPackage is the only route
   # that covers them). It needs the age key to be useful: with the key on all
   # three hosts (row 121) it works everywhere.
-  sops = pkgs.sops;
+  # GRANDPA-ONLY SINCE 2026-11-02 (his order "sops is for grandpa"): the
+  # declaration moved to hosts/grandpa/packages.nix. The laptops hold no age
+  # key any more and edit no ciphertext.
+  # sops = pkgs.sops;
   # filen-cli 0.2.9 — the Rust build (filen-rs), NOT nixpkgs' own 0.0.36,
   # which is the old Go implementation. Declared in ../../pkgs/filen-cli.nix;
   # the reasoning (musl-static vs gnu, prebuilt vs source) is written there.
@@ -30,7 +33,9 @@
   # login shell it printed "No shell profile file found" and left `filen`
   # unreachable. Declarative, it needs no PATH entry at all — /run/current-system/sw/bin
   # carries it on both machines.
-  filen-cli = pkgs.callPackage ../../pkgs/filen-cli.nix {};
+  # GRANDPA-ONLY SINCE 2026-11-02 (his order "keep filencli for server only"):
+  # the declaration moved to hosts/grandpa/packages.nix.
+  # filen-cli = pkgs.callPackage ../../pkgs/filen-cli.nix {};
   # ─── DISABLED 2026-10-13 on his word ───────────────────────────────────────
   # Android SDK for Flutter APK builds (Noor app). He does not use Flutter or
   # Android Studio — only adb/fastboot for his phone, and android-tools (the
@@ -88,8 +93,11 @@ in {
 
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
-    sops
-    filen-cli
+    # sops + filen-cli are GRANDPA-ONLY since 2026-11-02 — the declarations
+    # moved to hosts/grandpa/packages.nix (his orders: "sops is for grandpa",
+    # "keep filencli for server only").
+    # sops
+    # filen-cli
     # adb / fastboot — STILL NEEDED for his phone. This is the only Android
     # bit that stays; everything below it that was toolchain-related is off.
     android-tools

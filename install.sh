@@ -109,15 +109,15 @@ mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
 ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2>/dev/null || true
 
 #--- sops age key ---#
-# EVERY host declares sops secrets now: filen-sync moved into modules/core on
-# 2026-10-31, so its `filen/*` credentials decrypt on all three hosts.
-# modules/core/monitoring.nix supplies the default ciphertext file and the key
-# path; the declarations live in modules/core/filen-sync.nix and the hosts'
-# own secrets.nix. Without the private key, activation fails part-way through
-# a fresh install, which is the worst possible moment to find out. Look for
-# the key beside the installer or in $HOME and install it; if it is nowhere,
-# stop before building a system that cannot activate.
-if [ ! -f /var/lib/sops-nix/key.txt ]; then
+# SOPS IS GRANDPA-ONLY (2026-11-02, his order "sops is for grandpa"): the
+# fleet-wide secrets block (modules/core/monitoring.nix + modules/core/
+# filen-sync.nix) is now gated to host == "grandpa", so the laptops hold no
+# age key and decrypt nothing. The key is only needed where the secrets are
+# — the server. Without it activation fails part-way through a fresh install,
+# which is the worst possible moment to find out. Look for the key beside the
+# installer or in $HOME and install it; if it is nowhere, stop before building
+# a system that cannot activate.
+if [ "$HOST" = "grandpa" ] && [ ! -f /var/lib/sops-nix/key.txt ]; then
   KEY_SRC=""
   for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
     if [ -f "$candidate" ]; then

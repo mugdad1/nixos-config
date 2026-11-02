@@ -66,6 +66,13 @@
     # ── asked for by name ────────────────────────────────────────────────────
     gh
     git
+    # ── filen stack + sops CLI — GRANDPA-ONLY since 2026-11-02 ───────────────
+    # Moved out of modules/core/packages.nix at his order ("sops is for
+    # grandpa", "keep filencli for server only"): the laptops hold no age key
+    # and no filen CLI any more. The server is where the fleet's secrets and
+    # the Filen mirror live.
+    (pkgs.callPackage ../../pkgs/filen-cli.nix {})
+    sops
     # opencode is NOT listed here any more: it moved to
     # modules/core/packages.nix on 2026-10-30 so all three hosts get v2 from
     # one line (nixpkgs carries 2.1.4; the old sst/opencode overlay is gone).

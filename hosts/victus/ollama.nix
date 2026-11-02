@@ -22,16 +22,22 @@
 #              bigger number is not free — KV cache eats the same 4 GiB the
 #              weights need. 32k is the tested value.
 #
-# Model choices, both light on purpose:
-#   qwen3.5:4b   3.3 GB, the default. Fits the 3050, real tool calling —
-#                read, grep, write and shell all verified through opencode.
-#   qwen3.5:2b   1.9 GB, chat only. It has the tools capability on paper but
+# Model choices, sized for the 4 GiB card:
+#   qwen3.5:4b   3.3 GB Q4_K_M, 256K context, tools + vision. The one that
+#                actually fits the 3050 and drives opencode's tools correctly;
+#                back as the default 2026-11-02 (24s for the write-a-file task,
+#                10.9 tok/s at 32k with the flags below).
+#   qwen3.5:2b   2.7 GB, chat only. It has the tools capability on paper but
 #                in practice it confused `execute` with `shell`, retried, and
 #                never finished the same task the 4b did in 24s. It stays for
 #                `ollama run` quick questions, NOT as an opencode fallback.
-# Deliberately gone: nemotron-3.5-bolt (22 GB, the reason this file was
-# disabled), and nemotron-3-nano:4b — it has the tools capability but in
+# Deliberately gone: nemotron-3-nano:4b — it has the tools capability but in
 # practice hallucinated tool names instead of calling them.
+# REMOVED 2026-11-02 ("find me other model … not slow"): nemotron-3.5-bolt:e4b.
+# At 7.2–7.9 GB against 3.7 GiB of usable VRAM it ran mostly on the CPU — the
+# same failure mode as the old 22 GB model. qwen3.5:4b is the replacement.
+# syncModels = false means the nemotron blob is NOT deleted from disk; reclaim
+# the ~8 GB with `ollama rm nemotron-3.5-bolt:e4b`.
 #
 # GPU CAVEAT, unchanged: Cardwire's `integrated` mode (the default in
 # /var/lib/victus/gpu-mode) removes the dGPU from the PCI bus, so CUDA cannot

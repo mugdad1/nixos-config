@@ -1,5 +1,5 @@
-# The fleet's sops wiring, shared by every host. Disk health WAS here too and
-# is gone — see the note at the bottom of this file.
+# Grandpa's sops wiring (fleet-scoped until 2026-11-02; see the gate below).
+# Disk health WAS here too and is gone — see the note at the bottom of this file.
 #
 # SMART MONITORING REMOVED 2026-10-25 at his order ("rm smartd"). It was added
 # 2026-10-18 because every host could detect a failure and none could report
@@ -25,17 +25,16 @@
 # the `telegram/*` secrets; what remains is what the surviving services still
 # read — `filen/*`, `sear/secret_key`, and `opencode/*`.
 #
-# EVERY HOST, INCLUDING VICTUS, since 2026-10-31: filen-sync moved into
-# modules/core and every host now decrypts its `filen/*` credentials. The old
-# `host != "victus"` gate existed only because that laptop declared no secrets
-# at all; it cannot stay now that it does. Consequence: the age key
-# (/var/lib/sops-nix/key.txt, the same one the other two hosts use) MUST be in
-# place BEFORE the first switch on victus, or activation fails while decrypting.
+# SCOPED TO GRANDPA ON 2026-11-02 (his order "sops is for grandpa"). Between
+# 2026-10-31 and that day every host decrypted `filen/*`; the laptops now hold
+# no age key and no secrets, and filen-sync is gated the same way. The age key
+# (/var/lib/sops-nix/key.txt) is needed on the server only.
 {
   lib,
+  host,
   ...
 }: {
-  # ── the fleet's sops wiring, for every host ─────────────────────────────────
+  # ── sops wiring — grandpa only ──────────────────────────────────────────────
   #
   # WHAT THIS BLOCK IS. It used to exist to carry the Telegram credential
   # fleet-wide: it started in hosts/thinkcentre/secrets.nix because until
@@ -56,17 +55,15 @@
   # .sops.yaml's `path_regex` is generic (`secrets/[^/]+\.sops\.yaml$`), so it
   # keeps covering the new name.
   #
-  # The `host != "victus"` gate was removed 2026-10-31: filen-sync moved into
-  # modules/core and every host now declares its `filen/*` credentials. That
-  # gate existed only because victus had no secrets to decrypt; it cannot stay
-  # now that it does. Every host therefore needs the age key at the path below
-  # BEFORE its first switch, victus included.
-  sops = {
+  # SCOPED TO GRANDPA ONLY 2026-11-02 (his order: "sops is for grandpa"). The
+  # laptops hold no age key and declare no secrets any more (filen-sync's
+  # declarations live in modules/core/filen-sync.nix, gated the same way), so
+  # these defaults would be dead weight there.
+  sops = lib.mkIf (host == "grandpa") {
     defaultSopsFile = lib.mkDefault ../../secrets/fleet.sops.yaml;
 
-    # The private key, at the one path every host uses now:
-    # /var/lib/sops-nix/key.txt (root:root 0600), plus ~/.config/sops/age/
-    # keys.txt on the laptop for hand-editing with the `sops` CLI.
+    # The private key, at the one path grandpa uses:
+    # /var/lib/sops-nix/key.txt (root:root 0600).
     # DELIBERATELY not a home directory path: sops-install-secrets runs early
     # in boot, before homes are necessarily useful, and a root-owned path under
     # /var/lib states plainly that this is machine state, not user state.

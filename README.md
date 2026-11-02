@@ -347,11 +347,12 @@ that was the first half of the ask was dropped at his word ("ignore that").
 **2026-10-30: Ollama on the Victus, OpenCode on every host.** His ask: *"add
 ollama to victus with open to tailscale and others … also add opencode to all
 hosts"*. Ollama lives in `hosts/victus/ollama.nix` — the CUDA package, bound to
-`0.0.0.0:11434` but firewalled to `tailscale0` only, with `lfm3:1.7b`,
-`granite4.2:3b`, `qwen3.5:2b`, `nemotron-3-nano:4b` and
-`nemotron-3.5-bolt` declared for the model loader. The GPU half was verified on
-the box, not assumed: `nvidia-smi` reports the RTX 3050 Laptop (4 GiB, driver
-595.112.07, CUDA 13.2) once `gpu-mode hybrid` removes Cardwire's PCI block.
+`0.0.0.0:11434` but firewalled to `tailscale0` only, with `qwen3.5:4b` and
+`qwen3.5:2b` declared for the model loader. The GPU half was verified on
+the box, not assumed: `nvidia-smi` reports the RTX 3050 Laptop (4 GiB, CUDA
+13.4). The config now takes `nvidiaPackages.latest` (615.78.08 in this lock,
+the same branch CachyOS runs) once `gpu-mode hybrid` removes Cardwire's PCI
+block.
 OpenCode moved into `modules/core/packages.nix`, which is the one layer all
 three hosts import; nixpkgs already carries v2 (2.1.4 in this lock), so the old
 `sst/opencode` overlay references are now history.

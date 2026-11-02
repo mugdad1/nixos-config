@@ -165,11 +165,14 @@ in {
   hardware.nvidia = {
     open = true;
 
-    # Stable is 595.104.02. Only its userland outputs are rebuilt here (the
-    # kernel module comes from the untouched passthru.open and stays cached):
-    # re-install each pristine executable and re-apply interpreter + RPATH with
-    # nvidiaPatchelf, instead of the corrupted copies from the normal build.
-    package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (old: {
+    # `latest` = selectHighestVersion production new_feature = 615.78.08 at
+    # this pin (production is 595.112.07). Chosen 2026-11-02 ("see nixpkgs what
+    # is the latest") so NixOS matches the 615.78.08 that CachyOS runs on the
+    # same box. Only its userland outputs are rebuilt here (the kernel module
+    # comes from the untouched passthru.open and stays cached): re-install each
+    # pristine executable and re-apply interpreter + RPATH with nvidiaPatchelf,
+    # instead of the corrupted copies from the normal build.
+    package = config.boot.kernelPackages.nvidiaPackages.latest.overrideAttrs (old: {
       postInstall =
         (
           if (old.postInstall or null) != null
@@ -181,9 +184,16 @@ in {
                    nvidia-debugdump nvidia-powerd; do
             if [ -e "$bin/origBin/$i" ]; then
               install -Dm755 "$bin/origBin/$i" "$bin/bin/$i"
+              # TWO calls, rpath first: upstream patchelf #674 (nixpkgs
+              # #576412) shows --interpreter + --set-rpath in one invocation
+              # can move .dynamic into a read-only LOAD. 0.15.2 is currently
+              # immune, but the split order stays correct if the pin is ever
+              # dropped.
+              ${nvidiaPatchelf}/bin/patchelf \
+                --set-rpath "$out/lib:$libPath" \
+                "$bin/bin/$i"
               ${nvidiaPatchelf}/bin/patchelf \
                 --interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-                --set-rpath "$out/lib:$libPath" \
                 "$bin/bin/$i"
             fi
           done
@@ -192,8 +202,30 @@ in {
 
     modesetting.enable = true;
     powerManagement.enable = true;
+    # Deliberately NOT finegrained: on 595 + Ampere notebooks
+    # NVreg_DynamicPowerManagement already defaults to 0x03, which is
+    # fine-grained RTD3. Setting the option would pin 0x02 (same power state),
+    # add redundant udev rules, and assert prime.offload. Verified against the
+    # NVIDIA 595 README ch. 22 and nixos/modules/hardware/video/nvidia.nix.
     powerManagement.finegrained = false;
-    nvidiaSettings = true;
+    # nvidia-settings is an X11 tool and this host runs greetd + Sway only.
+    nvidiaSettings = false;
+
+    # Decode on the Intel iGPU. The option defaults to true and installs the
+    # NVIDIA VA-API ICD, which then competes with Intel's for no benefit on a
+    # 4 GB offload GPU.
+    videoAcceleration = false;
+
+    # Keep the suspend VRAM image OFF tmpfs. /tmp is RAM-backed here (and the
+    # box also runs zram), so a 4 GiB VRAM dump could fail resume; /var/tmp is
+    # on disk. Recommended by the NixOS wiki whenever powerManagement is on.
+    moduleParams.nvidia.NVreg_TemporaryFilePath = "/var/tmp";
+
+    # Dynamic Boost (nvidia-powerd) stays OFF on purpose: it holds the dGPU
+    # awake (defeating D3cold), fights power-profiles-daemon over cpufreq, and
+    # needs an SBIOS DC-limits table the Victus 15 may not expose. Revisit only
+    # if gaming on the dGPU and `/proc/driver/nvidia/gpus/*/power` reports
+    # "Notebook Dynamic Boost: Supported".
 
     prime = {
       offload.enable = true;
@@ -307,6 +339,11 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
+    # LM Studio — VICTUS ONLY, added 2026-11-02. The GUI half of local
+    # inference (download/compare GGUF models, chat, serve an OpenAI endpoint).
+    # Not in modules/core: the other two hosts have no dGPU and no reason for
+    # it. Unfree, which core/system.nix already allows.
+    pkgs.lmstudio
   ];
 
   # Hybrid is the default when no mode has been chosen yet; `f` only creates the
