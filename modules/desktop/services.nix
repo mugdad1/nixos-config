@@ -136,8 +136,13 @@ in {
       };
     };
 
-    irqbalance.enable = true;
-    bpftune.enable = true;
+    # irqbalance and bpftune OFF since 2026-11-02. Both are server/experiment
+    # tools: irqbalance regularly makes desktop IRQ placement worse (it has a
+    # long regression history) and bpftune rewrites sysctls at runtime behind
+    # your back, so the machine stops being reproducible. `scx_bpfland` below
+    # is the scheduler that actually helps an interactive laptop.
+    irqbalance.enable = false;
+    bpftune.enable = false;
 
     # sched_ext: EEVDF stays the in-kernel default, this swaps a BPF scheduler
     # in over it at runtime (kernel >= 6.12; ours is 7.3, and /sys/kernel/sched_ext
@@ -183,5 +188,16 @@ in {
   zramSwap = {
     enable = true;
     algorithm = "zstd";
+  };
+
+  # systemd-oomd ships enabled but does nothing until a slice opts in: the
+  # NixOS defaults leave root/system/user slices unmanaged. On 8 GB + zram the
+  # failure mode to avoid is the whole desktop locking up under pressure, so
+  # let oomd kill the largest process in the user slice at 80% pressure
+  # (Fedora's default policy). System/root slices stay unmanaged on purpose:
+  # killing a daemon is worse than killing a browser tab.
+  systemd.oomd = {
+    enable = true;
+    enableUserSlices = true;
   };
 }

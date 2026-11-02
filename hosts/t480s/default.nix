@@ -28,10 +28,15 @@
     "fbcon=nodefer"
   ];
 
-  # throttled (lenovo-throttling-fix) fights power-profiles-daemon over the
-  # CPU governor on Intel HWP; PPD + platform_profile is sufficient on this
-  # BIOS gen. tlp is likewise off — PPD is the single power daemon.
-  services.throttled.enable = false;
+  # throttled ON since 2026-11-02, reversing the earlier "PPD is enough" note.
+  # The T480/T480s/X1C6 has a documented Linux power-limit bug: the embedded
+  # controller resets PL1/PL2 and the CPU drops to ~400 MHz under sustained
+  # load. nixos-hardware's own t480s profile sets `services.throttled.enable =
+  # lib.mkDefault true`, and the ArchWiki T480s page says to install and enable
+  # throttled.service. It writes MSRs (power limits/trip points), not the CPU
+  # governor, so it coexists with PPD; PPD remains the only power *profile*
+  # daemon and TLP stays off.
+  services.throttled.enable = true;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
   # WHPH — his old productivity app (tasks/habits/timers) — is fully gone as
