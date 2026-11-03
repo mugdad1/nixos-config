@@ -123,7 +123,6 @@
     ["waybar"]
     # swaync is a home-manager systemd user service (modules/home/desktop/swaync);
     # exec'ing it here races that unit into a start-limit failure.
-    ["udiskie" "--automount" "--notify" "--smart-tray"]
     ["init-wallpaper"]
     ["swayosd-server"]
     [polkitAgent]

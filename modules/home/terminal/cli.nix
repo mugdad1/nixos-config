@@ -57,7 +57,6 @@
     strace
     libnotify
     socat
-    udiskie # auto-mounter
     wl-clipboard # wayland clipboard
     xdg-utils
     payload_dumper

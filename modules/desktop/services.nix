@@ -124,7 +124,6 @@ in {
       HandleLidSwitchDocked = lib.mkDefault "ignore";
     };
 
-    udisks2.enable = true;
 
     greetd = {
       enable = true;
