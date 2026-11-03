@@ -26,8 +26,19 @@
       # firefox
       tor-browser
 
+      ## Cloud storage
+      # Filen Desktop, wrapped from the official AppImage (see
+      # ../../../pkgs/filen-desktop.nix). Not pkgs.filen-desktop: nixpkgs'
+      # source build of the same 3.0.53 is broken (his report 2026-11-03).
+      # The package installs its own .desktop entry + icon, which is what rofi's
+      # drun mode lists — nothing else to register in rofi.
+      (callPackage ../../../pkgs/filen-desktop.nix {})
+
       ## Office / Productivity
-      onlyoffice-desktopeditors
+      # onlyoffice-desktopeditors  # DROPPED 2026-11-03 on his word. Its
+      # buildInputs still include gtk2, and the nixpkgs update to 0bb2eed makes
+      # gtk2.broken a hard eval error. Nothing else in this config wants gtk2,
+      # so dropping onlyoffice is cheaper than allow-listing a dead toolkit.
       libreoffice-stable
       # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
       ## System / Utility
