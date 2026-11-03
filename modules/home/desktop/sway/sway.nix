@@ -28,7 +28,7 @@
   wsNum = n: toString (n - (n / 10) * 10);
 
   appLaunchers = [
-    "  bindsym ${mod}+Return exec ${t} --gtk-single-instance=true"
+    "  bindsym ${mod}+Return exec ${t}"
     "  bindsym ${alt}+Return exec ${t}"
     "  bindsym ${mod}+b exec ${b}"
     "  bindsym ${mod}+d exec toggle-rofi ${l} -show drun"
