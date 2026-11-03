@@ -135,7 +135,6 @@ in {
     ./battery-charge-limit.nix
     # Back 2026-11-01 — the "too slow" verdict was about a 22 GB model on a
     # 4 GB card, not about the card. See the header of ollama.nix.
-    ./ollama.nix
     ./hardware-configuration.nix
     ../../modules/core
     ../../modules/desktop
