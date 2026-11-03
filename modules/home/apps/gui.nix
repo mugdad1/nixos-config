@@ -11,7 +11,6 @@
       pavucontrol
       vlc
       freetube
-      filen-desktop
       ## Browsers (vanilla, un-nixified profiles: editable directly)
       # firefox → chromium → ungoogled-chromium, all on his word 2026-10-13:
       # "add chromium to this device and rm firefox / keep zen" then
