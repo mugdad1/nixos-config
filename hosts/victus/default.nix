@@ -342,7 +342,8 @@ in {
     # inference (download/compare GGUF models, chat, serve an OpenAI endpoint).
     # Not in modules/core: the other two hosts have no dGPU and no reason for
     # it. Unfree, which core/system.nix already allows.
-    pkgs.lmstudio
+    pkgs.lmstudio-bionic
+
   ];
 
   # Hybrid is the default when no mode has been chosen yet; `f` only creates the
