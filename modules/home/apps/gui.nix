@@ -8,6 +8,9 @@
       ## Multimedia
       imv
       obs-studio
+      kdePackages.kdenlive
+      gimp
+      audacity
       pavucontrol
       vlc
       freetube
