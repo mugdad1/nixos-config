@@ -57,6 +57,25 @@
   #     includeEmulator = false;
   #     includeSystemImages = false;
   #   }).androidsdk;
+  # OpenCode egress is Tor-only on every host (his ask 2026-11-03: "i want
+  # opencode in all host be routed thro tor"). The binary itself has no proxy
+  # option — V2 only documents the standard HTTP_PROXY/HTTPS_PROXY/NO_PROXY
+  # environment (https://opencode.ai/v2/docs/network/). Exporting those
+  # fleet-wide would route every program through Tor, so they live in this
+  # wrapper: the CLI sets them for itself AND for the background service it
+  # starts.
+  #
+  # 8118 is Tor's HTTPTunnelPort (modules/core/tor.nix), not a second daemon.
+  # OpenCode's HTTP stack accepts an http:// proxy URL; socks5h:// is not
+  # documented, so the loopback CONNECT tunnel is the safe endpoint.
+  # NO_PROXY keeps the CLI -> local service connection on loopback — without
+  # it the client would try to reach 127.0.0.1 through Tor and fail.
+  opencode-tor = pkgs.writeShellScriptBin "opencode" ''
+    export HTTP_PROXY=http://127.0.0.1:8118
+    export HTTPS_PROXY=http://127.0.0.1:8118
+    export NO_PROXY=localhost,127.0.0.1,::1
+    exec ${pkgs.opencode}/bin/opencode "$@"
+  '';
 in {
   documentation.nixos.enable = false;
 
@@ -89,7 +108,12 @@ in {
     # again. The provider block that points it at Ollama is not here; it is
     # modules/home/apps/opencode.nix, so the package and its config move
     # together from now on.
-    opencode
+    #
+    # TOR-ONLY SINCE 2026-11-03: this is now the wrapper declared above, which
+    # exports HTTP_PROXY/HTTPS_PROXY to Tor's 127.0.0.1:8118 before exec'ing
+    # the real binary. The wrapper is named `opencode`, so the command he
+    # types is unchanged.
+    opencode-tor
 
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
