@@ -35,7 +35,13 @@ in {
       {
         # HTTP CONNECT -> Tor, loopback only. This is the endpoint OpenCode's
         # HTTP_PROXY/HTTPS_PROXY use; it is not an open proxy.
-        HTTPTunnelPort = "127.0.0.1:8118";
+        # `addr` is required here: the module's port type renders a bare int as
+        # `HTTPTunnelPort 8118`, and tor's own default for an omitted address is
+        # 127.0.0.1+[::1] — explicit is better than relying on that.
+        HTTPTunnelPort = {
+          addr = "127.0.0.1";
+          port = 8118;
+        };
       }
       (lib.mkIf dpi {
         # Snowflake: the transport that needs no bridge line, because the point is
