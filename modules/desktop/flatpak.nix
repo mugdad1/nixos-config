@@ -1,4 +1,10 @@
-{inputs, config, lib, pkgs, ...}: let
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   # nix-flatpak generates the activation-time installer as
   # `flatpak-managed-install.service` (Type=oneshot, zero user environment:
   # no DISPLAY, no DBUS_SESSION_BUS_ADDRESS). When it has real work to do the
@@ -10,25 +16,29 @@
   # DBUS_SYSTEM_BUS_ADDRESS doesn't help and pointing
   # DBUS_SESSION_BUS_ADDRESS at the system bus fails with "The name is not
   # activatable" — flatpak wants a session bus. So run the generated script
-  # under a private session bus via dbus-run-session. The script import below
-  # is byte-identical to the one nix-flatpak uses to build ExecStart (same
-  # module, same args), so the only change is the bus wrapper around it.
-  # Keep the same pinned input as the import in ./flatpak.nix above — this
-  # breaks loudly (path not found) if nix-flatpak restructures, which is what
-  # you want. REVISIT if activation ever succeeds without this: delete the
-  # ExecStart override.
-  managedInstallScript =
-    import "${inputs.nix-flatpak.outPath}/modules/script/flatpak-managed-install.nix" {
-      inherit pkgs lib;
-      cfg = config.services.flatpak;
-      installation = "system";
-      executionContext = "service-start";
-    };
+  # under a private session bus. The script import below is byte-identical
+  # to the one nix-flatpak uses to build ExecStart (same module, same args),
+  # so the only change is the bus wrapper around it. If nix-flatpak ever
+  # restructures and this breaks at evaluation time, that is deliberate.
+  managedInstallScript = import "${inputs.nix-flatpak.outPath}/modules/script/flatpak-managed-install.nix" {
+    inherit pkgs lib;
+    cfg = config.services.flatpak;
+    installation = "system";
+    executionContext = "service-start";
+  };
+
+  # Run the generated script under a private session bus. dbus-run-session
+  # can't find dbus-daemon on its own inside this unit — the unit's PATH has
+  # no dbus — so the wrapper prepends it.
+  managedInstallWithBus = pkgs.writeShellScript "flatpak-managed-install-with-session-bus" ''
+    export PATH="${pkgs.dbus}/bin:$PATH"
+    exec ${pkgs.dbus}/bin/dbus-run-session ${managedInstallScript}
+  '';
 in {
   imports = [inputs.nix-flatpak.nixosModules.nix-flatpak];
 
   systemd.services.flatpak-managed-install.serviceConfig.ExecStart =
-    lib.mkForce "${pkgs.dbus}/bin/dbus-run-session ${managedInstallScript}";
+    lib.mkForce "${managedInstallWithBus}";
 
   services.flatpak = {
     enable = true;
