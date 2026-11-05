@@ -4,7 +4,7 @@
   ...
 }: let
   g = import ../../../lib/gruvbox.nix;
-  raw = g.raw;
+  inherit (g) raw;
 in {
   programs.swaylock = {
     enable = true;

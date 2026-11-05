@@ -25,7 +25,6 @@ excludes = []
 
 [formatter.lua]
 command = "stylua"
-options = [ "-q" ]
 includes = [ "*.lua" ]
 
 [formatter.toml]

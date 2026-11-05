@@ -45,7 +45,7 @@
 # loudly with a journal line saying so. Deliberate: a Condition* that quietly
 # skipped instead would hide an unconfigured tool behind a green unit, which
 # is the failure mode this wiki keeps documenting.
-{...}: {
+_: {
   systemd.services.router-reboot = {
     description = "Reboot the house router (Huawei H122-373 at 192.168.8.1)";
     after = ["network-online.target"];

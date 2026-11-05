@@ -51,7 +51,7 @@
 # and the nixpkgs-hplip input.
 {inputs, ...}: {
   nixpkgs.overlays = [
-    (final: prev: {
+    (_final: prev: {
       hplip = inputs."nixpkgs-hplip".legacyPackages.${prev.stdenv.hostPlatform.system}.hplip;
     })
   ];

@@ -124,7 +124,6 @@ in {
       HandleLidSwitchDocked = lib.mkDefault "ignore";
     };
 
-
     greetd = {
       enable = true;
       settings = {

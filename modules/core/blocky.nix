@@ -79,11 +79,11 @@ in {
       # 2026-10-31: both resolve dns.nextdns.io and the AdGuard profile fine.
       bootstrapDns =
         [
-          { upstream = "tcp+udp:9.9.9.11"; } # Quad9
-          { upstream = "tcp+udp:94.140.14.14"; } # AdGuard
+          {upstream = "tcp+udp:9.9.9.11";} # Quad9
+          {upstream = "tcp+udp:94.140.14.14";} # AdGuard
         ]
         ++ lib.optionals asked [
-          { upstream = "tcp+udp:100.106.116.60"; }
+          {upstream = "tcp+udp:100.106.116.60";}
         ];
 
       caching = {

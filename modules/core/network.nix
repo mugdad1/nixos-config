@@ -19,7 +19,7 @@ in {
     # 802.11 interface. The gate is keyed on host rather than on an option the
     # shared module cannot see.
     networkmanager = lib.mkIf (host == "victus" || host == "t480s") {
-     enable = true;
+      enable = true;
       # iwd handles 802.11k/v/r and FT roaming far better than wpa_supplicant
       # on Intel: the previous laptop was flapping between two BSSIDs of one
       # SSID after the backend was switched to wpa_supplicant. iwd is also the

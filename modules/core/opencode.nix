@@ -32,10 +32,10 @@
 #
 # REVISIT WHEN nixos-unstable picks up c399e1b: if `nix build nixpkgs#opencode`
 # succeeds against the locked nixpkgs, delete this file.
-{...}: {
+_: {
   nixpkgs.overlays = [
-    (final: prev: {
-      opencode = prev.opencode.overrideAttrs (finalAttrs: previousAttrs: {
+    (_final: prev: {
+      opencode = prev.opencode.overrideAttrs (_finalAttrs: previousAttrs: {
         node_modules = prev.stdenv.mkDerivation {
           pname = "${previousAttrs.pname}-node_modules";
           inherit (previousAttrs) version src;

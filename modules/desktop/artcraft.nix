@@ -33,7 +33,7 @@
 # nix-flatpak note: the module default `remotes` is [flathub] only, and our
 # definition would REPLACE that default (lists don't merge across modules),
 # so flathub is spelled out explicitly here alongside artcraft-oci.
-{...}: {
+_: {
   services.flatpak = {
     remotes = [
       {

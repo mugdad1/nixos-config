@@ -1,4 +1,4 @@
-{lib, ...}: let
+_: let
   c = (import ../../../../lib/gruvbox.nix).css;
 in {
   services.swaync = {

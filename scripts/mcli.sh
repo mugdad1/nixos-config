@@ -19,7 +19,7 @@ warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 
 usage() {
-  cat <<EOF
+    cat << EOF
 mcli v${VERSION} - NixOS system management
 
 Usage: mcli <command> [options]
@@ -42,71 +42,71 @@ EOF
 }
 
 cmd_rebuild() {
-  info "Rebuilding NixOS for ${HOSTNAME}..."
-  nh os switch "${FLAKE_DIR}"
-  ok "Rebuild complete"
+    info "Rebuilding NixOS for ${HOSTNAME}..."
+    nh os switch "${FLAKE_DIR}"
+    ok "Rebuild complete"
 }
 
 cmd_update() {
-  info "Updating flake inputs..."
-  pushd "${FLAKE_DIR}" >/dev/null
-  # Do NOT update nixpkgs-hplip: it is pinned to an exact rev on purpose so
-  # the HPLIP workaround cannot move underneath us. nixos-hardware and
-  # rust-overlay are gone from the flake entirely.
-  nix flake update \
-    nixpkgs home-manager nix-flatpak nix-index-database \
-    zen-browser sops-nix
-  popd >/dev/null
-  info "Rebuilding with updated inputs..."
-  cmd_rebuild
+    info "Updating flake inputs..."
+    pushd "${FLAKE_DIR}" > /dev/null
+    # Do NOT update nixpkgs-hplip: it is pinned to an exact rev on purpose so
+    # the HPLIP workaround cannot move underneath us. nixos-hardware and
+    # rust-overlay are gone from the flake entirely.
+    nix flake update \
+        nixpkgs home-manager nix-flatpak nix-index-database \
+        zen-browser sops-nix
+    popd > /dev/null
+    info "Rebuilding with updated inputs..."
+    cmd_rebuild
 }
 
 cmd_diag() {
-  echo -e "${CYAN}=== System Info ===${NC}"
-  inxi -S 2>/dev/null || echo "inxi not installed"
-  echo ""
-  echo -e "${CYAN}=== Memory ===${NC}"
-  free -h
-  echo ""
-  echo -e "${CYAN}=== Disk Usage ===${NC}"
-  df -h / /boot 2>/dev/null
-  echo ""
-  echo -e "${CYAN}=== Nix Store ===${NC}"
-  nix store df 2>/dev/null || echo "nix store df not available"
-  echo ""
-  echo -e "${CYAN}=== Generations ===${NC}"
-  nix profile history --profile /nix/var/nix/profiles/system 2>/dev/null | tail -5 || echo "Cannot list generations"
-  echo ""
-  echo -e "${CYAN}=== NixOS Version ===${NC}"
-  nixos-version 2>/dev/null || echo "Not on NixOS"
-  echo ""
-  echo -e "${CYAN}=== Kernel ===${NC}"
-  uname -r
+    echo -e "${CYAN}=== System Info ===${NC}"
+    inxi -S 2> /dev/null || echo "inxi not installed"
+    echo ""
+    echo -e "${CYAN}=== Memory ===${NC}"
+    free -h
+    echo ""
+    echo -e "${CYAN}=== Disk Usage ===${NC}"
+    df -h / /boot 2> /dev/null
+    echo ""
+    echo -e "${CYAN}=== Nix Store ===${NC}"
+    nix store df 2> /dev/null || echo "nix store df not available"
+    echo ""
+    echo -e "${CYAN}=== Generations ===${NC}"
+    nix profile history --profile /nix/var/nix/profiles/system 2> /dev/null | tail -5 || echo "Cannot list generations"
+    echo ""
+    echo -e "${CYAN}=== NixOS Version ===${NC}"
+    nixos-version 2> /dev/null || echo "Not on NixOS"
+    echo ""
+    echo -e "${CYAN}=== Kernel ===${NC}"
+    uname -r
 }
 
 cmd_cleanup() {
-  local keep=${1:-1}
-  info "Cleaning generations (keeping last ${keep})..."
-  nh clean all --keep-since 1d --keep "$keep"
-  ok "Cleanup complete"
+    local keep=${1:-1}
+    info "Cleaning generations (keeping last ${keep})..."
+    nh clean all --keep-since 1d --keep "$keep"
+    ok "Cleanup complete"
 }
 
 cmd_trim() {
-  info "Running SSD TRIM..."
-  sudo fstrim -av
-  ok "TRIM complete"
+    info "Running SSD TRIM..."
+    sudo fstrim -av
+    ok "TRIM complete"
 }
 
 case "${1:-help}" in
-rebuild) cmd_rebuild ;;
-update) cmd_update ;;
-diag) cmd_diag ;;
-cleanup) cmd_cleanup "${2:-1}" ;;
-trim) cmd_trim ;;
-help | -h | --help) usage ;;
-*)
-  err "Unknown command: $1"
-  usage
-  exit 1
-  ;;
+    rebuild) cmd_rebuild ;;
+    update) cmd_update ;;
+    diag) cmd_diag ;;
+    cleanup) cmd_cleanup "${2:-1}" ;;
+    trim) cmd_trim ;;
+    help | -h | --help) usage ;;
+    *)
+        err "Unknown command: $1"
+        usage
+        exit 1
+        ;;
 esac

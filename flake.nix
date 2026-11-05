@@ -37,7 +37,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-
     # Secrets. The repo is PUBLIC (github.com/mugdad1/nixos-config), so a
     # credential can never be written inline in Nix — see .sops.yaml for the
     # full reasoning. sops-nix decrypts at activation with an age key that
@@ -49,11 +48,7 @@
     };
   };
 
-  outputs = {
-    nixpkgs,
-    self,
-    ...
-  } @ inputs: let
+  outputs = {nixpkgs, ...} @ inputs: let
     system = "x86_64-linux";
 
     mkHost = host: let

@@ -1,0 +1,10 @@
+# statix configuration.
+#
+# W20 (repeated_keys) is disabled deliberately: NixOS modules in this repo use
+# dotted attribute paths (`services.foo.enable`, `fileSystems."/"`,
+# `systemd.services.bar`, ...) because that is the idiomatic module style and
+# keeps the surrounding explanatory comments next to the option they describe.
+# Collapsing every dotted path into nested attrsets would be a large,
+# readability-only rewrite of generated hardware configs and host modules.
+disabled = ["repeated_keys"]
+ignore = [".direnv"]

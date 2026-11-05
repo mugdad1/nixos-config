@@ -123,7 +123,7 @@
   # (this is why nvidia-smi and nvidia-cuda-mps-control were broken while nvtop
   # read both GPUs fine). 0.15.2 keeps .dynamic writable; it is used below to
   # re-link the pristine copies from origBin/ that the driver build keeps.
-  nvidiaPatchelf = pkgs.patchelf.overrideAttrs (old: rec {
+  nvidiaPatchelf = pkgs.patchelf.overrideAttrs (_old: rec {
     version = "0.15.2";
     src = pkgs.fetchurl {
       url = "https://github.com/NixOS/patchelf/releases/download/${version}/patchelf-${version}.tar.gz";
@@ -133,8 +133,6 @@
 in {
   imports = [
     ./battery-charge-limit.nix
-    # Back 2026-11-01 — the "too slow" verdict was about a 22 GB model on a
-    # 4 GB card, not about the card. See the header of ollama.nix.
     ./hardware-configuration.nix
     ../../modules/core
     ../../modules/desktop
@@ -343,7 +341,6 @@ in {
     # Not in modules/core: the other two hosts have no dGPU and no reason for
     # it. Unfree, which core/system.nix already allows.
     pkgs.lmstudio-bionic
-
   ];
 
   # Hybrid is the default when no mode has been chosen yet; `f` only creates the

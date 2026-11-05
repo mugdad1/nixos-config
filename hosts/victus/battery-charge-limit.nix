@@ -180,8 +180,8 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    boot.extraModulePackages = [ config.boot.kernelPackages.acpi_call ];
-    boot.kernelModules = [ "acpi_call" ];
+    boot.extraModulePackages = [config.boot.kernelPackages.acpi_call];
+    boot.kernelModules = ["acpi_call"];
     assertions = [
       {
         assertion = cfg.resumeAt < cfg.stopAt;

@@ -3,64 +3,62 @@
   lib,
   ...
 }: {
-  home.packages = (
-    with pkgs; [
-      ## Multimedia
-      imv
-      obs-studio
-      kdePackages.kdenlive
-      gimp
-      audacity
-      pavucontrol
-      vlc
-      freetube
-      ## Browsers (vanilla, un-nixified profiles: editable directly)
-      # firefox → chromium → ungoogled-chromium, all on his word 2026-10-13:
-      # "add chromium to this device and rm firefox / keep zen" then
-      # "yes ofc i hate google". Same upstream version either way (155.0.8059.39),
-      # so this is a drop-in swap, not an upgrade.
-      # Firefox was the plain package with an un-nixified profile — it had no
-      # programs.firefox block anywhere in the flake, so removing it drops no
-      # declarative state. Zen is the one with the managed profile
-      # (modules/home/browser.nix) and stays exactly as it was; this line was
-      # never what provided it.
-      ungoogled-chromium
-      # chromium
-      # firefox
-      tor-browser
+  home.packages = with pkgs; [
+    ## Multimedia
+    imv
+    obs-studio
+    kdePackages.kdenlive
+    gimp
+    audacity
+    pavucontrol
+    vlc
+    freetube
+    ## Browsers (vanilla, un-nixified profiles: editable directly)
+    # firefox → chromium → ungoogled-chromium, all on his word 2026-10-13:
+    # "add chromium to this device and rm firefox / keep zen" then
+    # "yes ofc i hate google". Same upstream version either way (155.0.8059.39),
+    # so this is a drop-in swap, not an upgrade.
+    # Firefox was the plain package with an un-nixified profile — it had no
+    # programs.firefox block anywhere in the flake, so removing it drops no
+    # declarative state. Zen is the one with the managed profile
+    # (modules/home/browser.nix) and stays exactly as it was; this line was
+    # never what provided it.
+    ungoogled-chromium
+    # chromium
+    # firefox
+    tor-browser
 
-      ## Cloud storage
-      # Filen Desktop, wrapped from the official AppImage (see
-      # ../../../pkgs/filen-desktop.nix). Not pkgs.filen-desktop: nixpkgs'
-      # source build of the same 3.0.53 is broken (his report 2026-11-03).
-      # The package installs its own .desktop entry + icon, which is what rofi's
-      # drun mode lists — nothing else to register in rofi.
-      (callPackage ../../../pkgs/filen-desktop.nix {})
+    ## Cloud storage
+    # Filen Desktop, wrapped from the official AppImage (see
+    # ../../../pkgs/filen-desktop.nix). Not pkgs.filen-desktop: nixpkgs'
+    # source build of the same 3.0.53 is broken (his report 2026-11-03).
+    # The package installs its own .desktop entry + icon, which is what rofi's
+    # drun mode lists — nothing else to register in rofi.
+    (callPackage ../../../pkgs/filen-desktop.nix {})
 
-      ## Office / Productivity
-      # onlyoffice-desktopeditors  # DROPPED 2026-11-03 on his word. Its
-      # buildInputs still include gtk2, and the nixpkgs update to 0bb2eed makes
-      # gtk2.broken a hard eval error. Nothing else in this config wants gtk2,
-      # so dropping onlyoffice is cheaper than allow-listing a dead toolkit.
-      libreoffice-stable
-      # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
-      ## System / Utility
-      qbittorrent
-      gnome-disk-utility
-      localsend
-      zenity
-      kdePackages.polkit-kde-agent-1
-      wlsunset
+    ## Office / Productivity
+    # onlyoffice-desktopeditors  # DROPPED 2026-11-03 on his word. Its
+    # buildInputs still include gtk2, and the nixpkgs update to 0bb2eed makes
+    # gtk2.broken a hard eval error. Nothing else in this config wants gtk2,
+    # so dropping onlyoffice is cheaper than allow-listing a dead toolkit.
+    libreoffice-stable
+    # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
+    ## System / Utility
+    qbittorrent
+    gnome-disk-utility
+    localsend
+    zenity
+    kdePackages.polkit-kde-agent-1
+    wlsunset
 
-      ## GNOME apps (PDF viewer, archive manager)
-      evince
-      file-roller
+    ## GNOME apps (PDF viewer, archive manager)
+    evince
+    file-roller
 
-      ## File manager
-      nemo-with-extensions
-      nemo-fileroller
-    ]
-  );
+    ## File manager
+    nemo-with-extensions
+    nemo-fileroller
+  ];
 
   dconf.settings = {
     "org/nemo/preferences" = {

@@ -25,7 +25,7 @@
   nodeModules = stdenv.mkDerivation {
     pname = "gitea-mirror-node-modules";
     version = "1";
-    src = src;
+    inherit src;
     nativeBuildInputs = [bun];
     dontConfigure = true;
     dontBuild = true;
@@ -51,7 +51,7 @@ in
   stdenv.mkDerivation {
     pname = "gitea-mirror";
     version = "3.14.1";
-    src = src;
+    inherit src;
     nativeBuildInputs = [bun];
 
     buildPhase = ''
