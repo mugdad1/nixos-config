@@ -327,8 +327,8 @@ in {
   # it with SBCO 0x00.  The daemon is in battery-charge-limit.nix.
   services.victus.batteryChargeLimit = {
     enable = true;
-    stopAt = 80;
-    resumeAt = 77;
+    stopAt = 85;
+    resumeAt = 82;
   };
 
   environment.systemPackages = [
