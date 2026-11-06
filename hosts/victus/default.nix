@@ -133,6 +133,7 @@
 in {
   imports = [
     ./battery-charge-limit.nix
+    ./ollama.nix
     ./hardware-configuration.nix
     ../../modules/core
     ../../modules/desktop
