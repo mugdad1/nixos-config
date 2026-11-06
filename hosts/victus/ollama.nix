@@ -25,6 +25,33 @@ in {
     # Re-running pull on later boots is a no-op once the manifest is present.
     loadModels = ["mimo-v2.6"];
 
+    # ─── THE ENV BLOCK, RESTORED 2026-11-06 ─────────────────────────────────
+    # The mimo rewrite dropped it, and the server fell back to upstream's
+    # VRAM-based default — journalctl proof from today:
+    #   "vram-based default context total_vram=3.7 GiB default_num_ctx=4096"
+    # 4096 silently truncates opencode's prompt. The other extreme is just
+    # as wrong: the model file advertises qwen35.context_length = 262144,
+    # which cannot run here — q8 KV at 262144 would be ~18 GB against a
+    # 4 GiB card. 16384 is sized for THIS rig (i5-12500H, 24 GiB RAM,
+    # RTX 3050 4 GiB; mimo-v2.6 9B Q4_K_M = 6.6 GB, split CPU/GPU): q8 KV
+    # ≈ 1.2 GB, leaving ~2.5 GB of VRAM for weight layers. The old tested
+    # value 32768 belonged to the 3.3 GB qwen3.5:4b — at 9B the KV doubles
+    # against double the weights and too little stays on the die.
+    #
+    # THE NUMBER MUST MATCH limit.context in modules/home/apps/opencode.nix
+    # (16384 there, 16384 here). If you raise one, raise the other.
+    environmentVariables = {
+      OLLAMA_CONTEXT_LENGTH = "16384";
+      OLLAMA_MAX_LOADED_MODELS = "1"; # one resident model, never two
+      OLLAMA_NUM_PARALLEL = "1"; # a laptop, not a server; slots multiply KV
+      # Generation on a 4 GB card is KV-cache bound, not weight bound. These
+      # two move together (measured 2026-11-01 on this card: 6.3 → 10.9
+      # tok/s at 32k for the 4B — q8_0 halves the cache so more layers stay
+      # on the GPU, and it requires flash attention).
+      OLLAMA_FLASH_ATTENTION = "1";
+      OLLAMA_KV_CACHE_TYPE = "q8_0";
+    };
+
     # Deliberately not `openFirewall`: that opens the port on every interface,
     # including wlan0/eth0. The rule below is tailnet-only.
     openFirewall = false;
