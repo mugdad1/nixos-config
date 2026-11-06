@@ -336,11 +336,6 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
-    # LM Studio — VICTUS ONLY, added 2026-11-02. The GUI half of local
-    # inference (download/compare GGUF models, chat, serve an OpenAI endpoint).
-    # Not in modules/core: the other two hosts have no dGPU and no reason for
-    # it. Unfree, which core/system.nix already allows.
-    pkgs.lmstudio-bionic
   ];
 
   # Hybrid is the default when no mode has been chosen yet; `f` only creates the
