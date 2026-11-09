@@ -22,9 +22,15 @@
   # modules/desktop/services.nix (which sets WLR_DRM_DEVICES before exec sway).
   # Cardwire applies the block/unblock immediately; the renderer change takes
   # effect at the next login.
+  # nixpkgs' cardwire 0.12.3 omits sqlite from buildInputs, so the daemon fails
+  # to link with "cannot find -lsqlite3". Add it here until the package is fixed
+  # upstream (master still has the bug as of 2026-11-09).
+  cardwire = pkgs.cardwire.overrideAttrs (old: {
+    buildInputs = (old.buildInputs or []) ++ [pkgs.sqlite];
+  });
   gpuMode = pkgs.writeShellScriptBin "gpu-mode" ''
     set -eu
-    export PATH=${lib.makeBinPath [pkgs.kmod pkgs.coreutils pkgs.cardwire]}:$PATH
+    export PATH=${lib.makeBinPath [pkgs.kmod pkgs.coreutils cardwire]}:$PATH
     mode="''${1:-}"
     case "$mode" in
       intel|hybrid|nvidia) ;;
@@ -241,6 +247,7 @@ in {
   # GPU behind the iGPU.
   services.cardwired = {
     enable = true;
+    package = cardwire;
     settings = {
       auto_apply_gpu_state = true;
       experimental_nvidia_block = true; # also block /dev/nvidiactl etc.
@@ -272,7 +279,7 @@ in {
     after = ["cardwired.service"];
     wants = ["cardwired.service"];
     before = ["greetd.service"];
-    path = with pkgs; [cardwire coreutils];
+    path = [cardwire pkgs.coreutils];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
