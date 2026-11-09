@@ -89,8 +89,6 @@
     # again. The provider block that points it at Ollama is not here; it is
     # modules/home/apps/opencode.nix, so the package and its config move
     # together from now on.
-    opencode
-
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
     # sops + filen-cli are GRANDPA-ONLY since 2026-11-02 — the declarations
