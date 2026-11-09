@@ -158,7 +158,7 @@ in {
     #
     # If the scheduler process dies, the kernel falls back to EEVDF by itself;
     # disabling this option and rebuilding undoes it entirely.
-    scx = {
+    scx-loader = {
       enable = true;
       scheduler = "scx_bpfland";
     };
