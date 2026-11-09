@@ -158,10 +158,22 @@ in {
     #
     # If the scheduler process dies, the kernel falls back to EEVDF by itself;
     # disabling this option and rebuilding undoes it entirely.
+<<<<<<< HEAD
     #scx-loader = {
     #  enable = true;
     #  config = "scx_bpfland";
     #};
+||||||| da6c662 (f)
+    scx-loader = {
+      enable = true;
+      scheduler = "scx_bpfland";
+    };
+=======
+    scx = {
+      enable = true;
+      scheduler = "scx_bpfland";
+    };
+>>>>>>> parent of da6c662 (f)
   };
 
   # gvfs 1.48+ spawns `wsdd` itself when a file manager browses the Windows
