@@ -37,12 +37,9 @@
     (callPackage ../../../pkgs/filen-desktop.nix {})
 
     ## AI / local LLM
-    # opencode is also installed system-wide (modules/core/packages.nix); kept
-    # here as well so the GUI app set is self-contained.
-    opencode
-    # Bionic — LM Studio's desktop client for local/open models. Unfree, which
-    # modules/core/system.nix already allows. Its main program is `bionic`.
-    lmstudio-bionic
+    # opencode now lives in modules/core/packages.nix so every host gets it,
+    # and LM Studio is victus-only (hosts/victus/default.nix). Neither belongs
+    # in this shared GUI set any more.
 
     ## Office / Productivity
     # onlyoffice-desktopeditors  # DROPPED 2026-11-03 on his word. Its

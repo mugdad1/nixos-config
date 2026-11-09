@@ -343,6 +343,10 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
+    # Bionic — LM Studio's desktop client for local/open models. Unfree, which
+    # modules/core/system.nix already allows. Moved here from the shared GUI
+    # set: this laptop is the only host that runs local models.
+    pkgs.lmstudio-bionic
   ];
 
   # Hybrid is the default when no mode has been chosen yet; `f` only creates the

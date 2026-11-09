@@ -81,11 +81,12 @@
   };
 
   environment.systemPackages = with pkgs; [
-    # ─── opencode — REMOVED 2026-10-31, BACK 2026-11-01 ─────────────────────
-    # It was here (his ask 2026-10-30, one line for all three hosts) so every
-    # host got v2 from nixpkgs. It left the next day ("He no longer wants it")
-    # and returned the day after that ("run opencode against a model on this
-    # laptop"), which needs the binary on the fleet again.
+    # ─── opencode — ALL HOSTS ───────────────────────────────────────────────
+    # One line here reaches every host. The laptops also load the desktop home
+    # stack, but grandpa is headless and imports none, so systemPackages is the
+    # only route that covers all three. It used to live in
+    # modules/home/apps/gui.nix, which only the two laptops ever load.
+    opencode
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
     # sops + filen-cli are GRANDPA-ONLY since 2026-11-02 — the declarations
