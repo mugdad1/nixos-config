@@ -84,11 +84,8 @@
     # ─── opencode — REMOVED 2026-10-31, BACK 2026-11-01 ─────────────────────
     # It was here (his ask 2026-10-30, one line for all three hosts) so every
     # host got v2 from nixpkgs. It left the next day ("He no longer wants it")
-    # and returned the day after that, when the ask became "run opencode
-    # against a model on this laptop" — which needs the binary on the fleet
-    # again. The provider block that points it at Ollama is not here; it is
-    # modules/home/apps/opencode.nix, so the package and its config move
-    # together from now on.
+    # and returned the day after that ("run opencode against a model on this
+    # laptop"), which needs the binary on the fleet again.
     cachix
     nftables # `sudo nft list ruleset` — the firewall is nftables
     # sops + filen-cli are GRANDPA-ONLY since 2026-11-02 — the declarations

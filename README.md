@@ -10,7 +10,7 @@ Three active hosts, all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
-| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050, Ollama | HP Victus 15 (i5-12th gen H) |
+| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
 | `t480s`     | Laptop — Sway desktop, home-manager, Intel iGPU only | ThinkPad T480s |
 | `grandpa`   | Headless lightweight server — Docker, blocky, tailscale, sshd, sops | Custom i3-2120 box |
 
@@ -30,12 +30,7 @@ there is a decision, not a default; see `hosts/grandpa/default.nix`.
 `victus` is the old laptop config minus everything ThinkPad-specific (battery
 threshold unit, TrackPoint quirk, `mem_sleep_default=deep`, throttled/tlp) plus
 the NVIDIA stack: open kernel modules, modesetting, PRIME offload and a
-three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only). It also runs
-**Ollama** (`hosts/victus/ollama.nix`) on `:11434`, tailnet-only, built from
-latest upstream release source with CUDA and pulling the single model
-`mimo-v2.6` in the background on activation. GPU inference needs `gpu-mode hybrid` — Cardwire's
-default `intel` mode removes the RTX 3050 from the PCI bus, so CUDA cannot see
-it.
+three-way `gpu-mode` switch (Intel only / hybrid / NVIDIA only).
 
 ## Structure
 
@@ -120,7 +115,7 @@ Also:
 ```bash
 # Either machine — the host is derived from `hostname` by nh:
 mcli rebuild                 # = nh os switch ~/nixos-config
-mcli update                  # flake update + latest Ollama release + rebuild
+mcli update                  # flake update + rebuild
 
 # Or explicitly:
 sudo nixos-rebuild switch --flake .#victus
@@ -228,9 +223,6 @@ NVIDIA on `victus`.
 - **Home Manager** for user packages and dotfiles (laptops only)
 - **Intel + NVIDIA hybrid** on `victus` — open modules, PRIME offload, and
   `gpu-mode intel|hybrid|nvidia` to switch what renders
-- **Ollama** on `victus` — latest upstream release built from source (CUDA on
-  the RTX 3050), refreshed by `mcli update`; `:11434` on the tailnet only, one
-  declared model (`mimo-v2.6`) pulled after the server starts
 - **OpenCode v2** installed system-wide on every host
   (`modules/core/packages.nix`)
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
@@ -345,30 +337,13 @@ declares the `filen/*` secrets, the old `host != "victus"` sops gate was
 removed and the age key is required on all three. The `filen-desktop` GUI app
 that was the first half of the ask was dropped at his word ("ignore that").
 
-**2026-10-30: Ollama on the Victus, OpenCode on every host.** His ask: *"add
-ollama to victus with open to tailscale and others … also add opencode to all
-hosts"*. Ollama lives in `hosts/victus/ollama.nix` — the CUDA package, bound to
-`0.0.0.0:11434` but firewalled to `tailscale0` only, with a small model set
-declared for the model loader (`qwen3.5:4b`, `qwen3.5:2b` and
-`nemotron-3-nano:4b` at the time). The GPU half was verified on
-the box, not assumed: `nvidia-smi` reports the RTX 3050 Laptop (4 GiB, CUDA
-13.4). The config now takes `nvidiaPackages.latest` (615.78.08 in this lock,
-the same branch CachyOS runs) once `gpu-mode hybrid` removes Cardwire's PCI
-block.
+**2026-10-30: OpenCode on every host.** The GPU stack was verified on the box,
+not assumed: `nvidia-smi` reports the RTX 3050 Laptop (4 GiB, CUDA 13.4). The
+config now takes `nvidiaPackages.latest` (615.78.08 in this lock, the same
+branch CachyOS runs) once `gpu-mode hybrid` removes Cardwire's PCI block.
 OpenCode moved into `modules/core/packages.nix`, which is the one layer all
 three hosts import; nixpkgs already carries v2 (2.1.4 in this lock), so the old
 `sst/opencode` overlay references are now history.
-
-**2026-11-06: one model, from the latest upstream release.** LM Studio came out
-of `hosts/victus/default.nix`; Ollama takes its place. `mimo-v2.6` (Xiaomi
-MiMo's 9B code/agent model) is the only declared model, and it needs v0.40.15 —
-the locked nixpkgs still carries v0.40.13. `pkgs/ollama.nix` therefore builds
-the upstream tag through nixpkgs' CUDA recipe, with the tag, the llama.cpp pin
-that moved with it, and all hashes in `pkgs/ollama-pins.nix`. `mcli update`
-runs `scripts/update-ollama.sh` after the flake inputs move: it asks GitHub for
-the latest release, re-hashes both sources and the Go vendor graph, and only
-then rebuilds. No manual version bump, and a failed refresh restores the old
-pins instead of leaving a half-written file.
 
 The tree was reorganised 2026-10-14 ("orgnize nixos-config it is a mess"):
 `hosts/thinkcentre/default.nix` split into `packages.nix` + `overrides.nix`,

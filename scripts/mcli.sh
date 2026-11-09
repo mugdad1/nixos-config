@@ -57,8 +57,6 @@ cmd_update() {
         nixpkgs home-manager nix-flatpak nix-index-database \
         zen-browser sops-nix
     popd > /dev/null
-    info "Updating Ollama to the latest upstream release..."
-    bash "${FLAKE_DIR}/scripts/update-ollama.sh"
     info "Rebuilding with updated inputs..."
     cmd_rebuild
 }
