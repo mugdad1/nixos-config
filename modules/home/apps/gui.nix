@@ -51,7 +51,18 @@
     ## System / Utility
     qbittorrent
     gnome-disk-utility
-    localsend
+    # localsend 1.18.0 links localsend_app against libz.so.1, but nixpkgs'
+    # RUNPATH on the main executable omits zlib (gtk's pkg-config adds -lz,
+    # and the plugin .so files get the path, but the app binary does not).
+    # Without this it dies at startup with "libz.so.1: cannot open shared
+    # object file". Add zlib to the existing wrapper until fixed upstream.
+    (localsend.overrideAttrs (old: {
+      # The nixpkgs value ends with newlines; trim them so the extra
+      # --prefix stays on the same command line inside dartFixupHook's eval.
+      extraWrapProgramArgs =
+        lib.trim (old.extraWrapProgramArgs or "")
+        + " --prefix LD_LIBRARY_PATH : ${zlib}/lib";
+    }))
     zenity
     kdePackages.polkit-kde-agent-1
     wlsunset
