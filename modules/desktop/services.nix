@@ -1,24 +1,42 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }: let
   g = (import ../../lib/gruvbox.nix).raw;
 
   # greeter theme
   greeterTheme = "container=#${g.bg0_h};border=#${g.green};text=#${g.fg};prompt=#${g.yellow};time=#${g.gray};action=#${g.blue};button=#${g.aqua};title=#${g.bright_blue};greet=#${g.bright_green};input=#${g.fg}";
-  # single-token session command (tuigreet -c would clobber --cmd).
-  # Wrapper exports the Wayland session vars: greetd/tuigreet launch on a
-  # bare TTY (XDG_SESSION_TYPE=tty, no CurrentDesktop), which breaks
-  # portals, Electron/Ozone and anything keying off the desktop id.
-  sessionCommand = pkgs.writeShellScript "sway-session" ''
+
+  # tuigreet's --session-wrapper prepends this single-token command to the
+  # Exec line of the desktop file the user picked. It exports the Wayland
+  # session vars (greetd starts on a bare TTY: XDG_SESSION_TYPE=tty and no
+  # CurrentDesktop, which breaks portals, Electron/Ozone and anything keying
+  # off the desktop id) and the GPU selection, then execs the compositor.
+  #
+  # The desktop id is derived from the Exec basename, because both sessions
+  # share one wrapper. Sway and Hyprland have different GPU backends but we
+  # export both device lists: WLR_DRM_DEVICES is read by sway/wlroots,
+  # AQ_DRM_DEVICES by aquamarine/Hyprland. Each compositor ignores the other.
+  sessionWrapper = pkgs.writeShellScript "wayland-session" ''
+    case "''${1##*/}" in
+      start-hyprland | hyprland)
+        export XDG_SESSION_DESKTOP=Hyprland
+        export XDG_CURRENT_DESKTOP=Hyprland
+        ;;
+      *)
+        export XDG_SESSION_DESKTOP=sway
+        export XDG_CURRENT_DESKTOP=sway
+        ;;
+    esac
+
     export XDG_SESSION_TYPE=wayland
-    export XDG_SESSION_DESKTOP=sway
-    export XDG_CURRENT_DESKTOP=sway
     export GDK_BACKEND=wayland
     export QT_QPA_PLATFORM=wayland
     export NIXOS_OZONE_WL=1
     export ELECTRON_OZONE_PLATFORM_HINT=wayland
+
     # GPU mode chosen by `gpu-mode` (hosts/victus/default.nix). The file only
     # exists on the Victus, so this is a no-op everywhere else. Cards are found
     # by PCI vendor id (0x8086 Intel, 0x10de NVIDIA) instead of card0/card1:
@@ -41,9 +59,10 @@
       }
       # True if any connector on the given card (e.g. card0) reports a
       # connected display. Used to decide whether the dGPU must be handed to
-      # Sway at login: HDMI on this chassis is wired to the NVIDIA card, and
-      # Sway 1.12 ignores wlroots' add_drm_card signal, so a card that is not
-      # in WLR_DRM_DEVICES at startup can never gain an output later.
+      # the compositor at login: HDMI on this chassis is wired to the NVIDIA
+      # card, and Sway 1.12 ignores wlroots' add_drm_card signal, so a card
+      # that is not in WLR_DRM_DEVICES at startup can never gain an output
+      # later. Hyprland/aquamarine has the same startup-only behaviour.
       card_has_display() {
         for c in /sys/class/drm/"$1"-*/status; do
           [ -r "$c" ] || continue
@@ -66,12 +85,14 @@
           # second card, but it does not render the compositor.
           if [ -n "$intel_card" ]; then
             if [ -n "$nvidia_card" ]; then
-              export WLR_DRM_DEVICES="$intel_card:$nvidia_card"
+              drm_devices="$intel_card:$nvidia_card"
             else
-              export WLR_DRM_DEVICES="$intel_card"
+              drm_devices="$intel_card"
             fi
+            export WLR_DRM_DEVICES="$drm_devices"
+            export AQ_DRM_DEVICES="$drm_devices"
           else
-            echo "gpu-mode: nvidia requested but no Intel DRM card found; leaving WLR_DRM_DEVICES unset" >&2
+            echo "gpu-mode: nvidia requested but no Intel DRM card found; leaving DRM device lists unset" >&2
           fi
           export __NV_PRIME_RENDER_OFFLOAD=1
           export __GLX_VENDOR_LIBRARY_NAME=nvidia
@@ -83,11 +104,12 @@
         intel)
           if [ -n "$intel_card" ]; then
             export WLR_DRM_DEVICES="$intel_card"
+            export AQ_DRM_DEVICES="$intel_card"
           fi
           # Hide the dGPU from userspace as well as the kernel. Without this,
-          # glvnd enumerates every EGL vendor and sway/apps open the NVIDIA
-          # render node even though WLR_DRM_DEVICES points at the Intel card,
-          # which keeps the modules pinned and the GPU wakeable.
+          # glvnd enumerates every EGL vendor and the compositor/apps open the
+          # NVIDIA render node even though the DRM device list points at the
+          # Intel card, which keeps the modules pinned and the GPU wakeable.
           mesa_egl=/run/opengl-driver/share/glvnd/egl_vendor.d/50_mesa.json
           intel_vk=/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json
           if [ -r "$mesa_egl" ]; then
@@ -108,22 +130,25 @@
           if [ -n "$intel_card" ]; then
             if [ -n "$nvidia_card" ] && card_has_display "''${nvidia_card##*/}"; then
               # An external display is attached and HDMI is wired to the
-              # dGPU, so expose the card to Sway or the monitor can never be
-              # turned on. Opening its DRM node keeps the dGPU awake for this
-              # session; with no display attached only the iGPU is opened and
-              # the dGPU still reaches D3cold. Sway cannot add a DRM device
-              # after startup, so plugging the cable in mid-session still
-              # needs a logout/login.
+              # dGPU, so expose the card to the compositor or the monitor can
+              # never be turned on. Opening its DRM node keeps the dGPU awake
+              # for this session; with no display attached only the iGPU is
+              # opened and the dGPU still reaches D3cold. Neither compositor
+              # can add a DRM device after startup, so plugging the cable in
+              # mid-session still needs a logout/login.
               export WLR_DRM_DEVICES="$intel_card:$nvidia_card"
+              export AQ_DRM_DEVICES="$intel_card:$nvidia_card"
               export SWAY_UNSUPPORTED_GPU=true
             else
               export WLR_DRM_DEVICES="$intel_card"
+              export AQ_DRM_DEVICES="$intel_card"
             fi
           fi
           ;;
       esac
     fi
-    exec ${pkgs.sway}/bin/sway
+
+    exec "$@"
   '';
 in {
   services = {
@@ -154,7 +179,13 @@ in {
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --theme '${greeterTheme}' --cmd ${sessionCommand}";
+          # Sessions come from /etc/wayland-sessions, which holds our two
+          # entries (Sway and Hyprland). Passing --sessions keeps tuigreet out
+          # of the system XDG dirs, so hyprland's own hyprland-uwsm.desktop
+          # never shows up as a third, broken choice. --remember-session
+          # selects the last session tuigreet wrote; tmpfiles seeds that file
+          # with sway so a fresh install logs into Sway.
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --asterisks --remember --remember-session --sessions /etc/wayland-sessions --session-wrapper ${sessionWrapper} --theme '${greeterTheme}'";
           user = "greeter";
         };
       };
@@ -190,15 +221,47 @@ in {
     };
   };
 
+  # The two compositor sessions offered at greetd. Both Exec lines go through
+  # the same wrapper; DesktopNames is what tuigreet turns into
+  # XDG_CURRENT_DESKTOP/XDG_SESSION_DESKTOP for portals.
+  environment.etc = {
+    "wayland-sessions/sway.desktop".text = ''
+      [Desktop Entry]
+      Name=Sway
+      Comment=i3-compatible Wayland compositor
+      Exec=${pkgs.sway}/bin/sway
+      Type=Application
+      DesktopNames=sway
+      Keywords=tiling;wayland;compositor;
+    '';
+
+    "wayland-sessions/hyprland.desktop".text = ''
+      [Desktop Entry]
+      Name=Hyprland
+      Comment=An intelligent dynamic tiling Wayland compositor
+      Exec=${config.programs.hyprland.package}/bin/start-hyprland
+      Type=Application
+      DesktopNames=Hyprland
+      Keywords=tiling;wayland;compositor;
+    '';
+  };
+
   # gvfs 1.48+ spawns `wsdd` itself when a file manager browses the Windows
   # Network neighbourhood. Without it, Nautilus/Nemo show "Failed to spawn the
   # wsdd daemon" and the SMB workgroup comes up empty.
   environment.systemPackages = [pkgs.wsdd];
 
-  # tuigreet's --remember cache; lives here (not shared boot.nix) because
-  # the `greeter` user only exists where greetd runs.
+  # tuigreet's --remember/--remember-session cache; lives here (not shared
+  # boot.nix) because the `greeter` user only exists where greetd runs.
+  #
+  # `f` only writes the file when it is missing, so the session the user
+  # actually picked survives reboots. `r` drops a stale free-form command
+  # (lastsession) left over from the old --cmd setup; if present, tuigreet
+  # would prefer it over the session file.
   systemd.tmpfiles.rules = [
-    "d /var/cache/tuigreet 0755 greeter greeter"
+    "d /var/cache/tuigreet 0755 greeter greeter -"
+    "f /var/cache/tuigreet/lastsession-path 0644 greeter greeter - /etc/wayland-sessions/sway.desktop"
+    "r /var/cache/tuigreet/lastsession"
   ];
 
   services.upower = {

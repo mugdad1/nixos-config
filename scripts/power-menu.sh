@@ -19,6 +19,20 @@ no="<span color='${red}'>✘</span>"
 
 theme="$HOME/.config/rofi/powermenu-theme.rasi"
 
+# Both desktops share this script. XDG_CURRENT_DESKTOP is exported by the
+# greetd session wrapper (modules/desktop/services.nix): "sway" or "Hyprland".
+is_hyprland() {
+    [[ ${XDG_CURRENT_DESKTOP:-} == *Hyprland* ]]
+}
+
+do_lock() {
+    if is_hyprland; then
+        hyprlock
+    else
+        swaylock
+    fi
+}
+
 rofi_cmd() {
     rofi -dmenu -theme ${theme} -markup-rows
 }
@@ -45,10 +59,14 @@ run_cmd() {
         elif [[ $1 == '--reboot' ]]; then
             systemctl reboot
         elif [[ $1 == '--suspend' ]]; then
-            swaylock &
+            do_lock &
             systemctl suspend
         elif [[ $1 == '--logout' ]]; then
-            swaymsg exit
+            if is_hyprland; then
+                hyprctl dispatch 'hl.dsp.exit()'
+            else
+                swaymsg exit
+            fi
         fi
     else
         exit 0
@@ -64,7 +82,7 @@ case ${chosen} in
         run_cmd --reboot
         ;;
     "$lock")
-        swaylock
+        do_lock
         ;;
     "$suspend")
         sleep 0.1

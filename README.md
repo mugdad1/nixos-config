@@ -10,8 +10,8 @@ Three active hosts, all deploying from `main`:
 
 | Host        | Role                                            | Platform            |
 | ----------- | ----------------------------------------------- | ------------------- |
-| `victus`    | Laptop — Sway desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
-| `t480s`     | Laptop — Sway desktop, home-manager, Intel iGPU only | ThinkPad T480s |
+| `victus`    | Laptop — Sway + Hyprland desktop, home-manager, Intel + RTX 3050 | HP Victus 15 (i5-12th gen H) |
+| `t480s`     | Laptop — Sway + Hyprland desktop, home-manager, Intel iGPU only | ThinkPad T480s |
 | `grandpa`   | Headless lightweight server — Docker, blocky, tailscale, sshd, sops | Custom i3-2120 box |
 
 Installed: `t480s` (NixOS since 2026-10-11 — **removed 2026-10-22, restored
@@ -66,7 +66,7 @@ nixos-config/
 │       ├── default.nix       # scanPaths + ../../scripts/default.nix
 │       ├── terminal/         # cli, dev, fish, shell, glow, lazyvim + fastfetch/, ghostty/, lazyvim-config/
 │       ├── apps/             # browser, git, gui, homepage, vscodium, xdg
-│       └── desktop/          # theme, osd, swaylock + sway/, waybar/, rofi/, swaync/
+│       └── desktop/          # theme, osd, swaylock + sway/, hyprland/, waybar/, rofi/, swaync/
 ├── pkgs/                     # callPackage files: filen-cli.nix
 ├── scripts/                  # Shell scripts (explicitly name-wrapped to PATH)
 │   ├── *.sh                  # checkup, mcli, hm-find, desktop helpers
@@ -226,6 +226,10 @@ NVIDIA on `victus`.
 - **OpenCode v2** installed system-wide on every host
   (`modules/core/packages.nix`)
 - **Sway** compositor (Wayland, gap-less tiling) with Waybar, Rofi, SwayNC
+- **Hyprland** as a second greetd session on both laptops, with the same
+  Gruvbox theme, gaps, borders and keybinds as Sway (Waybar uses
+  `hyprland/workspaces` there, Sway keeps `sway/workspaces`). Sway stays the
+  default entry until another session is picked in the greetd menu.
 - **Gruvbox** theme throughout
 - **Tailscale** tailnet, with MagicDNS explicitly refused (`--accept-dns=false`)
 - **Blocky** as the local DNS resolver — `127.0.0.1:53`, upstreams raced in
@@ -280,6 +284,22 @@ Worth knowing so they are not mistaken for oversights:
   `hosts/victus/default.nix`.
 
 ## History
+
+**2026-11-10: Hyprland is back, as a second session.** His ask: *"u have to make
+hyprland same theme and binds"*. Hyprland 0.57 (Lua config) is restored from the
+pre-2026-10 config (git `d36404a^`) and adapted to the new `hl.*` API, then
+mirrored onto Sway's Gruvbox look and keymap: gaps 6/12, border 2, no rounding,
+bright-green focused border, no blur/shadow/animations, the same launcher/
+window/workspace/media binds and a three-finger workspace swipe. Both laptops
+offer **Sway** and **Hyprland** at greetd through `tuigreet --sessions
+/etc/wayland-sessions` (the custom dir keeps Hyprland's `hyprland-uwsm.desktop`
+from appearing as a third, broken choice). A single session wrapper exports
+`XDG_CURRENT_DESKTOP` plus the right DRM device list per compositor
+(`WLR_DRM_DEVICES` for Sway, `AQ_DRM_DEVICES` for Hyprland), so the GPU switch
+keeps working in both. `lastsession-path` is seeded with Sway, so a fresh
+install — and any login without touching the Sessions menu — stays on Sway.
+Waybar gets a second `config-hypr` file; `power-menu`, `toggle-waybar` and
+hypridle branch on the desktop instead of assuming Sway.
 
 The configuration covered `t480s` (laptop) and `asus` (a headless home server)
 before September 2026; the `asus` host and everything that served it were
