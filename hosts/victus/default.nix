@@ -211,7 +211,8 @@ in {
     # add redundant udev rules, and assert prime.offload. Verified against the
     # NVIDIA 595 README ch. 22 and nixos/modules/hardware/video/nvidia.nix.
     powerManagement.finegrained = false;
-    # nvidia-settings is an X11 tool and this host runs greetd + Sway only.
+    # nvidia-settings is an X11 GUI, so it is of limited use under greetd + Sway;
+    # enabled on request (2026-11-10).
     nvidiaSettings = false;
 
     # Decode on the Intel iGPU. The option defaults to true and installs the
