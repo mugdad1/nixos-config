@@ -104,7 +104,9 @@ in {
 
           hide_input = false;
           fade_on_empty = false;
-          placeholder_text = ''<i><span foreground="#${raw.fg0}">Enter Password</span></i>'';
+          # hyprlang treats `#` as a comment, so markup colors need `##`;
+          # hyprlock's wiki uses the same escape for every span foreground.
+          placeholder_text = ''<i><span foreground="##${raw.fg0}">Enter Password</span></i>'';
 
           position = "0, 200";
           halign = "center";
