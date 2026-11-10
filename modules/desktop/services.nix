@@ -39,6 +39,20 @@
         done
         return 1
       }
+      # True if any connector on the given card (e.g. card0) reports a
+      # connected display. Used to decide whether the dGPU must be handed to
+      # Sway at login: HDMI on this chassis is wired to the NVIDIA card, and
+      # Sway 1.12 ignores wlroots' add_drm_card signal, so a card that is not
+      # in WLR_DRM_DEVICES at startup can never gain an output later.
+      card_has_display() {
+        for c in /sys/class/drm/"$1"-*/status; do
+          [ -r "$c" ] || continue
+          if [ "$(cat "$c")" = connected ]; then
+            return 0
+          fi
+        done
+        return 1
+      }
       intel_card="$(drm_card_for 0x8086 || true)"
       nvidia_card="$(drm_card_for 0x10de || true)"
       case "$(cat /var/lib/victus/gpu-mode)" in
@@ -92,7 +106,19 @@
           # `nvidia-offload` sets the PRIME variables for the one command that
           # asks for the dGPU.
           if [ -n "$intel_card" ]; then
-            export WLR_DRM_DEVICES="$intel_card"
+            if [ -n "$nvidia_card" ] && card_has_display "''${nvidia_card##*/}"; then
+              # An external display is attached and HDMI is wired to the
+              # dGPU, so expose the card to Sway or the monitor can never be
+              # turned on. Opening its DRM node keeps the dGPU awake for this
+              # session; with no display attached only the iGPU is opened and
+              # the dGPU still reaches D3cold. Sway cannot add a DRM device
+              # after startup, so plugging the cable in mid-session still
+              # needs a logout/login.
+              export WLR_DRM_DEVICES="$intel_card:$nvidia_card"
+              export SWAY_UNSUPPORTED_GPU=true
+            else
+              export WLR_DRM_DEVICES="$intel_card"
+            fi
           fi
           ;;
       esac
