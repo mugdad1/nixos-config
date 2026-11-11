@@ -1,28 +1,14 @@
+# `bypass` tries several routes in order and stops at the first that answers:
+#   1. zapret     DPI desync for ordinary HTTPS
+#   2. snowflake  local Tor
+#   3. home       Tor through grandpa over the tailnet
+# Every route ends with a SOCKS proxy on 127.0.0.1:9050.
 {
   host,
   lib,
   pkgs,
   ...
-}:
-# One command, several routes, no choices to remember: `bypass` tries each in
-# order and stops at the first that answers. `bypass off` undoes it, `bypass
-# status` says what is up.
-#
-#   1. zapret       DPI desync for ordinary HTTPS (websites that Fortinet
-#                   blocks by SNI). Tailscale-safe by construction — see
-#                   modules/core/zapret.nix.
-#   2. snowflake    local Tor, no bridge line needed. Flaky: it reached 100%
-#                   twice and stalled at 45% once, which is why it is not the
-#                   only route.
-#   3. home         Tor through grandpa's own daemon over the tailnet. The
-#                   laptop stops its local tor and an ssh -L puts grandpa's
-#                   SOCKS on 127.0.0.1:9050, so applications see the same
-#                   address either way. WireGuard matches no DPI rule, so this
-#                   is the route that survives a campus that blocks snowflake.
-#
-# Every route ends with 127.0.0.1:9050 live, so nothing downstream has to know
-# which one won.
-let
+}: let
   dpi = builtins.elem host ["victus" "t480s"];
 
   bypass = pkgs.writeShellScriptBin "bypass" ''
@@ -32,10 +18,6 @@ let
     export PATH
 
     REMOTE="mugdad@100.106.116.60"
-    # The tunnel is ssh, so it must run as the human, not as root: root has no
-    # key for grandpa (the test on 2026-10-27 failed exactly there — the unit
-    # died instantly and `systemctl is-active` said inactive). 9050 is above
-    # 1024, so no privilege is needed to bind it.
     RUNAS="''${SUDO_USER:-}"
     [ -n "$RUNAS" ] || RUNAS=$(logname 2>/dev/null || id -un)
 
@@ -53,9 +35,7 @@ let
     tunnel_start() {
       systemctl stop bypass-home 2>/dev/null || true
       systemctl reset-failed bypass-home 2>/dev/null || true
-      # --uid is the whole point: the service must use the human's ssh keys,
-      # not /root/.ssh. No --collect, so a failure stays in `systemctl status
-      # bypass-home` and `journalctl -u bypass-home` instead of vanishing.
+      # --uid so the service uses the human's ssh keys, not /root/.ssh.
       systemd-run --unit=bypass-home --quiet --uid="$RUNAS" \
         --property=Restart=on-failure --property=RestartSec=3 \
         "$(command -v ssh)" -N -o BatchMode=yes -o ExitOnForwardFailure=yes \
@@ -66,8 +46,7 @@ let
     }
 
     wait_bootstrap() {
-      # Only lines written after this restart count; a stale 100% from earlier
-      # in the same boot must not be mistaken for progress.
+      # Only lines written after this restart count.
       local since=$1 i=0 last
       while [ "$i" -lt 22 ]; do
         last=$(journalctl -u tor -b --since "@$since" --no-pager -o cat 2>/dev/null \
@@ -83,9 +62,6 @@ let
       say "trying routes ..."
       systemctl start zapret 2>/dev/null && ok "zapret (DPI desync)" || bad "zapret"
 
-      # Test hook: BYPASS_SKIP_LOCAL=1 jumps straight to the home route, which
-      # is the only way to exercise that branch from a network where snowflake
-      # happens to be healthy today.
       if [ "''${BYPASS_SKIP_LOCAL:-0}" = 1 ]; then
         say "  ... skipping snowflake (BYPASS_SKIP_LOCAL=1)"
       else

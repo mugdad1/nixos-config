@@ -1,13 +1,7 @@
 _: let
   c = (import ../../../lib/gruvbox.nix).raw;
 in {
-  # foot — Wayland-native terminal, added 2026-11-02 as the light fallback to
-  # Ghostty on the 8 GB T480s. Colours come from the same lib/gruvbox.nix the
-  # rest of the desktop uses, so the palette cannot drift.
-  #
-  # foot 1.28 splits themes into [colors-dark] / [colors-light]; the old
-  # [colors] section is gone. Only the dark theme is overridden and
-  # initial-color-theme pins dark, so the light builtin is never selected.
+  # foot — Wayland-native terminal, the light fallback to Ghostty.
   programs.foot = {
     enable = true;
 
@@ -18,8 +12,6 @@ in {
         initial-color-theme = "dark";
       };
 
-      # foot keeps its scrollback in a dedicated [scrollback] section
-      # (foot.ini(5)); there is no [main] "scrollback-lines" option.
       scrollback = {
         lines = 10000;
       };
@@ -27,8 +19,7 @@ in {
       "colors-dark" = {
         background = c.bg0_h;
         foreground = c.fg0;
-        # foot expects TWO space-separated RRGGBB values here: the
-        # foreground (text) and the background (cursor) color.
+        # Two values: foreground (text) and background (cursor).
         cursor = "${c.fg0} ${c.fg2}";
 
         regular0 = c.bg0;

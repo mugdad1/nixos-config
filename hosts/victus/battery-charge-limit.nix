@@ -1,3 +1,6 @@
+# HP's ACPI charge-mode switch (SBCO/GBCO). The EC has no percentage register,
+# so this is a userspace loop: SBCO 0x05 inhibits charging, SBCO 0x00 restores
+# it, GBCO 0x04 confirms the firmware actually stopped.
 {
   config,
   lib,
@@ -6,16 +9,6 @@
 }: let
   cfg = config.services.victus.batteryChargeLimit;
 
-  # The EC has no percentage register.  This is a userspace policy loop around
-  # HP's ACPI "Battery Health Manager" mode: SBCO 0x05 inhibits charging,
-  # SBCO 0x00 restores normal charging.  GBCO reads the live mode back:
-  # 0x04 means the firmware has actually stopped charging.
-  #
-  # This is deliberately NOT a TLP threshold and NOT a direct EC write.  It is
-  # the same firmware path the out-of-tree hp-omen-dkms battery patch uses; the
-  # board-specific test for 8A4F was:
-  #   SBCO 0x05 -> status "Not charging", power_now 0, GBCO 0x04
-  #   SBCO 0x00 -> status "Charging"
   batteryLimit = pkgs.writeShellScriptBin "victus-battery-limit" ''
     set -u
 
@@ -95,8 +88,8 @@
       cap="$(cat "$BAT/capacity")"
       last="$(cat "$STATE" 2>/dev/null || true)"
 
-      # HP's own firmware derives _BST partly from BDVO.  Never leave an
-      # inhibit armed while unplugged; clear it once and otherwise stay out.
+      # HP's _BST partly derives from BDVO: never leave an inhibit armed
+      # while unplugged.
       if ! ac_online; then
         if [ "$last" != auto ]; then
           if set_mode 00; then
@@ -133,8 +126,7 @@
       trap 'set_mode 00 >/dev/null 2>&1 || true; exit 0' TERM INT
       while :; do
         tick || true
-        # Background sleep + wait so a TERM from systemd interrupts the wait
-        # and the trap can restore auto mode promptly.
+        # Background sleep + wait so a TERM interrupts the wait.
         sleep "$INTERVAL" &
         wait $! || true
       done
@@ -196,9 +188,8 @@ in {
       wantedBy = ["multi-user.target"];
       after = ["systemd-modules-load.service"];
       wants = ["systemd-modules-load.service"];
-      # acpi_call is out-of-tree and nixpkgs ships it without the .ko.cer
-      # sidecar that NixOS's module-merging build expects, so load the exact
-      # kernel-matched .ko directly instead of using boot.extraModulePackages.
+      # acpi_call ships without the .ko.cer sidecar NixOS's module-merging
+      # build expects, so load the kernel-matched .ko directly.
       preStart = ''
         if ! grep -q '^acpi_call ' /proc/modules; then
           ${pkgs.kmod}/bin/modprobe acpi_call

@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   services.printing = {
     enable = true;
-    # Don't keep CUPS (and its daemons) resident; start on first job instead.
+    # Start CUPS on first job instead of keeping it resident.
     startWhenNeeded = true;
     drivers = [
       pkgs.hplip
@@ -15,15 +15,9 @@
     openFirewall = true;
   };
 
-  # ipp-usb is deliberately NOT enabled. It is only needed for driverless
-  # IPP-over-USB; HPLIP's own `hp` CUPS backend already handles HP printers
-  # (including USB), and the ipp-usb NixOS module still sets the obsolete
-  # `services.avahi.publish.*` options in 26.11, which produced two evaluation
-  # warnings. `lpinfo -v` still lists `direct hp`, so HP printing is unchanged.
-  #
-  # ipp-usb also enabled SANE by default. Keep scanner support explicitly so
-  # removing ipp-usb does not silently take the scanner away from an HP
-  # all-in-one; sane-airscan covers network scanners via eSCL/WSD.
+  # ipp-usb is intentionally off: HPLIP's `hp` backend already handles HP
+  # printers over USB, and the module sets obsolete avahi options. Keep SANE
+  # explicit so the scanner is not lost with it.
   hardware.sane = {
     enable = true;
     extraBackends = [pkgs.sane-airscan];

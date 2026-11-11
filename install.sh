@@ -2,13 +2,8 @@
 
 set -euo pipefail
 
-# Colour setup. These used to be bare `tput` calls, which meant the installer
-# died instantly over ssh from kitty or ghostty: those set TERM=xterm-kitty /
-# xterm-ghostty, a fresh box has no terminfo entry for either, tput exits
-# non-zero, and `set -e` above aborts before a single line of output. The
-# terminal itself still renders plain ANSI regardless of terminfo, so the
-# fallback is the raw escape sequence — colour keeps working, and the script
-# no longer depends on the terminfo database being present.
+# tput fails on terminals with no terminfo entry (e.g. xterm-kitty over ssh),
+# so fall back to raw ANSI.
 RESET=$(tput sgr0 2> /dev/null || printf '\033[0m')
 RED=$(tput setaf 1 2> /dev/null || printf '\033[31m')
 GREEN=$(tput setaf 2 2> /dev/null || printf '\033[32m')
@@ -18,14 +13,10 @@ OK="[${GREEN}OK${RESET}]\t"
 INFO="[${BLUE}INFO${RESET}]\t"
 ERROR="[${RED}ERROR${RESET}]\t"
 
-#--- Root check ---#
-
 if [[ $EUID -eq 0 ]]; then
     echo -e "${ERROR}Do not run as root!"
     exit 1
 fi
-
-#--- whiptail check ---#
 
 if ! command -v whiptail &> /dev/null; then
     echo -e "${INFO}Installing whiptail..."
@@ -33,16 +24,8 @@ if ! command -v whiptail &> /dev/null; then
     exit $?
 fi
 
-#--- Confirm ---#
-
-#--- Detect host + GPU ---#
-# product_name alone is NOT enough on every box: the returned ThinkCentre
-# reported 10LYS02F00 there, a bare machine-type string, so product_family is
-# consulted too. The Victus reports "Victus by HP 15-fa1xxx" (sometimes just
-# "HP Victus"), so "hp" counts as a hit as well.
-#
-# Override anything: HOST=grandpa ./install.sh — the DMI cannot identify a
-# custom desktop and must not be trusted for a reinstall.
+# Detect the host from DMI. product_name alone is not enough on every box, so
+# product_family is consulted too. Override with HOST=grandpa ./install.sh.
 DMI_NAME="$(cat /sys/class/dmi/id/product_name 2> /dev/null || true)"
 DMI_FAMILY="$(cat /sys/class/dmi/id/product_family 2> /dev/null || true)"
 
@@ -58,23 +41,13 @@ if [ -n "${HOST:-}" ]; then
     GPU="$(gpu_for "$HOST")"
     echo -e "${INFO}Host forced by environment: ${GREEN}$HOST${RESET}"
 elif grep -qi 't480s\|thinkpad\|20L8' <<< "$DMI_NAME"; then
-    # BACK 2026-10-25 — this branch refused for three days (his "rm thinkpad",
-    # 2026-10-22) because hosts/t480s/ was deleted and sed-ing its
-    # variables.nix would have failed after the whiptail prompt. The host is
-    # back in the flake ("bring him back to nixos-config"), so detection is
-    # detection again. Intel iGPU: no nvidia branch for this machine.
     HOST="t480s"
     GPU="intel"
 elif grep -qi 'victus\|hp' <<< "$DMI_NAME$DMI_FAMILY"; then
     HOST="victus"
     GPU="nvidia"
 else
-    # His call, 2026-10-22: a machine the DMI cannot name defaults to the
-    # Victus. Deliberately NOT grandpa — a miss here used to hand the laptop
-    # the headless server's config. Reinstalling the server takes the HOST=
-    # override above; **the ThinkPad needs no override any more** (2026-10-25),
-    # because its own DMI branch above catches it again. Fleet is grandpa +
-    # victus + t480s.
+    # Unknown hardware defaults to the laptop, never the headless server.
     HOST="victus"
     GPU="nvidia"
     echo -e "${INFO}DMI named no known host; defaulting to ${GREEN}victus${RESET} (force with HOST=<host> ./install.sh)"
@@ -91,16 +64,7 @@ if ! (whiptail --yesno "$SUMMARY\n\nProceed with installation?" 12 40 --title "N
     exit 0
 fi
 
-#--- Set username ---#
-
-# variables.nix is the single source of truth: all three hosts ship
-# username = "mugdad", and the account the NixOS installer creates must match
-# it. Do NOT take the name from `whoami`: on the live ISO that is "nixos",
-# and running the installer from there would silently rewrite the fleet user
-# to "nixos" and build a system with no matching home directory.
-#
-# Only an explicit override changes it:
-#   TARGET_USER=someone ./install.sh
+# variables.nix is the source of truth; `whoami` is "nixos" on the live ISO.
 TARGET_USER="${TARGET_USER:-}"
 if [ -n "$TARGET_USER" ]; then
     echo -e "${INFO}Overriding username to ${GREEN}$TARGET_USER${RESET}"
@@ -109,25 +73,12 @@ else
     echo -e "${INFO}Using username from hosts/${HOST}/variables.nix"
 fi
 
-# GPU is fixed per host, not templated: the Intel media/compute packages and
-# the NVIDIA stack are declared in the host's default.nix, and there is no `gpu`
-# key in variables.nix. Detection above is only used to fill this summary.
-
-#--- Prepare environment ---#
-
 echo -e "${INFO}Preparing environment"
 mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
 ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
 
-#--- sops age key ---#
-# SOPS IS GRANDPA-ONLY (2026-11-02, his order "sops is for grandpa"): the
-# fleet-wide secrets block (modules/core/monitoring.nix + modules/core/
-# filen-sync.nix) is now gated to host == "grandpa", so the laptops hold no
-# age key and decrypt nothing. The key is only needed where the secrets are
-# — the server. Without it activation fails part-way through a fresh install,
-# which is the worst possible moment to find out. Look for the key beside the
-# installer or in $HOME and install it; if it is nowhere, stop before building
-# a system that cannot activate.
+# sops is grandpa-only, and the private key is the one thing a declarative
+# system cannot restore. Refuse to build a system that cannot activate.
 if [ "$HOST" = "grandpa" ] && [ ! -f /var/lib/sops-nix/key.txt ]; then
     KEY_SRC=""
     for candidate in "$HOME/age-key.txt" "./age-key.txt"; do
@@ -146,15 +97,11 @@ if [ "$HOST" = "grandpa" ] && [ ! -f /var/lib/sops-nix/key.txt ]; then
     fi
 fi
 
-#--- Hardware config ---#
-
 if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
     echo -e "${ERROR}/etc/nixos/hardware-configuration.nix not found! Aborting."
     exit 1
 fi
 cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.nix"
-
-#--- Build ---#
 
 echo -e "${INFO}Starting system build..."
 sudo nixos-rebuild switch --flake ."#${HOST}"

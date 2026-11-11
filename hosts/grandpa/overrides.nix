@@ -1,53 +1,23 @@
-# Host-level OVERRIDES for grandpa — every value a shared module sets for the
-# laptop that this wired, headless box has to undo, plus the systemd-networkd
-# posture that replaces NetworkManager. The long notes live in git history;
-# this file keeps only what is specific to grandpa.
-#
-# ONLY active because ./overrides.nix is named in the imports list of
-# ./default.nix — a directory module does not sweep up its siblings.
+# Host overrides for grandpa: undo laptop defaults, and run the wired network
+# with systemd-networkd instead of NetworkManager.
 {lib, ...}: {
-  # Headless: no games, no Wine, hence no 32-bit Mesa. modules/core/hardware.nix
-  # sets this plainly for the machines that want it.
   hardware.graphics.enable32Bit = lib.mkForce false;
 
-  # The disk is a single ext4 HDD — no btrfs, so a scrub has nothing to act on.
-  # **CORRECTED 2026-10-18:** the "the laptop, whose root IS btrfs, keeps
-  # scrubbing" half of this comment was false — the t480s root is ext4 too
-  # (`c0e89f41…`), and nothing in this repo enables `services.btrfs.autoScrub`
-  # at all. So this is a guard against a future core default, not a host fix;
-  # see the longer note in hosts/thinkcentre/overrides.nix.
+  # Guard against a future core default; this host is ext4 and has no btrfs.
   services.btrfs.autoScrub.enable = lib.mkForce false;
 
-  # ── network: systemd-networkd in ───────────────────────────────────────────
-  # Wired desktop: modules/core/network.nix enables NetworkManager/iwd only on
-  # victus, so this host never inherits that stack or ModemManager.
+  # Wired-only: core only enables NetworkManager/iwd on the laptops.
   networking.useDHCP = false;
   networking.useNetworkd = true;
-  # blocky owns /etc/resolv.conf (core/network.nix forces nameserver 127.0.0.1
-  # when blocky is on); enabling networkd would otherwise pull in
-  # systemd-resolved, which fights for the same file and fails evaluation.
   services.resolved.enable = lib.mkForce false;
   systemd.network.enable = true;
-  # DOCKER'S VETHs — the trap the Type=ether match below fell into once docker
-  # arrived (2026-10-19, forgejo + gitea-mirror moved to compose). A veth end is
-  # ALSO type `ether`, so 10-ethernet claimed every docker veth the moment a
-  # container started, and applying a .network file to it strips the bridge
-  # master: dockerd creates the pair, enslaves it, networkd claims it, the port
-  # falls out of the bridge — dmesg shows "entered promiscuous mode" then
-  # "left promiscuous mode" seconds later, the bridge sits NO-CARRIER, and
-  # every published port is a timeout from outside while `docker exec` and
-  # wget INSIDE the container answer fine (the container never notices).
-  # thinkcentre never hit this because its match is Name=eno1. networkd picks
-  # the FIRST matching .network, so this one sorts before 10- and hands veths
-  # straight back to docker, unmanaged.
+
+  # Docker veths are also type `ether`; hand them back to docker before
+  # 10-ethernet can claim them and strip the bridge master.
   systemd.network.networks."09-veth-unmanaged" = {
     matchConfig.Kind = "veth";
     linkConfig.Unmanaged = true;
   };
-  # The NIC name on a custom-built desktop is unknowable until the box is here,
-  # so match by link TYPE (every ethernet port) instead of a hard-coded name like
-  # the ThinkCentre's eno1. docker bridges are type `bridge`, not `ether`, so
-  # they are untouched — the veths needed 09-veth-unmanaged above.
   systemd.network.networks."10-ethernet" = {
     matchConfig.Type = "ether";
     networkConfig = {
@@ -57,71 +27,23 @@
     linkConfig.RequiredForOnline = "yes";
   };
 
-  # mandb runs to completion then goes inactive — the one false positive a unit
-  # monitor keeps flagging on a headless box. No interactive man usage here.
+  # No interactive man usage on a headless box; the unit only ever goes inactive.
   systemd.services.mandb.enable = lib.mkForce false;
 
-  # sshd on the LAN, and passwordless sudo. core already does both; stated here
-  # for the same reason thinkcentre states them — a headless box with nobody at a
-  # keyboard must not depend on core never changing its mind.
   services.openssh.enable = true;
   security.sudo.wheelNeedsPassword = lib.mkForce false;
 
-  # blocky upstreams: drop the laptop's two work resolvers (192.168.44.187/.188),
-  # which do not exist here. Race the encrypted pair alone — identical to
-  # hosts/thinkcentre/overrides.nix.
+  # grandpa is at home, where DoT/DoQ are not blocked, so it keeps the
+  # encrypted transports and races them itself.
   services.blocky.settings.upstreams.groups.default = lib.mkForce [
     "tcp-tls:cbf8aa.dns.nextdns.io:853"
     "quic:2b44bd66.d.adguard-dns.com"
   ];
 
-  # ── blocky: reachable from the LAN and the tailnet, plain DNS only ─────────
-  # OPENED TO THE LAN 2026-10-26 (see the firewall note below): the section
-  # header used to read "reachable from the tailnet" and that was the bug —
-  # he pointed the house router here the same day.
-  # MOVED HERE 2026-10-22 with the rest of the service layer: the ThinkCentre
-  # is being returned to its owner, and it has held this since 2026-10-21
-  # (decisions row 177). Same posture, new address.
-  #
-  # His word, 2026-10-21: "i just want to set the tailscale ip as dns / inside
-  # tailsclae / cuz on phone i must allow tailsclae dns", then "i will not use
-  # dot / just plain tailscaleip as dns". So: no DoT, no 853, no cert, no
-  # Private DNS — the phone points at **100.106.116.60** and the query travels
-  # inside the tailnet. The ThinkCentre's 100.88.29.31 stops being an answer
-  # the day the box leaves; anything (phone Private DNS, a router, a second
-  # box) still pointed there must be repointed to this one.
-  #
-  # Why 0.0.0.0 rather than the tailnet address alone: core/network.nix points
-  # /etc/resolv.conf at 127.0.0.1, because blocky IS this box's resolver, so
-  # binding only the tailnet IP would take DNS away from the box itself.
-  # (This comment used to continue "what makes it tailnet-only is the firewall
-  # rule below, which never opens the LAN" — that stopped being true the day
-  # the house router started pointing here. See below.)
+  # Bound on every interface so loopback and the LAN both answer; the house
+  # router points its DNS here.
   services.blocky.settings.ports.dns = lib.mkForce "0.0.0.0:53";
 
-  # OPENED TO EVERY INTERFACE 2026-10-26 — this rule was the outage.
-  # Two hours earlier he had pointed the HOUSE router's DNS at this box
-  # (*"i just changed my home dns to grandpa"*), but the rule below only ever
-  # accepted 53 on tailscale0. So every device on the LAN was sending
-  # queries to 192.168.8.254 and getting the firewall's refusal: the house
-  # had no DNS at all, and it was invisible from inside the box because a
-  # query from grandpa to its own address never traverses the input chain.
-  #
-  # That last part is why this was missed — the obvious test (dig
-  # @192.168.8.254) passes from here while failing from the couch. The only
-  # evidence that would have caught it early is a non-127.0.0.1 client_ip in
-  # blocky's query log, which appears only once something off-box asks.
-  #
-  # "make it 0.0.0.0" — global rather than enp2s0-scoped, which is safe
-  # because this box has NO WAN interface: lo, enp2s0 (LAN), tailscale0,
-  # docker0, and NAT lives in the router. Nothing here is reachable from the
-  # internet without a port forward, so the wider rule costs no exposure and
-  # does not depend on an interface name — enp2s0 is already misdescribed as
-  # enp3s0 in default.nix's header, which is exactly how a scoped rule rots.
-  #
-  # BOTH transports: tcp is what a resolver falls back to when the answer is
-  # too big for one UDP packet — any large or DNSSEC-signed response — so
-  # opening udp alone breaks only the big answers, and only then.
   networking.firewall.allowedTCPPorts = [53];
   networking.firewall.allowedUDPPorts = [53];
 }

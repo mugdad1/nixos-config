@@ -3,9 +3,8 @@
   lib,
   ...
 }: let
-  # Seeded ONCE into ~/.config/VSCodium/User/settings.json (only if the file
-  # doesn't exist yet). Afterwards it's a normal editable file - GUI changes
-  # survive rebuilds.
+  # Seeded once into ~/.config/VSCodium/User/settings.json; afterwards it is a
+  # normal editable file.
   defaultSettings = pkgs.writeText "codium-default-settings.json" (
     builtins.toJSON {
       "security.workspace.trust.enabled" = false;
@@ -24,17 +23,15 @@
 in {
   programs.vscodium = {
     enable = true;
-    # FHS wrapper keeps runtime compatibility (e.g. extension host binaries)
     package = pkgs.vscodium.fhs;
-    # extensions fully managed by nix: nothing installable/updatable in GUI
     mutableExtensionsDir = false;
 
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         ## Web dev
-        bmewburn.vscode-intelephense-client # PHP intellisense
-        esbenp.prettier-vscode # web formatting
-        ritwickdey.liveserver # local dev server
+        bmewburn.vscode-intelephense-client
+        esbenp.prettier-vscode
+        ritwickdey.liveserver
         formulahendry.auto-rename-tag
         formulahendry.auto-close-tag
         bradlc.vscode-tailwindcss
@@ -43,7 +40,7 @@ in {
         mads-hartmann.bash-ide-vscode
         timonwong.shellcheck
 
-        ## C (OS course) - cpptools is not on Open VSX, clangd + lldb are
+        ## C
         llvm-vs-code-extensions.vscode-clangd
         vadimcn.vscode-lldb
 
@@ -58,8 +55,6 @@ in {
     S="$HOME/.config/VSCodium/User/settings.json"
     if [ ! -f "$S" ]; then
       mkdir -p "$(dirname "$S")"
-      # install instead of cp so it doesn't inherit the store path's
-      # read-only mode
       install -m 644 ${defaultSettings} "$S"
     fi
   '';

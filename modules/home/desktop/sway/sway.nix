@@ -1,13 +1,5 @@
-# sway configuration for the victus session (carried over from the t480s
-# river + kwm/kwim setup).
-#
-# Writes ~/.config/sway/config. Everything kwm/kwim carried over:
-# - output baseline eDP-1 scale 1.2 (ex-seeded kanshi/displays.nix)
-# - keyboard us,ara + grp:alt_shift_toggle + 50/300 repeat
-# - touchpad tap/drag/natural-scroll
-# - kwm keybindings (Mod4), floating rules, gaps, gruvbox borders
-# - kwm startup programs (kanshi/wdisplays dropped — sway owns outputs)
-# The kwm top bar is gone; tags now show in waybar's sway/workspaces.
+# Sway configuration for the laptops, generated from this file.
+# Writes ~/.config/sway/config.
 {
   pkgs,
   variables,
@@ -121,8 +113,7 @@
     ["wl-clip-persist" "--clipboard" "both"]
     ["wl-paste" "--watch" "cliphist" "store"]
     ["waybar"]
-    # swaync is a home-manager systemd user service (modules/home/desktop/swaync);
-    # exec'ing it here races that unit into a start-limit failure.
+    # swaync is a home-manager systemd user service; exec'ing it here races it.
     ["init-wallpaper"]
     ["swayosd-server"]
     [polkitAgent]
@@ -155,7 +146,7 @@ in {
   ];
 
   xdg.configFile."sway/config".text = ''
-    # mugdad's sway configuration (replaces river + kwm/kwim)
+    # mugdad's sway configuration
     # generated from modules/home/desktop/sway/sway.nix
     # https://github.com/mugdad1/nixos-config
     set $mod Mod4
@@ -163,7 +154,6 @@ in {
 
     font pango:Iosevka Nerd Font 12
 
-    # outputs, sway owns them directly (kanshi/wdisplays dropped)
     output eDP-1 scale 1.2
 
     gaps inner 6
@@ -175,7 +165,6 @@ in {
     focus_wrapping yes
     floating_modifier $mod normal
 
-    # gruvbox borders (kwm carried over)
     client.focused          ${hex g.bright_green} ${hex g.bright_green} ${hex g.bg0} ${hex g.bright_green} ${hex g.bright_green}
     client.focused_inactive ${hex g.gray} ${hex g.gray} ${hex g.bg0} ${hex g.gray} ${hex g.gray}
     client.unfocused        ${hex g.gray} ${hex g.gray} ${hex g.bg0} ${hex g.gray} ${hex g.gray}
@@ -196,10 +185,10 @@ in {
     # bindings
     ${concatLines binds}
 
-    # floating window rules (kwm carried over)
+    # floating window rules
     ${concatLines floatingRules}
 
-    # startup (kwm carried over; kanshi gone — outputs are static in sway)
+    # startup
     ${concatLines (map execLine startup)}
   '';
 }

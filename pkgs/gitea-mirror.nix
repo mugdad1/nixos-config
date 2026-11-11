@@ -1,12 +1,5 @@
-# gitea-mirror (RayLabsHQ/gitea-mirror, rev 0759db8) built from source with our
-# own nixpkgs — no upstream flake, no multi-arch eval, no darwin.
-#
-# Strategy (the buildNpmPackage pattern, adapted for bun):
-#   1. nodeModules  — fixed-output derivation that runs `bun install
-#      --frozen-lockfile` once (network allowed only inside fixed-output
-#      derivations), so the real (sandboxed, offline) build below is hermetic.
-#   2. app          — copies that node_modules and runs `bun run build`
-#      offline, then installs the SSR bundle + upstream entrypoint script.
+# gitea-mirror (RayLabsHQ/gitea-mirror) built from source with our own nixpkgs.
+# A fixed-output derivation fetches node_modules, so the real build is offline.
 {
   lib,
   stdenv,
@@ -42,9 +35,7 @@
     '';
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    # 2026-10-19: refreshed on grandpa — bun install's output shifted upstream
-    # (registry tarballs are not content-stable across time); first mismatch
-    # after resurrection reported `sha256-X5jx/aR43znbtt3tpHcbwCuxXkHdq+AM0nDemeW1Fv0=`.
+    # Registry tarballs are not content-stable; refresh when bun install drifts.
     outputHash = "sha256-X5jx/aR43znbtt3tpHcbwCuxXkHdq+AM0nDemeW1Fv0=";
   };
 in
@@ -60,9 +51,8 @@ in
       rm -rf node_modules
       cp -r ${nodeModules}/node_modules node_modules
       chmod -R u+w node_modules
-      # The package.json "build" script is `bunx --bun astro build`; `bunx`
-      # probes the registry even for a locally-resolvable binary and dies
-      # silently in the offline sandbox. Run astro directly via bun instead.
+      # `bunx` probes the registry even for local binaries and dies in the
+      # offline sandbox; run astro directly.
       bun node_modules/astro/bin/astro.mjs build
       runHook postBuild
     '';

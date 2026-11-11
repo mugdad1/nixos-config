@@ -22,9 +22,8 @@ in {
           Locked = true;
         };
       };
-      # false = let the user's own bookmarks show through. Do NOT declare a
-      # `bookmarks` block here: with force = true (a module assertion) an empty
-      # list silently wipes every bookmark on each rebuild.
+      # Keep the user's own bookmarks: an empty `bookmarks` block with force
+      # would wipe them on every rebuild.
       NoDefaultBookmarks = false;
       OfferToSaveLogins = false;
 
@@ -35,17 +34,8 @@ in {
         Fingerprinting = true;
       };
 
-      # HOMEPAGE BACK TO THE INDEX, 2026-10-22. It had been pointed at SearXNG
-      # as a stopgap when the ThinkCentre (and with it the Caddy that hosted
-      # the index) was returned. The index has a host again — nginx on grandpa,
-      # :80 tailnet-only, declared in hosts/grandpa/default.nix — so his
-      # original "links and a search box" front page is restored. Both are
-      # http-only services, so HTTPS-Only mode will show its warning page once
-      # per origin until he clicks "Continue with http" (the exception sticks).
-      # It is an IP and not the MagicDNS name on purpose: the laptop refuses
-      # MagicDNS (--accept-dns=false, see modules/core/tailscale.nix), so a
-      # tailnet hostname would only resolve through blocky's conditional —
-      # one more moving part for a page that has to come up with the browser.
+      # The index page served by nginx on grandpa. It is an IP on purpose:
+      # the laptop refuses MagicDNS.
       Homepage = {
         URL = "http://100.106.116.60/";
         StartPage = "homepage";
@@ -57,12 +47,10 @@ in {
           install_url = "https://addons.mozilla.org/en-US/firefox/downloads/latest/ublock-origin/latest.xpi";
           installation_mode = "normal_installed";
         };
-        # DownThemAll (verified guid via AMO API)
         "{DDC359D1-844A-42a7-9AA1-88A850A938A8}" = {
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/downthemall/latest.xpi";
           installation_mode = "normal_installed";
         };
-        # Bitwarden (guid {446900e4-71c2-419f-a6a7-df9c091e268b})
       };
     };
 
@@ -98,9 +86,7 @@ in {
         "captivedetect.canonicalURL" = "";
         "network.allow-experiments" = false;
 
-        # his word 2026-10-19: "disable https only mode (in zen)" — was true
-        # from the start of this block; the two flags cover normal + private
-        # windows, both off now.
+        # HTTPS-Only is off at his request (2026-10-19).
         "dom.security.https_only_mode" = false;
         "dom.security.https_only_mode_pbm" = false;
         "network.dns.disablePrefetch" = true;
@@ -120,31 +106,9 @@ in {
         "media.autoplay.default" = 5;
         "media.autoplay.blocking_policy" = 2;
       };
-      # SearXNG in the address bar — his question 2026-10-15 (*"why search
-      # defult engine isnt sear?"*) pointed straight at this block: it said
-      # `ddg`, while the comment up at `Homepage` already claimed SearXNG
-      # owned the address bar. It did not. Now it does.
-      #
-      # force = Zen rewrites search.json.mozlz4 on every launch, so the
-      # symlink home-manager puts there has to be re-imposed by every
-      # rebuild; without it the first start reverts to the profile's own
-      # last-known file and the declared engine silently disappears.
-      #
-      # The box's own instance, by IP and not by MagicDNS name: the laptop
-      # runs --accept-dns=false (modules/core/tailscale.nix), so a tailnet
-      # hostname would need blocky's conditional to resolve — one more
-      # moving part for the thing that has to answer the moment you type.
-      # Plain http on purpose: searxng answers http-only, same as the
-      # homepage above.
-      #
-      # HOST 100.106.116.60 since 2026-10-22: searxng was declared Nix-native on
-      # grandpa ("Declare it inside grandpa") when the ThinkCentre started back
-      # to its owner. Port 8888 unchanged — only the host part moved, so every
-      # old bookmark works after one edit.
-      #
-      # `ddg` stays in the list as a FALLBACK (app-provided, not default)
-      # so the bar still answers if grandpa or the tailnet is down.
-      # Delete `ddg.metaData = {}` to make it searxng-only.
+
+      # SearXNG in the address bar; ddg stays as a fallback. force = true is
+      # required because Zen rewrites search.json.mozlz4 on every launch.
       search = {
         force = true;
         default = "searxng";
@@ -165,7 +129,6 @@ in {
             icon = "http://100.106.116.60:8888/favicon.ico";
             definedAliases = ["@sx"];
           };
-          # app-provided entry: listed in the dropdown, NOT the default
           ddg.metaData = {};
         };
       };

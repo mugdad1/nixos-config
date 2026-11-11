@@ -13,52 +13,22 @@
     pavucontrol
     vlc
     freetube
-    ## Browsers (vanilla, un-nixified profiles: editable directly)
-    # firefox → chromium → ungoogled-chromium, all on his word 2026-10-13:
-    # "add chromium to this device and rm firefox / keep zen" then
-    # "yes ofc i hate google". Same upstream version either way (155.0.8059.39),
-    # so this is a drop-in swap, not an upgrade.
-    # Firefox was the plain package with an un-nixified profile — it had no
-    # programs.firefox block anywhere in the flake, so removing it drops no
-    # declarative state. Zen is the one with the managed profile
-    # (modules/home/browser.nix) and stays exactly as it was; this line was
-    # never what provided it.
+
+    ## Browsers (un-nixified profiles)
     ungoogled-chromium
-    # chromium
-    # firefox
     tor-browser
 
-    ## Cloud storage
-    # Filen Desktop, wrapped from the official AppImage (see
-    # ../../../pkgs/filen-desktop.nix). Not pkgs.filen-desktop: nixpkgs'
-    # source build of the same 3.0.53 is broken (his report 2026-11-03).
-    # The package installs its own .desktop entry + icon, which is what rofi's
-    # drun mode lists — nothing else to register in rofi.
+    ## Cloud storage — upstream AppImage wrapper, see pkgs/filen-desktop.nix.
     (callPackage ../../../pkgs/filen-desktop.nix {})
 
-    ## AI / local LLM
-    # opencode now lives in modules/core/packages.nix so every host gets it,
-    # and LM Studio is victus-only (hosts/victus/default.nix). Neither belongs
-    # in this shared GUI set any more.
-
     ## Office / Productivity
-    # onlyoffice-desktopeditors  # DROPPED 2026-11-03 on his word. Its
-    # buildInputs still include gtk2, and the nixpkgs update to 0bb2eed makes
-    # gtk2.broken a hard eval error. Nothing else in this config wants gtk2,
-    # so dropping onlyoffice is cheaper than allow-listing a dead toolkit.
     libreoffice-stable
-    # clickup  # DISABLED 2026-10-13 on his word. Commented, not deleted.
+
     ## System / Utility
     qbittorrent
     gnome-disk-utility
-    # localsend 1.18.0 links localsend_app against libz.so.1, but nixpkgs'
-    # RUNPATH on the main executable omits zlib (gtk's pkg-config adds -lz,
-    # and the plugin .so files get the path, but the app binary does not).
-    # Without this it dies at startup with "libz.so.1: cannot open shared
-    # object file". Add zlib to the existing wrapper until fixed upstream.
+    # localsend needs zlib in the wrapper's library path.
     (localsend.overrideAttrs (old: {
-      # The nixpkgs value ends with newlines; trim them so the extra
-      # --prefix stays on the same command line inside dartFixupHook's eval.
       extraWrapProgramArgs =
         lib.trim (old.extraWrapProgramArgs or "")
         + " --prefix LD_LIBRARY_PATH : ${zlib}/lib";

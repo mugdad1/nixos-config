@@ -1,3 +1,4 @@
+# ThinkPad T480s — Intel iGPU only, desktop enabled.
 {
   pkgs,
   inputs,
@@ -7,8 +8,6 @@
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480s
     ./hardware-configuration.nix
     ../../modules/core
-    # Desktop is opt-in per host, no longer dragged in by core (2026-10-12).
-    # This laptop wants a desktop.
     ../../modules/desktop
   ];
 
@@ -28,28 +27,12 @@
     "fbcon=nodefer"
   ];
 
-  # throttled ON since 2026-11-02, reversing the earlier "PPD is enough" note.
-  # The T480/T480s/X1C6 has a documented Linux power-limit bug: the embedded
-  # controller resets PL1/PL2 and the CPU drops to ~400 MHz under sustained
-  # load. nixos-hardware's own t480s profile sets `services.throttled.enable =
-  # lib.mkDefault true`, and the ArchWiki T480s page says to install and enable
-  # throttled.service. It writes MSRs (power limits/trip points), not the CPU
-  # governor, so it coexists with PPD; PPD remains the only power *profile*
-  # daemon and TLP stays off.
+  # The T480 has a documented EC power-limit bug that drops the CPU to
+  # ~400 MHz; throttled writes the MSRs and coexists with PPD. TLP stays off.
   services.throttled.enable = true;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
-  # WHPH — his old productivity app (tasks/habits/timers) — is fully gone as
-  # of 2026-10-20 on his "rm whph": both the ~/projects/whph clone and the
-  # pkgs/whph.nix derivation are deleted, not merely commented out. Kept here
-  # as a note only, so nobody re-adds it wondering. It was dropped because its
-  # sync bound to whatever the laptop happened to be on and only lived while
-  # the laptop was up — which is precisely what the self-hosted task store
-  # replaces: Vikunja, which lived on the ThinkCentre (tailscale only,
-  # http://100.88.29.31:3456/) until that box was returned 2026-10-22; the
-  # task store is offline pending his word on a grandpa home. Tasks.org on
-  # the phone, web UI on this machine (modules/home/apps/tasks.nix — the
-  # desktop entry is commented out for the same reason).
+
   environment.systemPackages = [
     pkgs.powertop
     pkgs.tmux

@@ -1,7 +1,7 @@
 {config, ...}: let
   g = import ../../../../lib/gruvbox.nix;
   rgba = g.hexToRgba;
-  raw = g.raw;
+  inherit (g) raw;
 in {
   # pam.services.hyprlock is declared in modules/desktop/hyprland.nix.
   programs.hyprlock = {
