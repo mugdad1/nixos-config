@@ -259,6 +259,7 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
+    pkgs.jan
   ];
 
   # `f` only creates the file, so a chosen mode survives rebuilds.
