@@ -259,7 +259,6 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
-    pkgs.lmstudio-bionic
   ];
 
   # `f` only creates the file, so a chosen mode survives rebuilds.
