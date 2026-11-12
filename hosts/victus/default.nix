@@ -263,9 +263,20 @@ in {
   ];
 
   # Local model server on the RTX 3050. Listens on 127.0.0.1:11434.
+  # OLLAMA_CONTEXT_LENGTH must equal limit.context in
+  # modules/home/apps/opencode.nix (16384 on both).
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
+    environmentVariables = {
+      OLLAMA_CONTEXT_LENGTH = "16384";
+      OLLAMA_MAX_LOADED_MODELS = "1"; # one resident model, never two
+      OLLAMA_NUM_PARALLEL = "1"; # slots multiply the KV cache
+      # Generation here is KV-cache bound, not weight bound; q8_0 halves the
+      # cache so more layers stay on the die, and it requires flash attention.
+      OLLAMA_FLASH_ATTENTION = "1";
+      OLLAMA_KV_CACHE_TYPE = "q8_0";
+    };
     loadModels = [
       "qwen3.5:4b"
       "ministral-3:8b"
