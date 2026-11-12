@@ -70,13 +70,6 @@ in
         environment.SEARXNG_URL = searxng;
         codemode = false;
       };
-      # Khotta (خطة) remote MCP — OAuth + dynamic client registration.
-      # Sign in with /mcps after the first build; tokens live outside this file.
-      mcp.servers.khotta = {
-        type = "remote";
-        url = "https://api.axenda.io/mcp";
-        codemode = false;
-      };
       providers.ollama.models = {
         "qwen3.5:4b" = localModel {
           name = "Qwen3.5 4B (local)";
