@@ -259,7 +259,21 @@ in {
     gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
+    pkgs.ollama-cuda
   ];
+
+  # Local model server on the RTX 3050. Listens on 127.0.0.1:11434.
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
+    loadModels = [
+      "qwen3.5:4b"
+      "ministral-3:8b"
+      "gemma4:e4b"
+      "mimo-v2.6"
+      "nemotron-3-nano:4b"
+    ];
+  };
 
   # `f` only creates the file, so a chosen mode survives rebuilds.
   systemd.tmpfiles.rules = [
