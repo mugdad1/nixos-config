@@ -1,13 +1,20 @@
 {pkgs, ...}: {
   # GUI printer setup; the CUPS web UI is at http://localhost:631.
-  environment.systemPackages = [pkgs.system-config-printer];
+  environment.systemPackages = [
+    pkgs.system-config-printer
+    # Plugin-enabled HPLIP also provides hp-setup/hp-info/hp-plugin.
+    pkgs.hplipWithPlugin
+  ];
 
   services.printing = {
     enable = true;
     # Start CUPS on first job instead of keeping it resident.
     startWhenNeeded = true;
     drivers = [
-      pkgs.hplip
+      # The P1102 is host-based: its firmware ships in HPLIP's proprietary
+      # plugin, not in plain `hplip`. Without this the hpcups filter dies with
+      # "m_Job initialization failed with error = 48" / hplip.plugin-error.
+      pkgs.hplipWithPlugin
       pkgs.gutenprint
     ];
   };
