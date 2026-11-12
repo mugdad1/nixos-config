@@ -277,12 +277,11 @@ in {
       OLLAMA_FLASH_ATTENTION = "1";
       OLLAMA_KV_CACHE_TYPE = "q8_0";
     };
+    # Two models, chosen by measured tool use on this GPU (2026-11-12):
+    # qwen is the fast default, gemma the slower but stronger second.
     loadModels = [
       "qwen3.5:4b"
-      "ministral-3:8b"
       "gemma4:e4b"
-      "mimo-v2.6"
-      "nemotron-3-nano:4b"
     ];
   };
 

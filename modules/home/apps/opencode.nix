@@ -75,19 +75,8 @@ in
           name = "Qwen3.5 4B (local)";
           thinking = true;
         };
-        "nemotron-3-nano:4b" = localModel {
-          name = "Nemotron 3 Nano 4B (local)";
-          image = false;
-          thinking = true;
-        };
-        "ministral-3:8b" = localModel {
-          name = "Ministral 3 8B (local)";
-        };
         "gemma4:e4b" = localModel {
           name = "Gemma 4 E4B (local)";
-        };
-        "mimo-v2.6" = localModel {
-          name = "MiMo V2.6 (local)";
         };
       };
     };
