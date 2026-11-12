@@ -24,6 +24,18 @@
       noto-fonts-color-emoji
       comic-relief
       corefonts
+      # The Office/Vista set Word and PowerPoint default to (Calibri,
+      # Cambria, Candara, Consolas, Corbel, Constantia). Without it those
+      # names fall back to Public Sans / Noto Serif and documents reflow.
+      vista-fonts
+      # The whole Google Fonts library, so Canva/Word designs that name a
+      # font by hand (Montserrat, Poppins, Oswald, …) render instead of
+      # silently falling back.
+      google-fonts
+      # Arabic faces for Office documents: Amiri is the Naskh classic,
+      # Scheherazade is what SIL/LaTeX use.
+      amiri
+      scheherazade-new
 
       fira
       fira-code
