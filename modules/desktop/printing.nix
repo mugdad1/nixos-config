@@ -1,4 +1,7 @@
 {pkgs, ...}: {
+  # GUI printer setup; the CUPS web UI is at http://localhost:631.
+  environment.systemPackages = [pkgs.system-config-printer];
+
   services.printing = {
     enable = true;
     # Start CUPS on first job instead of keeping it resident.
