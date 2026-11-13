@@ -26,7 +26,7 @@ Usage: mcli <command> [options]
 
 Commands:
   rebuild        Rebuild NixOS configuration
-  update         Update flake inputs and rebuild
+  update         Update flake inputs, rebuild, and update Flatpak apps
   diag           System diagnostics
   cleanup        Clean old generations
   trim           SSD TRIM
@@ -57,6 +57,18 @@ cmd_update() {
     popd > /dev/null
     info "Rebuilding with updated inputs..."
     cmd_rebuild
+
+    # Flatpak apps live outside Nix, so they need their own update pass.
+    if command -v flatpak > /dev/null 2>&1; then
+        info "Updating Flatpak apps..."
+        # sudo drops the session bus, which makes flatpak die with
+        # "dbus-launch --autolaunch" errors; give it a private session bus.
+        sudo dbus-run-session -- flatpak update -y --noninteractive \
+            || warn "Flatpak update had errors (see output above)"
+        ok "Flatpak update complete"
+    else
+        warn "flatpak is not installed, skipping"
+    fi
 }
 
 cmd_diag() {
