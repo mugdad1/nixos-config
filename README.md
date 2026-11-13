@@ -108,3 +108,9 @@ directly in that case.
 from DMI, rewrites `username`, copies `/etc/nixos/hardware-configuration.nix`
 into the host directory, and runs the first switch. Regenerate
 `hardware-configuration.nix` on the target and diff — never hand-write it.
+
+`asus` is the exception: it mounts by label (`ASUSBOOT`, `asus-root`,
+`asus-storage`), so the installer keeps its hand-written
+`hardware-configuration.nix` instead of replacing it with the UUID-based one.
+That is what lets the SSD and HDD be swapped, or the HDD moved into a USB
+enclosure, without editing the config.

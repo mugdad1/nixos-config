@@ -33,6 +33,7 @@ gpu_for() {
     case "$1" in
         victus) echo "nvidia" ;;
         t480s) echo "intel" ;;
+        asus) echo "none" ;;
         *) echo "none" ;;
     esac
 }
@@ -46,6 +47,9 @@ elif grep -qi 't480s\|thinkpad\|20L8' <<< "$DMI_NAME"; then
 elif grep -qi 'victus\|hp' <<< "$DMI_NAME$DMI_FAMILY"; then
     HOST="victus"
     GPU="nvidia"
+elif grep -qi 'x509\|asus' <<< "$DMI_NAME$DMI_FAMILY"; then
+    HOST="asus"
+    GPU="none"
 else
     # Unknown hardware defaults to the laptop, never the headless server.
     HOST="victus"
@@ -73,9 +77,12 @@ else
     echo -e "${INFO}Using username from hosts/${HOST}/variables.nix"
 fi
 
-echo -e "${INFO}Preparing environment"
-mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
-ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
+# Desktop hosts only: the headless ones never load a wallpaper.
+if [ "$GPU" != "none" ]; then
+    echo -e "${INFO}Preparing environment"
+    mkdir -p ~/Music ~/Documents ~/Pictures/wallpapers/others
+    ln -sf "$PWD/assets/wallpapers/wallpaper.png" ~/Pictures/wallpapers/wallpaper 2> /dev/null || true
+fi
 
 # sops is grandpa-only, and the private key is the one thing a declarative
 # system cannot restore. Refuse to build a system that cannot activate.
@@ -101,7 +108,14 @@ if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
     echo -e "${ERROR}/etc/nixos/hardware-configuration.nix not found! Aborting."
     exit 1
 fi
-cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.nix"
+# asus mounts by label on purpose (the SSD and the HDD can be swapped or the
+# HDD moved to a USB enclosure), so never replace that file with the
+# UUID-based output of the installer.
+if [ "$HOST" = "asus" ]; then
+    echo -e "${INFO}Keeping hosts/asus/hardware-configuration.nix (label-based mounts)"
+else
+    cp /etc/nixos/hardware-configuration.nix "hosts/${HOST}/hardware-configuration.nix"
+fi
 
 echo -e "${INFO}Starting system build..."
 sudo nixos-rebuild switch --flake ."#${HOST}"
