@@ -77,23 +77,35 @@
           export SWAY_UNSUPPORTED_GPU=true
           ;;
         intel)
-          if [ -n "$intel_card" ]; then
-            export WLR_DRM_DEVICES="$intel_card"
-            export AQ_DRM_DEVICES="$intel_card"
+          # HDMI is wired to the dGPU on this chassis, so "Intel only" still has
+          # to hand the NVIDIA card to the compositor when an external display is
+          # attached at login. Without it the port can never scan out.
+          if [ -n "$intel_card" ] && [ -n "$nvidia_card" ] && card_has_display "''${nvidia_card##*/}"; then
+            export WLR_DRM_DEVICES="$intel_card:$nvidia_card"
+            export AQ_DRM_DEVICES="$intel_card:$nvidia_card"
+            export SWAY_UNSUPPORTED_GPU=true
+            # Do not restrict EGL to mesa here: the HDMI output needs the
+            # NVIDIA vendor library to import its buffers.
+            export __GLX_VENDOR_LIBRARY_NAME=mesa
+          else
+            if [ -n "$intel_card" ]; then
+              export WLR_DRM_DEVICES="$intel_card"
+              export AQ_DRM_DEVICES="$intel_card"
+            fi
+            # Hide the dGPU from userspace too, or glvnd opens the NVIDIA render
+            # node and keeps the GPU awake.
+            mesa_egl=/run/opengl-driver/share/glvnd/egl_vendor.d/50_mesa.json
+            intel_vk=/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json
+            if [ -r "$mesa_egl" ]; then
+              export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa_egl"
+            fi
+            if [ -r "$intel_vk" ]; then
+              export VK_DRIVER_FILES="$intel_vk"
+              export VK_ICD_FILENAMES="$intel_vk"
+            fi
+            export __GLX_VENDOR_LIBRARY_NAME=mesa
+            unset __NV_PRIME_RENDER_OFFLOAD __NV_PRIME_RENDER_OFFLOAD_PROVIDER __VK_LAYER_NV_optimus
           fi
-          # Hide the dGPU from userspace too, or glvnd opens the NVIDIA render
-          # node and keeps the GPU awake.
-          mesa_egl=/run/opengl-driver/share/glvnd/egl_vendor.d/50_mesa.json
-          intel_vk=/run/opengl-driver/share/vulkan/icd.d/intel_icd.x86_64.json
-          if [ -r "$mesa_egl" ]; then
-            export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa_egl"
-          fi
-          if [ -r "$intel_vk" ]; then
-            export VK_DRIVER_FILES="$intel_vk"
-            export VK_ICD_FILENAMES="$intel_vk"
-          fi
-          export __GLX_VENDOR_LIBRARY_NAME=mesa
-          unset __NV_PRIME_RENDER_OFFLOAD __NV_PRIME_RENDER_OFFLOAD_PROVIDER __VK_LAYER_NV_optimus
           ;;
         hybrid)
           # Hand the dGPU to the compositor only when an external display is

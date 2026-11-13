@@ -41,7 +41,23 @@
 
     case "$mode" in
       intel)
-        if ! cardwire set integrated; then
+        # HDMI is wired to the dGPU, so blocking it while a display is attached
+        # would leave the port dead. Keep the card reachable in that case.
+        nv_display=0
+        for c in /sys/class/drm/card[0-9]*-*/status; do
+          [ -r "$c" ] || continue
+          [ "$(cat "$c" 2> /dev/null)" = connected ] || continue
+          card="''${c#/sys/class/drm/}"
+          card="''${card%%-*}"
+          if [ "$(cat "/sys/class/drm/$card/device/vendor" 2> /dev/null)" = 0x10de ]; then
+            nv_display=1
+            break
+          fi
+        done
+        if [ "$nv_display" -eq 1 ]; then
+          echo "gpu-mode: external display is on the dGPU; keeping it awake" >&2
+          cardwire set hybrid || true
+        elif ! cardwire set integrated; then
           echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
           exit 1
         fi
@@ -54,7 +70,7 @@
         ;;
     esac
     echo "GPU mode: $mode — log out and back in to apply."
-    echo "  intel  iGPU only, dGPU off"
+    echo "  intel  iGPU only; dGPU stays on while an HDMI display is attached"
     echo "  hybrid iGPU now, dGPU on demand: nvidia-offload <command>"
     echo "  nvidia iGPU drives the panel, dGPU available for PRIME offload"
   '';
