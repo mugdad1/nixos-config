@@ -8,6 +8,7 @@
     imv
     obs-studio
     kdePackages.kdenlive
+    shotcut
     gimp
     audacity
     pavucontrol
