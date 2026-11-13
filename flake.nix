@@ -85,6 +85,7 @@
       t480s = mkHost "t480s";
       victus = mkHost "victus";
       grandpa = mkHost "grandpa";
+      asus = mkHost "asus";
     };
   };
 }

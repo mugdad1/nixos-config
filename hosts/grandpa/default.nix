@@ -12,7 +12,6 @@
     # must be listed explicitly.
     ./packages.nix
     ./overrides.nix
-    ./backup.nix
     ./router-reboot.nix
     ./home-assistant.nix
     ./services.nix
