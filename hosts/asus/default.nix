@@ -82,8 +82,19 @@
     ];
   };
 
+  # Headless CLI set: modules/home (which carries git/gh for the desktops) is
+  # skipped here, and grandpa's package list lives in its own file. Without git
+  # this box cannot pull its own configuration.
   environment.systemPackages = with pkgs; [
     iw
     rsync
+    git
+    gh
+    tmux
+    vim
+    jq
+    dnsutils
+    htop
+    (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
   ];
 }
