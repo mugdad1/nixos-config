@@ -24,7 +24,6 @@
     "  bindsym ${alt}+Return exec ${t}"
     "  bindsym ${mod}+b exec ${b}"
     "  bindsym ${mod}+d exec toggle-rofi ${l} -show drun"
-    "  bindsym ${mod}+p exec gpu-menu"
     "  bindsym ${mod}+Shift+d exec nwg-displays"
     "  bindsym ${mod}+e exec nemo"
     "  bindsym ${mod}+w exec wallpaper-picker"

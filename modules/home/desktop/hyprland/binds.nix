@@ -14,7 +14,6 @@ in ''
   hl.bind("ALT + Return",           hl.dsp.exec_cmd("${t}"))
   hl.bind(mod .. " + B",            hl.dsp.exec_cmd("${b}"))
   hl.bind(mod .. " + D",            hl.dsp.exec_cmd("toggle-rofi ${l} -show drun"))
-  hl.bind(mod .. " + P",            hl.dsp.exec_cmd("gpu-menu"))
   hl.bind(mod .. " + SHIFT + D",    hl.dsp.exec_cmd("nwg-displays"))
   hl.bind(mod .. " + E",            hl.dsp.exec_cmd("nemo"))
   hl.bind(mod .. " + W",            hl.dsp.exec_cmd("wallpaper-picker"))
