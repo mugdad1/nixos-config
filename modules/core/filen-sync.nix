@@ -1,5 +1,5 @@
 # filen-sync — periodic two-way bisync of the Filen drive root into ~/filen.
-# grandpa only: the laptops hold no age key and no filen CLI.
+# Servers only (grandpa, asus): the laptops hold no age key and no filen CLI.
 {
   config,
   lib,
@@ -27,7 +27,7 @@
     '';
   };
 in
-  lib.mkIf (host == "grandpa") {
+  lib.mkIf (host == "grandpa" || host == "asus") {
     sops.secrets."filen/email" = {};
     sops.secrets."filen/password" = {};
 

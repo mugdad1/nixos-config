@@ -26,6 +26,9 @@
     gh
     git
 
+    # Servers carry sops: asus holds the fleet age key for filen-sync.
+    sops
+
     # Agent tooling: tcpdump for network debug.
     tcpdump
 

@@ -12,6 +12,7 @@
     ../../modules/core
     ./packages.nix
     ./study.nix
+    ./secrets.nix
   ];
 
   boot.loader.efi.efiSysMountPoint = "/boot";
