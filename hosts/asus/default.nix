@@ -73,6 +73,13 @@
 
   users.users.${username}.extraGroups = ["users"];
 
+  # victus holds the only keypair in the fleet, and restic pushes here over
+  # sftp — that needs non-interactive auth, not a typed password. t480s can
+  # add its own key later with ssh-copy-id.
+  users.users.${username}.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTAV1WMtmBZ3PMicT0QFN78AUU5eEZuzam2tu136yeZ"
+  ];
+
   environment.systemPackages = with pkgs; [
     iw
     rsync
