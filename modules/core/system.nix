@@ -64,10 +64,13 @@
 
   # The stock pool resolves to the ISP's NTP box (212.138.170.134), which
   # never answers, so every host sat at "System clock synchronized: no".
-  # Cloudflare and Google both reply; verified from asus 2026-11-14.
+  # Servers are pinned by IP on purpose: asus's RTC has lost power twice and
+  # come up at 2019, and then DoT/DoH certificates fail, which kills blocky,
+  # which kills DNS, which would kill name-based NTP too. Plain NTP by IP
+  # breaks that deadlock.
   services.timesyncd = {
-    servers = ["time.cloudflare.com" "time.google.com"];
-    fallbackServers = ["time.cloudflare.com" "time.google.com"];
+    servers = ["162.159.200.1" "216.239.35.0"];
+    fallbackServers = ["162.159.200.123" "216.239.35.4"];
   };
 
   i18n.defaultLocale = lib.mkDefault variables.locale;
