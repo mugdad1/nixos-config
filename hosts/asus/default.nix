@@ -1,6 +1,5 @@
 # ASUS X509 (i3-8xxxU, 4 GiB, RTL8821CE) — headless Wi-Fi server. The OS lives
-# on the SATA SSD; the 1 TB Seagate is a separate partition mounted at
-# /srv/storage (2.5" bay or USB enclosure — both mount by label). Imports
+# on the SATA SSD; the 1 TB Seagate is mounted at /srv/storage. Imports
 # modules/core only, never modules/desktop.
 {
   pkgs,
@@ -10,12 +9,11 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
-    ./services.nix
   ];
 
   boot.loader.efi.efiSysMountPoint = "/boot";
 
-  # Spinning, SMR platter is the only disk.
+  # The root disk is an SSD; the platter is storage only.
   boot.kernelParams = [
     "rootflags=noatime"
     "nowatchdog"
@@ -31,6 +29,14 @@
     options rtw88_pci disable_aspm=1
     options rtw88_core disable_lps_deep=1
   '';
+
+  # The 1 TB disk. Label, not UUID, so the disk can move to a USB enclosure
+  # without editing anything; nofail so a dead platter never blocks boot.
+  fileSystems."/srv/storage" = {
+    device = "/dev/disk/by-label/asus-storage";
+    fsType = "ext4";
+    options = ["nofail" "x-systemd.device-timeout=10"];
+  };
 
   # 4 GiB with no desktop: compressed swap keeps the store off the platter.
   zramSwap = {
@@ -74,17 +80,15 @@
   users.users.${username} = {
     extraGroups = ["users"];
 
-    # victus holds the only keypair in the fleet, and restic pushes here over
-    # sftp — that needs non-interactive auth, not a typed password. t480s can
-    # add its own key later with ssh-copy-id.
+    # victus holds the only keypair in the fleet; key auth means no password
+    # typing on a box with no keyboard attached.
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTAV1WMtmBZ3PMicT0QFN78AUU5eEZuzam2tu136yeZ"
     ];
   };
 
   # Headless CLI set: modules/home (which carries git/gh for the desktops) is
-  # skipped here, and grandpa's package list lives in its own file. Without git
-  # this box cannot pull its own configuration.
+  # skipped here. Without git this box cannot pull its own configuration.
   environment.systemPackages = with pkgs; [
     iw
     rsync
