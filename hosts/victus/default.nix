@@ -62,8 +62,12 @@ in {
 
     modesetting.enable = true;
     powerManagement.enable = true;
-    # Ampere notebooks already default to fine-grained RTD3.
-    powerManagement.finegrained = false;
+    # Fine-grained RTD3: the 3050 drops to D3cold when nothing holds it and
+    # `nvidia-offload` wakes it on demand. NixOS then sets
+    # NVreg_DynamicPowerManagement=0x02 and adds the udev rule that flips
+    # power/control to `auto`. HDMI hangs off this GPU, so that is the one
+    # path to re-test after a driver bump.
+    powerManagement.finegrained = true;
     nvidiaSettings = false;
 
     # Decode on the Intel iGPU.
