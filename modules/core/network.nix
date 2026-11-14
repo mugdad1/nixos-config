@@ -8,13 +8,16 @@
   # When Blocky is on it owns :53, so resolved and resolvconf get out of the way.
   localDns = config.services.blocky.enable;
   laptop = host == "victus" || host == "t480s";
+  # asus is headless, but Wi-Fi is its only uplink, so it needs the same
+  # NetworkManager + iwd stack as the laptops — just without the applet.
+  wifiHost = laptop || host == "asus";
 in {
   networking = {
     hostName = host;
     enableIPv6 = false;
 
-    # NetworkManager + iwd are laptop-only; grandpa is wired-only.
-    networkmanager = lib.mkIf laptop {
+    # grandpa is the only wired-only host.
+    networkmanager = lib.mkIf wifiHost {
       enable = true;
       wifi.backend = "iwd";
       dns = lib.mkIf localDns "none";
@@ -24,7 +27,7 @@ in {
     firewall.enable = true;
   };
 
-  networking.wireless.iwd.enable = lib.mkIf laptop true;
+  networking.wireless.iwd.enable = lib.mkIf wifiHost true;
 
   services.resolved = lib.mkIf (!localDns) {
     enable = true;
@@ -45,8 +48,6 @@ in {
   '';
 
   environment.systemPackages = with pkgs;
-    lib.optionals laptop [
-      networkmanagerapplet
-      iw
-    ];
+    lib.optionals laptop [networkmanagerapplet]
+    ++ lib.optionals wifiHost [iw];
 }
