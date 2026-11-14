@@ -2,6 +2,7 @@
 # on the SATA SSD; the 1 TB Seagate is mounted at /srv/storage. Imports
 # modules/core only, never modules/desktop.
 {
+  lib,
   pkgs,
   username,
   ...
@@ -89,6 +90,18 @@
       fi
     '';
   };
+
+  # Same resolver as grandpa: this box is also at home, where DoT/DoQ are not
+  # blocked, so it races the encrypted transports itself instead of DoH, and
+  # answers the LAN as well as loopback. Kept in sync with
+  # hosts/grandpa/overrides.nix.
+  services.blocky.settings.upstreams.groups.default = lib.mkForce [
+    "tcp-tls:cbf8aa.dns.nextdns.io:853"
+    "quic:2b44bd66.d.adguard-dns.com"
+  ];
+  services.blocky.settings.ports.dns = lib.mkForce "0.0.0.0:53";
+  networking.firewall.allowedTCPPorts = [53];
+  networking.firewall.allowedUDPPorts = [53];
 
   users.users.${username} = {
     extraGroups = ["users"];
