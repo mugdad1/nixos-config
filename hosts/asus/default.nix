@@ -47,6 +47,18 @@
     priority = 100;
   };
 
+  # Garbage collection is already fleet-wide: modules/core/nh.nix enables
+  # programs.nh.clean (weekly, --keep-since 14d --keep 10). Turning on
+  # nix.gc.automatic as well would run a second collector against the same
+  # store, so it stays off here too.
+
+  # smartctl is installed, but nothing watches the 1 TB platter until smartd
+  # does. No mail transport on this box: findings land in the journal.
+  services.smartd = {
+    enable = true;
+    notifications.wall.enable = false;
+  };
+
   # It is a server: closing the lid must not stop it, and nothing may suspend.
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
