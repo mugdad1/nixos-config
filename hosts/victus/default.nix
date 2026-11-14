@@ -1,123 +1,9 @@
-# HP Victus 15 — i5-12th gen + RTX 3050 Laptop. The panel is wired to the
-# Intel iGPU, so there is no MUX: `gpu-mode` decides what renders, not what
-# scans out. Cardwire blocks dGPU access in intel mode.
 {
   config,
   lib,
   pkgs,
   ...
 }: let
-  # cardwire 0.12.3 omits sqlite from buildInputs and fails to link.
-  cardwire = pkgs.cardwire.overrideAttrs (old: {
-    buildInputs = (old.buildInputs or []) ++ [pkgs.sqlite];
-  });
-
-  # Writes /var/lib/victus/gpu-mode, read by the session wrapper in
-  # modules/desktop/services.nix. Renderer changes apply at next login.
-  gpuMode = pkgs.writeShellScriptBin "gpu-mode" ''
-    set -eu
-    export PATH=${lib.makeBinPath [pkgs.kmod pkgs.coreutils cardwire]}:$PATH
-    mode="''${1:-}"
-    case "$mode" in
-      intel|hybrid|nvidia) ;;
-      *)
-        echo "usage: gpu-mode intel|hybrid|nvidia" >&2
-        exit 1
-        ;;
-    esac
-    if [ "$(id -u)" -ne 0 ]; then
-      exec sudo "$0" "$@"
-    fi
-    install -d -m 0755 /var/lib/victus
-    printf '%s\n' "$mode" > /var/lib/victus/gpu-mode.tmp
-    chmod 0644 /var/lib/victus/gpu-mode.tmp
-    mv /var/lib/victus/gpu-mode.tmp /var/lib/victus/gpu-mode
-    # Keep the driver loaded in every mode; Cardwire blocks at the syscall
-    # level, which is what lets the dGPU reach D3cold.
-    modprobe nvidia 2>/dev/null || true
-    modprobe nvidia_uvm 2>/dev/null || true
-    modprobe nvidia_modeset 2>/dev/null || true
-    modprobe nvidia_drm 2>/dev/null || true
-
-    case "$mode" in
-      intel)
-        # HDMI is wired to the dGPU, so blocking it while a display is attached
-        # would leave the port dead. Keep the card reachable in that case.
-        nv_display=0
-        for c in /sys/class/drm/card[0-9]*-*/status; do
-          [ -r "$c" ] || continue
-          [ "$(cat "$c" 2> /dev/null)" = connected ] || continue
-          card="''${c#/sys/class/drm/}"
-          card="''${card%%-*}"
-          if [ "$(cat "/sys/class/drm/$card/device/vendor" 2> /dev/null)" = 0x10de ]; then
-            nv_display=1
-            break
-          fi
-        done
-        if [ "$nv_display" -eq 1 ]; then
-          echo "gpu-mode: external display is on the dGPU; keeping it awake" >&2
-          cardwire set hybrid || true
-        elif ! cardwire set integrated; then
-          echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
-          exit 1
-        fi
-        ;;
-      hybrid | nvidia)
-        if ! cardwire set hybrid; then
-          echo "gpu-mode: cardwired is not reachable; the block will be applied at next boot" >&2
-          exit 1
-        fi
-        ;;
-    esac
-    echo "GPU mode: $mode — log out and back in to apply."
-    echo "  intel  iGPU only; dGPU stays on while an HDMI display is attached"
-    echo "  hybrid iGPU now, dGPU on demand: nvidia-offload <command>"
-    echo "  nvidia iGPU drives the panel, dGPU available for PRIME offload"
-  '';
-
-  # Super+P menu: Intel only -> power-saver, hybrid -> balanced,
-  # NVIDIA only -> performance.
-  gpuMenu = pkgs.writeShellScriptBin "gpu-menu" ''
-    set -eu
-    export PATH=${lib.makeBinPath [
-      gpuMode
-      pkgs.rofi
-      pkgs.libnotify
-      pkgs.power-profiles-daemon
-      pkgs.coreutils
-    ]}:$PATH
-    mode="$(cat /var/lib/victus/gpu-mode 2>/dev/null || echo hybrid)"
-    case "$mode" in
-      intel) selected=0 ;;
-      nvidia) selected=2 ;;
-      *) selected=1 ;;
-    esac
-    intel="<span color='#98971a'>󰾆 </span>Intel only"
-    both="<span color='#d79921'>󰾅 </span>Both (hybrid)"
-    nvidia="<span color='#cc241d'>󰓅 </span>NVIDIA only"
-    chosen="$(printf '%s\n' "$intel" "$both" "$nvidia" | \
-      rofi -dmenu -i -markup-rows -p 'GPU mode' \
-        -theme "$HOME/.config/rofi/powermenu-theme.rasi" \
-        -theme-str 'window {width: 320px;} listview {columns: 1;}' \
-        -selected-row "$selected")" || exit 0
-    case "$chosen" in
-      *Intel*) target=intel; profile=power-saver ;;
-      *Both*) target=hybrid; profile=balanced ;;
-      *NVIDIA*) target=nvidia; profile=performance ;;
-      *) exit 0 ;;
-    esac
-    # Only change the power profile once the GPU mode actually applied.
-    if out="$(gpu-mode "$target" 2>&1)"; then
-      if pp_out="$(powerprofilesctl set "$profile" 2>&1)"; then
-        notify-send -u normal "GPU mode: $target" "Power profile: $profile. Log out and back in to apply."
-      else
-        notify-send -u normal "GPU mode: $target" "Power profile not changed: $pp_out"
-      fi
-    else
-      notify-send -u critical "GPU mode failed" "$out"
-    fi
-  '';
-
   # patchelf >= 0.18 relocates .dynamic of these non-PIE NVIDIA binaries into a
   # read-only segment, so ld.so segfaults before main. 0.15.2 keeps it writable.
   nvidiaPatchelf = pkgs.patchelf.overrideAttrs (_old: rec {
@@ -195,67 +81,12 @@ in {
     };
   };
 
-  # Cardwire keeps the driver loaded and blocks opens of the dGPU device nodes,
-  # so the GPU can stay in D3cold.
-  services.cardwired = {
-    enable = true;
-    package = cardwire;
-    settings = {
-      auto_apply_gpu_state = true;
-      experimental_nvidia_block = true;
-      external_display_auto_switch = true;
-    };
-  };
-
-  systemd.services.cardwired.environment.RUST_LOG = "warn";
-
   boot.kernelModules = [
     "nvidia"
     "nvidia_uvm"
     "nvidia_modeset"
     "nvidia_drm"
   ];
-
-  # Re-apply the saved mode to cardwired at boot.
-  systemd.services.victus-gpu-mode = {
-    description = "Apply the saved GPU mode to Cardwire";
-    wantedBy = ["multi-user.target"];
-    after = ["cardwired.service"];
-    wants = ["cardwired.service"];
-    before = ["greetd.service"];
-    path = [cardwire pkgs.coreutils];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    restartIfChanged = false;
-    script = ''
-      mode="$(cat /var/lib/victus/gpu-mode 2>/dev/null || echo hybrid)"
-      case "$mode" in
-        intel) target=integrated ;;
-        hybrid | nvidia) target=hybrid ;;
-        *) target=hybrid ;;
-      esac
-
-      # This Victus has no MUX, so cardwire rejects "integrated" outright
-      # ("require a offload discrete GPU"). Fall back before burning the
-      # retry loop, otherwise the unit fails on every boot and every switch.
-      available="$(cardwire get 2>/dev/null | sed -n 's/^Available Mode: //p')"
-      if ! printf ', %s,' "$available" | grep -q ", $target,"; then
-        echo "victus-gpu-mode: '$target' unavailable here [$available] — using hybrid" >&2
-        target=hybrid
-      fi
-
-      for _ in {1..30}; do
-        if cardwire set "$target"; then
-          exit 0
-        fi
-        sleep 1
-      done
-      echo "victus-gpu-mode: could not set Cardwire mode to $target" >&2
-      exit 1
-    '';
-  };
 
   boot.kernelParams = [
     "nowatchdog"
@@ -273,6 +104,10 @@ in {
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
 
+  # Panel on the iGPU, HDMI on the dGPU, no MUX: tell the compositor about both
+  # DRM nodes so an external display works from login.
+  services.desktop.intelPrimaryDrm = true;
+
   # HP's own ACPI charge-mode methods, not TLP thresholds.
   services.victus.batteryChargeLimit = {
     enable = true;
@@ -281,16 +116,8 @@ in {
   };
 
   environment.systemPackages = [
-    gpuMode
-    gpuMenu
     pkgs.nvtopPackages.full
     pkgs.tmux
-  ];
-
-  # `f` only creates the file, so a chosen mode survives rebuilds.
-  systemd.tmpfiles.rules = [
-    "d /var/lib/victus 0755 root root -"
-    "f /var/lib/victus/gpu-mode 0644 root root - hybrid"
   ];
 
   services.logind.settings.Login = {
