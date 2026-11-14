@@ -9,6 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/core
+    ./packages.nix
   ];
 
   boot.loader.efi.efiSysMountPoint = "/boot";
@@ -87,19 +88,9 @@
     ];
   };
 
-  # Headless CLI set: modules/home (which carries git/gh for the desktops) is
-  # skipped here. Without git this box cannot pull its own configuration.
+  # The only tool list this host adds itself; everything else comes from
+  # ./packages.nix, which mirrors grandpa's server set.
   environment.systemPackages = with pkgs; [
     iw
-    rsync
-    git
-    gh
-    tmux
-    vim
-    jq
-    dnsutils
-    htop
-    btop
-    (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
   ];
 }
