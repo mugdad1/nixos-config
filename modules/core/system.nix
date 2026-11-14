@@ -61,6 +61,15 @@
   };
 
   time.timeZone = lib.mkDefault variables.timezone;
+
+  # The stock pool resolves to the ISP's NTP box (212.138.170.134), which
+  # never answers, so every host sat at "System clock synchronized: no".
+  # Cloudflare and Google both reply; verified from asus 2026-11-14.
+  services.timesyncd = {
+    servers = ["time.cloudflare.com" "time.google.com"];
+    fallbackServers = ["time.cloudflare.com" "time.google.com"];
+  };
+
   i18n.defaultLocale = lib.mkDefault variables.locale;
   nixpkgs.config.allowUnfree = lib.mkDefault true;
   nixpkgs.config.android_sdk.accept_license = true;
