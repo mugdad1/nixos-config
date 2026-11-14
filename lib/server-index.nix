@@ -33,6 +33,12 @@
       first = true;
     }
     {
+      name = "trilium";
+      host = "asus";
+      port = "8080";
+      desc = "notes — triliumnext, hierarchical; syncs with the desktop app";
+    }
+    {
       name = "home assistant";
       host = "grandpa";
       port = "8123";

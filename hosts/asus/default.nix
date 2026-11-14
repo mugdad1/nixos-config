@@ -12,6 +12,7 @@
     ../../modules/core
     ./packages.nix
     ./study.nix
+    ./trilium.nix
     ./secrets.nix
   ];
 
