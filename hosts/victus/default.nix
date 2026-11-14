@@ -236,6 +236,16 @@ in {
         hybrid | nvidia) target=hybrid ;;
         *) target=hybrid ;;
       esac
+
+      # This Victus has no MUX, so cardwire rejects "integrated" outright
+      # ("require a offload discrete GPU"). Fall back before burning the
+      # retry loop, otherwise the unit fails on every boot and every switch.
+      available="$(cardwire get 2>/dev/null | sed -n 's/^Available Mode: //p')"
+      if ! printf ', %s,' "$available" | grep -q ", $target,"; then
+        echo "victus-gpu-mode: '$target' unavailable here [$available] — using hybrid" >&2
+        target=hybrid
+      fi
+
       for _ in {1..30}; do
         if cardwire set "$target"; then
           exit 0
