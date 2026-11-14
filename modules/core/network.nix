@@ -20,7 +20,21 @@ in {
     networkmanager = lib.mkIf wifiHost {
       enable = true;
       wifi.backend = "iwd";
+      wifi.powersave = false;
       dns = lib.mkIf localDns "none";
+
+      # With the iwd backend NetworkManager does not reliably re-apply its own
+      # powersave setting, and rtw88 drops the link when the radio sleeps.
+      dispatcherScripts = lib.mkIf wifiHost [
+        {
+          type = "basic";
+          source = pkgs.writeText "wifi-powersave-off" ''
+            #!/bin/sh
+            [ "$1" = "wlan0" ] || exit 0
+            ${pkgs.iw}/bin/iw dev wlan0 set power_save off
+          '';
+        }
+      ];
     };
 
     # Ports are opened by the module that needs them, never centrally.
