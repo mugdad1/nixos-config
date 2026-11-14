@@ -99,6 +99,7 @@
     jq
     dnsutils
     htop
+    btop
     (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
   ];
 }
