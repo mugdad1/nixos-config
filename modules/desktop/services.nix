@@ -48,6 +48,15 @@
       else
         export WLR_DRM_DEVICES="$intel_card"
         export AQ_DRM_DEVICES="$intel_card"
+        # Nothing is plugged into the dGPU, so keep glvnd away from it: a
+        # single open /dev/nvidia* handle pins the GPU in D0 and defeats
+        # runtime D3. `nvidia-offload` overrides these for one command.
+        mesa_egl=/run/opengl-driver/share/glvnd/egl_vendor.d/50_mesa.json
+        if [ -r "$mesa_egl" ]; then
+          export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa_egl"
+        fi
+        export __GLX_VENDOR_LIBRARY_NAME=mesa
+        unset __NV_PRIME_RENDER_OFFLOAD __NV_PRIME_RENDER_OFFLOAD_PROVIDER __VK_LAYER_NV_optimus
       fi
     fi
   '';

@@ -112,6 +112,31 @@ in {
   # DRM nodes so an external display works from login.
   services.desktop.intelPrimaryDrm = true;
 
+  # Linux 7.3 starts kernel threads in a nullfs root, so nvidia's probe thread
+  # cannot open the PCI config file and silently turns RTD3 off
+  # (NVIDIA/open-gpu-kernel-modules#1507): /proc/driver/nvidia/gpus/*/power says
+  # "Not supported" and the 3050 never leaves D0. Re-probing from process
+  # context after the modules are loaded restores it; the udev bind rule then
+  # flips power/control to auto.
+  systemd.services.nvidia-rtd3-rebind = {
+    description = "Re-probe the NVIDIA GPU so runtime D3 is enabled";
+    wantedBy = ["multi-user.target"];
+    after = ["systemd-modules-load.service"];
+    before = ["display-manager.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      drv=/sys/bus/pci/drivers/nvidia
+      dev=0000:01:00.0
+      if [ -e "$drv/$dev" ]; then
+        echo "$dev" > "$drv/unbind"
+        echo "$dev" > "$drv/bind"
+      fi
+    '';
+  };
+
   # HP's own ACPI charge-mode methods, not TLP thresholds.
   services.victus.batteryChargeLimit = {
     enable = true;
