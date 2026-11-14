@@ -28,6 +28,9 @@
 
     # Agent tooling: tcpdump for network debug.
     tcpdump
+
+    # hosts/asus/study.nix runs scripts/serve.py (stdlib only, but it is python).
+    python3
     (writeShellScriptBin "mcli" (builtins.readFile ../../scripts/mcli.sh))
 
     # CLI, headless-useful subset

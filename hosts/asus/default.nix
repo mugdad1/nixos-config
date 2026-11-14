@@ -11,6 +11,7 @@
     ./hardware-configuration.nix
     ../../modules/core
     ./packages.nix
+    ./study.nix
   ];
 
   boot.loader.efi.efiSysMountPoint = "/boot";
